@@ -51,15 +51,10 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     private Pose2d pose;
 
     public TwoDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick, Pose2d pose) {
-        // TODO: make sure your config has **motors** with these names (or change them)
-        //   the encoders should be plugged into the slot matching the named motor
-        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         par = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "yEncoder")));
         perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "xEncoder")));
         par.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // TODO: reverse encoder directions if needed
-        //   par.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.imu = imu;
 
@@ -80,12 +75,25 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         return pose;
     }
 
+
+    public static double normalizeAngle(double angle) {
+        return mod((angle + Math.PI), 2 * Math.PI) - Math.PI;
+    }
+
+    public static double mod(double num, double divisor) {
+        return num - Math.floor(num / divisor) * divisor;
+    }
+
     @Override
     public PoseVelocity2d update() {
         PositionVelocityPair parPosVel = par.getPositionAndVelocity();
         PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
 
         YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
+
+//        // make IMU go from 0 to 2PI
+//        YawPitchRollAngles correctedAngles = new YawPitchRollAngles(AngleUnit.RADIANS, mod(angles.getYaw(), 2 * Math.PI), angles.getPitch(), angles.getRoll(), angles.getAcquisitionTime());
+
         // Use degrees here to work around https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/1070
         AngularVelocity angularVelocityDegrees = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
         AngularVelocity angularVelocity = new AngularVelocity(
@@ -137,17 +145,6 @@ public final class TwoDeadWheelLocalizer implements Localizer {
                         headingDelta,
                         headingVel,
                 })
-        );
-
-        Vector2dDual a = new  Vector2dDual<>(
-                new DualNum<Time>(new double[] {
-                        parPosDelta - PARAMS.parYTicks * headingDelta,
-                        parPosVel.velocity - PARAMS.parYTicks * headingVel,
-                }).times(inPerTick),
-                new DualNum<Time>(new double[] {
-                        perpPosDelta - PARAMS.perpXTicks * headingDelta,
-                        perpPosVel.velocity - PARAMS.perpXTicks * headingVel,
-                }).times(inPerTick)
         );
 
         lastParPos = parPosVel.position;

@@ -52,8 +52,8 @@ public class LocalizationTest extends LinearOpMode {
             while (opModeIsActive()) {
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
-                                gamepad1.left_stick_x,
-                                gamepad1.left_stick_y
+                                -gamepad1.left_stick_y,
+                                -gamepad1.left_stick_x
                         ),
                         gamepad1.right_stick_x
                 ));
@@ -64,6 +64,7 @@ public class LocalizationTest extends LinearOpMode {
                 telemetry.addData("x", pose.position.x);
                 telemetry.addData("y", pose.position.y);
                 telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+                telemetry.addData("Right stick x", gamepad1.right_stick_x);
                 telemetry.update();
 
                 TelemetryPacket packet = new TelemetryPacket();
