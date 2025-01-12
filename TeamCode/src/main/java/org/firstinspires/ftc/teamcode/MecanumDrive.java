@@ -63,7 +63,7 @@ public final class MecanumDrive {
 
         // drive model parameters
         public double tickPerRev = 365;
-        public double inPerTick = 96 / 25.4 * Math.PI / tickPerRev;  // 96mm diameterc
+Me        public double inPerTick = 32 / 25.4 * Math.PI / tickPerRev;  // for drive wheels
         public double lateralInPerTick = inPerTick;
         public double trackWidthTicks = 0;
 
@@ -111,7 +111,6 @@ public final class MecanumDrive {
     public final VoltageSensor voltageSensor;
 
     public final LazyImu lazyImu;
-    public final double inPerTick = 32 * Math.PI / 25.4 / 2000;
 
     public final Localizer localizer;
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
@@ -245,7 +244,7 @@ public final class MecanumDrive {
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         // TODO: change starting position
-        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), inPerTick, pose);
+        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
         // localizer = new DriveLocalizer(pose);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
@@ -253,9 +252,15 @@ public final class MecanumDrive {
 
     public void setDrivePowers(PoseVelocity2d powers) {
         // flip xy
+        //TODO: check if change from trackwidth set to 1 did anything or revert if needed
         PoseVelocity2d correctedPowers = new PoseVelocity2d(new Vector2d(powers.linearVel.y, powers.linearVel.x), powers.angVel);
+
         MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
                 PoseVelocity2dDual.constant(correctedPowers, 1));
+
+        //Method: MecanumKinematics.inverse(), Takes: gamepad vals/PoseVelocity2dDual, returns WheelVelocities
+//        MecanumKinematics.WheelVelocities<Time> wheelVels = kinematics.inverse(
+//                PoseVelocity2dDual.constant(correctedPowers, 1));
 
         double maxPowerMag = 1;
         for (DualNum<Time> power : wheelVels.all()) {

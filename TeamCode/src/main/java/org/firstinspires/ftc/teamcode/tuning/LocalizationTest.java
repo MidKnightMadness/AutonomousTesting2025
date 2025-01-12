@@ -20,9 +20,7 @@ import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 
 @TeleOp(name="LocalizationTest2")
 public class LocalizationTest extends LinearOpMode {
-
-    TwoDeadWheelLocalizer twoDeadWheelLocalizer;
-    IMU imu;
+//    IMU imu;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -35,15 +33,15 @@ public class LocalizationTest extends LinearOpMode {
 //        expansionIMUParameters.loggingTag          = "IMU";
 //        expansionIMUParameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-
-        imu = hardwareMap.get(IMU.class, "imuExpansion");
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
-
-        twoDeadWheelLocalizer = new TwoDeadWheelLocalizer(hardwareMap,  imu, 32 * Math.PI / 25.4 / 2000, new Pose2d(0, 0, 0));
-
+        //2
+//        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
+//        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
+//        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
+//
+//        imu = hardwareMap.get(IMU.class, "imuExpansion");
+//        imu.initialize(new IMU.Parameters(orientationOnRobot));
+//
+//
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
             MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
