@@ -15,11 +15,13 @@ public class ActionsTestOpMode extends OpMode {
     VerticalSlides verticalSlides;
     MecanumDrive drive;
     Pose2d initialPose;
+    Wrist wrist;
     @Override
     public void init() {
         initialPose = new Pose2d(0, 0, 0);
         drive = new MecanumDrive(hardwareMap, initialPose);
         claw = new Claw(hardwareMap);
+        wrist = new Wrist(hardwareMap);
         verticalSlides = new VerticalSlides(hardwareMap);
     }
 
@@ -27,6 +29,7 @@ public class ActionsTestOpMode extends OpMode {
     public void start() {
         Actions.runBlocking(new SequentialAction(
             claw.open(0),
+            wrist.open(0),
 
             verticalSlides.liftUp(),
 
