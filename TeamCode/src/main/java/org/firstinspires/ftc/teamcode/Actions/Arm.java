@@ -13,6 +13,11 @@ public class Arm {
     public static final Vector2d RIGHT_SERVO_BOUNDS = new Vector2d(0, 1);
     public static final Vector2d LEFT_SERVO_BOUNDS = new Vector2d(0, 0.835);
 
+                                                        //Left, Right
+    final double FACING_DOWN_POSITION_AUTO = 0.835; //set already
+    final double SUBMERSIBLE_POSITION_AUTO = 0; //not set
+    final double BASKET_POSITION_AUTO = 0;
+
     public Servo leftServo;
     public Servo rightServo;
     ElapsedTime elapsedTime;
@@ -26,7 +31,7 @@ public class Arm {
     }
 
     public Action open(double waitTime) {
-        return new SetPosition(LEFT_SERVO_BOUNDS.y, RIGHT_SERVO_BOUNDS.y, waitTime);
+        return new SetPosition(LEFT_SERVO_BOUNDS.y, waitTime);
     }
 
     public Action close(double waitTime) {
@@ -62,8 +67,6 @@ public class Arm {
             return (elapsedTime.time() - startTime) / 1000d > waitTime;
         }
     }
-
-
 
 
 }

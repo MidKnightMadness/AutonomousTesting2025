@@ -4,35 +4,35 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class Claw {
-    public static final double OPEN_POSITION = 0.65;
-    public static double CLOSED_POSITION = 0.46;
-
+public class Wrist {
+    final double SAMPLE_POSITION_AUTO = 0 ; //sample pickup in autonomous
+    final double BASKET_POSITION_AUTO = 0; //sample dropoff in basket(top basket) at certain arm position
     public Servo servo;
     ElapsedTime elapsedTime;
 
-    public Claw(HardwareMap hardwareMap) {
-        servo = hardwareMap.get(Servo.class, "clawServo");
+    public Wrist(HardwareMap hardwareMap) {
+        servo = hardwareMap.get(Servo.class, "wristServo");
         elapsedTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         elapsedTime.startTime();
     }
 
-    public Action grab(double waitTime) {
-        return new SetPosition(GRAB_POSITION, waitTime);
+
+    public Action setSamplePos(double waitTime) {
+        return new Wrist.SetPosition(SAMPLE_POSITION_AUTO, waitTime);
     }
 
-    public Action release(double waitTime) {
-        return new SetPosition(RELEASE_POSITION, waitTime);
+    public Action setBasketPos(double waitTime){
+        return new Wrist.SetPosition(BASKET_POSITION_AUTO, waitTime);
     }
 
     public Action setPosition(double position, double waitTime) {
-        return new SetPosition(position, waitTime);
+        return new Wrist.SetPosition(position, waitTime);
     }
+
 
     public class SetPosition implements Action {
         private final double position;
@@ -56,6 +56,4 @@ public class Claw {
             return (elapsedTime.time() - startTime) / 1000d > waitTime;
         }
     }
-
-
 }
