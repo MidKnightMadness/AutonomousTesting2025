@@ -27,9 +27,7 @@ public class ActionsTestOpMode extends OpMode {
     public void start() {
         Actions.runBlocking(new SequentialAction(
             claw.open(0),
-
             verticalSlides.liftUp(),
-
             drive.actionBuilder(initialPose)
                     .splineTo(new Vector2d(30, 30), Math.PI / 2)
                     .splineTo(new Vector2d(0, 60), Math.PI)
@@ -41,7 +39,4 @@ public class ActionsTestOpMode extends OpMode {
     public void loop() {
 
     }
-
-
-
 }

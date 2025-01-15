@@ -13,6 +13,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.teamcode.Actions.Arm;
+import org.firstinspires.ftc.teamcode.Actions.Claw;
+import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Drawing;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.TankDrive;
@@ -20,85 +23,63 @@ import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 
 @TeleOp(name="LocalizationTest2")
 public class LocalizationTest extends LinearOpMode {
-//    IMU imu;
+    VerticalSlides lift;
+    Claw claw;
+    Arm arm;
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-//        BNO055IMU.Parameters expansionIMUParameters = new BNO055IMU.Parameters();
-//        expansionIMUParameters.angleUnit           = BNO055IMU.AngleUnit.RADIANS;
-//        expansionIMUParameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-//        expansionIMUParameters.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample OpMode
-//        expansionIMUParameters.loggingEnabled      = true;
-//        expansionIMUParameters.loggingTag          = "IMU";
-//        expansionIMUParameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        lift = new VerticalSlides(hardwareMap);
+        claw = new Claw(hardwareMap);
+        arm = new Arm(hardwareMap);
 
-        //2
-//        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-//        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-//        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-//
-//        imu = hardwareMap.get(IMU.class, "imuExpansion");
-//        imu.initialize(new IMU.Parameters(orientationOnRobot));
-//
-//
-        if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
-            MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
-            waitForStart();
+        waitForStart();
 
-            while (opModeIsActive()) {
-                drive.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                -gamepad1.left_stick_x,
-                                -gamepad1.left_stick_y
-                        ),
-                        -gamepad1.right_stick_x
-                ));
+        while (opModeIsActive()) {
+            drive.setDrivePowers(new PoseVelocity2d(
+                    new Vector2d(
+                            -gamepad1.left_stick_x,
+                            -gamepad1.left_stick_y
+                    ),
+                    -gamepad1.right_stick_x
+            ));
 
-                drive.updatePoseEstimate();
+            drive.updatePoseEstimate();
 
-                Pose2d pose = drive.localizer.getPose();
-                telemetry.addData("x", pose.position.x);
-                telemetry.addData("y", pose.position.y);
-                telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
-                telemetry.addData("Right stick x", gamepad1.right_stick_x);
-                telemetry.update();
+            lift.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? 1 : -1));
+            lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? 1 : -1));
 
-                TelemetryPacket packet = new TelemetryPacket();
-                packet.fieldOverlay().setStroke("#3F51B5");
-                Drawing.drawRobot(packet.fieldOverlay(), pose);
-                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            if (gamepad1.a) {
+                arm.leftServo.setPosition(Arm.LEFT_SERVO_BOUNDS.x);
             }
-        } else if (TuningOpModes.DRIVE_CLASS.equals(TankDrive.class)) {
-            TankDrive drive = new TankDrive(hardwareMap, new Pose2d(0, 0, 0));
-
-            waitForStart();
-
-            while (opModeIsActive()) {
-                drive.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                -gamepad1.left_stick_y,
-                                0.0
-                        ),
-                        -gamepad1.right_stick_x
-                ));
-
-                drive.updatePoseEstimate();
-
-                Pose2d pose = drive.localizer.getPose();
-                telemetry.addData("x", pose.position.x);
-                telemetry.addData("y", pose.position.y);
-                telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
-                telemetry.update();
-
-                TelemetryPacket packet = new TelemetryPacket();
-                packet.fieldOverlay().setStroke("#3F51B5");
-                Drawing.drawRobot(packet.fieldOverlay(), pose);
-                FtcDashboard.getInstance().sendTelemetryPacket(packet);
+            else if (gamepad1.y) {
+                arm.leftServo.setPosition(Arm.LEFT_SERVO_BOUNDS.y);
             }
-        } else {
-            throw new RuntimeException();
+
+            if (gamepad1.x) {
+                claw.servo.setPosition(Claw.CLOSED_POSITION);
+            }
+            else if (gamepad1.b) {
+                claw.servo.setPosition(Claw.OPEN_POSITION);
+            }
+
+            Pose2d pose = drive.localizer.getPose();
+
+            telemetry.addData("x", pose.position.x);
+            telemetry.addData("y", pose.position.y);
+            telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+            telemetry.addData("Right stick x", gamepad1.right_stick_x);
+            telemetry.addData("Right motor pos", lift.getRightMotor().getCurrentPosition());
+            telemetry.addData("Left motor pos", lift.getLeftMotor().getCurrentPosition());
+            telemetry.update();
+
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.fieldOverlay().setStroke("#3F51B5");
+            Drawing.drawRobot(packet.fieldOverlay(), pose);
+            FtcDashboard.getInstance().sendTelemetryPacket(packet);
         }
     }
 }

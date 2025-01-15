@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Claw {
-    final double OPEN_POSITION = 0;
-    final double CLOSED_POSITION = 0;
+    public static final double OPEN_POSITION = 0.65;
+    public static double CLOSED_POSITION = 0.46;
 
     public Servo servo;
     ElapsedTime elapsedTime;

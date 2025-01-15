@@ -10,16 +10,16 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Arm {
-    final Vector2d RIGHT_SERVO_BOUNDS = new Vector2d(0, 1);
-    final Vector2d LEFT_SERVO_BOUNDS = new Vector2d(0, 1);
+    public static final Vector2d RIGHT_SERVO_BOUNDS = new Vector2d(0, 1);
+    public static final Vector2d LEFT_SERVO_BOUNDS = new Vector2d(0, 0.835);
 
     public Servo leftServo;
     public Servo rightServo;
     ElapsedTime elapsedTime;
 
     public Arm(HardwareMap hardwareMap) {
-        leftServo = hardwareMap.get(Servo.class, "leftArm");
-        rightServo = hardwareMap.get(Servo.class, "rightArm");
+        leftServo = hardwareMap.get(Servo.class, "leftArmServo");
+//        rightServo = hardwareMap.get(Servo.class, "rightArmServo");
 
         elapsedTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         elapsedTime.startTime();
@@ -56,12 +56,14 @@ public class Arm {
             if (!initialized) {
                 startTime = elapsedTime.time();
                 leftServo.setPosition(leftPosition);
-                rightServo.setPosition(rightPosition);
+//                rightServo.setPosition(rightPosition);
             }
 
             return (elapsedTime.time() - startTime) / 1000d > waitTime;
         }
     }
+
+
 
 
 }

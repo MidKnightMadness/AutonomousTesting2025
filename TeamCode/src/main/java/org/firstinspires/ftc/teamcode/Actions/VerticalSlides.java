@@ -18,8 +18,17 @@ public class VerticalSlides {
     double downPosition;
 
     public VerticalSlides(HardwareMap hardwareMap) {
-        rightMotor = hardwareMap.get(DcMotorEx.class, "rightSlide");
-        leftMotor = hardwareMap.get(DcMotorEx.class, "leftSlide");
+        rightMotor = hardwareMap.get(DcMotorEx.class, "rightSlideMotor");
+        leftMotor = hardwareMap.get(DcMotorEx.class, "leftSlideMotor");
+        
+        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        resetEncoders();
+
 
         power = 0.8;
         upPosition = 3000;
@@ -84,5 +93,21 @@ public class VerticalSlides {
 
             return !(rightCompleted && leftCompleted);
         }
+    }
+
+    public DcMotorEx getLeftMotor() {
+        return leftMotor;
+    }
+
+    public DcMotorEx getRightMotor() {
+        return rightMotor;
+    }
+
+    public void resetEncoders() {
+        leftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 }
