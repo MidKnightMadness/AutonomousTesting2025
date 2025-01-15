@@ -13,6 +13,8 @@ public class Arm {
     final Vector2d RIGHT_SERVO_BOUNDS = new Vector2d(0, 1);
     final Vector2d LEFT_SERVO_BOUNDS = new Vector2d(0, 1);
 
+    final Vector2d FACING_DOWN_BOUNDS = new Vector2d(0,1);
+    final Vector2d BASKET_BOUNDS = new Vector2d(0, 1);
     public Servo leftServo;
     public Servo rightServo;
     ElapsedTime elapsedTime;
@@ -31,6 +33,14 @@ public class Arm {
 
     public Action close(double waitTime) {
         return new SetPosition(LEFT_SERVO_BOUNDS.x, RIGHT_SERVO_BOUNDS.x, waitTime);
+    }
+
+    public Action setSampleHeight(double waitTime){//pickup sample
+        return new Arm.SetPosition(FACING_DOWN_BOUNDS.x, FACING_DOWN_BOUNDS.y, waitTime);
+    }
+
+    public Action setBasketHeight(double waitTime){
+        return new Arm.SetPosition(BASKET_BOUNDS.x, BASKET_BOUNDS.y, waitTime);
     }
 
     public Action setPosition(double leftPosition, double rightPosition, double waitTime) {
