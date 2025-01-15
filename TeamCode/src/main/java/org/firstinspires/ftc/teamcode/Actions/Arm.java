@@ -10,54 +10,57 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Arm {
-    final Vector2d RIGHT_SERVO_BOUNDS = new Vector2d(0, 1);
     final Vector2d LEFT_SERVO_BOUNDS = new Vector2d(0, 1);
 
-    final Vector2d FACING_DOWN_BOUNDS = new Vector2d(0,1);
-    final Vector2d BASKET_BOUNDS = new Vector2d(0, 1);
+                                                        //Left, Right
+    final double FACING_DOWN_POSITION_AUTO = 0.835; //set already
+    final double SUBMERSIBLE_POSITION_AUTO = 0; //not set
+    final double BASKET_POSITION_AUTO = 0;
+
     public Servo leftServo;
     public Servo rightServo;
     ElapsedTime elapsedTime;
 
     public Arm(HardwareMap hardwareMap) {
         leftServo = hardwareMap.get(Servo.class, "leftArm");
-        rightServo = hardwareMap.get(Servo.class, "rightArm");
 
         elapsedTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
         elapsedTime.startTime();
     }
 
     public Action open(double waitTime) {
-        return new SetPosition(LEFT_SERVO_BOUNDS.y, RIGHT_SERVO_BOUNDS.y, waitTime);
+        return new SetPosition(LEFT_SERVO_BOUNDS.y, waitTime);
     }
 
     public Action close(double waitTime) {
-        return new SetPosition(LEFT_SERVO_BOUNDS.x, RIGHT_SERVO_BOUNDS.x, waitTime);
+        return new SetPosition(LEFT_SERVO_BOUNDS.x, waitTime);
     }
 
-    public Action setSampleHeight(double waitTime){//pickup sample
-        return new Arm.SetPosition(FACING_DOWN_BOUNDS.x, FACING_DOWN_BOUNDS.y, waitTime);
+    public Action setSamplePosition(double waitTime){//pickup sample
+        return new Arm.SetPosition(FACING_DOWN_POSITION_AUTO, waitTime);
     }
 
-    public Action setBasketHeight(double waitTime){
-        return new Arm.SetPosition(BASKET_BOUNDS.x, BASKET_BOUNDS.y, waitTime);
+    public Action setSubPosition(double waitTime){//pickup sample from submersible
+        return new Arm.SetPosition(SUBMERSIBLE_POSITION_AUTO, waitTime);
     }
 
-    public Action setPosition(double leftPosition, double rightPosition, double waitTime) {
-        return new SetPosition(leftPosition, rightPosition, waitTime);
+    public Action setBasketPosition(double waitTime){
+        return new Arm.SetPosition(BASKET_POSITION_AUTO,  waitTime);
+    }
+
+    public Action setPosition(double leftPosition, double waitTime) {
+        return new SetPosition(leftPosition, waitTime);
     }
 
     public class SetPosition implements Action {
         private final double leftPosition;
-        private final double rightPosition;
         private final double waitTime;
 
         double startTime;
         boolean initialized = false;
 
-        public SetPosition(double leftPosition, double rightPosition, double waitTime) {
+        public SetPosition(double leftPosition, double waitTime) {
             this.leftPosition = leftPosition;
-            this.rightPosition = rightPosition;
             this.waitTime = waitTime;
         }
 
@@ -66,7 +69,6 @@ public class Arm {
             if (!initialized) {
                 startTime = elapsedTime.time();
                 leftServo.setPosition(leftPosition);
-                rightServo.setPosition(rightPosition);
             }
 
             return (elapsedTime.time() - startTime) / 1000d > waitTime;

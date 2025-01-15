@@ -19,7 +19,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 
-@Autonomous
+@Autonomous(name = "SamplePushAuto")
 public class SamplePushAuto extends OpMode {
 
     Claw claw;
@@ -62,5 +62,5 @@ public class SamplePushAuto extends OpMode {
 
     }
 
-    public
+
 }

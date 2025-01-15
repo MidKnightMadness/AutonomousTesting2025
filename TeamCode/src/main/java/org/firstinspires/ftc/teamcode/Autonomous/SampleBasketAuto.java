@@ -23,7 +23,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 
 //Start at the left of the 2nd tile
 
-@Autonomous
+@Autonomous(name = "SampleBasketAuto")
 public class SampleBasketAuto extends OpMode {
 
     Claw claw;
@@ -55,6 +55,7 @@ public class SampleBasketAuto extends OpMode {
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
     }
 
+
     @Override
     public void start() {
 
@@ -71,10 +72,10 @@ public class SampleBasketAuto extends OpMode {
                                     .build()
                         ),
                         slides.liftUp(),
-                        arm.setBasketHeight(0),
-                        wrist.setBasketHeight(0)
+                        arm.setBasketPosition(0),
+                        wrist.setBasketPos(0)
                 ),
-                claw.open(0.2),
+                claw.release(0.2),
                 mecanumDrive.actionBuilder(startingPose)
                         .waitSeconds(1)
                         .build()
@@ -99,6 +100,11 @@ public class SampleBasketAuto extends OpMode {
                 .splineTo(new Vector2d(20, 0), -90)
                 ;
 
+        state +=1;
+        if(state == 1) {
+            telemetry.addLine("Traj 1");
+        }
+
 
 
 
@@ -107,20 +113,22 @@ public class SampleBasketAuto extends OpMode {
                 new SequentialAction(
                     new ParallelAction(
                         slides.bringDown(),
-                        arm.setSampleHeight(0),
-                        wrist.setSampleHeight(0),
+                        arm.setSamplePosition(0),
+                        wrist.setSamplePos(0),
                         tab1.build()
                     ),
-                    claw.close(1),
+                    claw.grab(1),
                     new ParallelAction(
-                        mecanumDrive.actionBuilder(startingPose)
+                            new SequentialAction(
+                            mecanumDrive.actionBuilder(startingPose)
                                 .turn(Math.toRadians(-35))
                                 .build(),
-                        slides.liftUp(),
-                        arm.setBasketHeight(0),
-                        wrist.setBasketHeight(0)
+                            slides.liftUp(
+                                    )),
+                        arm.setBasketPosition(0),
+                        wrist.setBasketPos(0)
                     ),
-                    claw.open(1)
+                    claw.release(1)
                 )
         );
 
@@ -130,20 +138,20 @@ public class SampleBasketAuto extends OpMode {
                 new SequentialAction(
                         new ParallelAction(
                                 slides.bringDown(),
-                                arm.setSampleHeight(0),
-                                wrist.setSampleHeight(0),
+                                arm.setSamplePosition(0),
+                                wrist.setSamplePos(0),
                                 tab2.build()
                         ),
-                        claw.close(1),
+                        claw.grab(1),
                         new ParallelAction(
                                 mecanumDrive.actionBuilder(startingPose)
                                         .turn(Math.toRadians(-35))
                                         .build(),
                                 slides.liftUp(),
-                                arm.setBasketHeight(0),
-                                wrist.setBasketHeight(0)
+                                arm.setBasketPosition(0),
+                                wrist.setBasketPos(0)
                         ),
-                        claw.open(1)
+                        claw.release(1)
                 )
         );
 
@@ -152,24 +160,22 @@ public class SampleBasketAuto extends OpMode {
                 new SequentialAction(
                         new ParallelAction(
                                 slides.bringDown(),
-                                arm.setSampleHeight(0),
-                                wrist.setSampleHeight(0),
+                                arm.setSamplePosition(0),
+                                wrist.setSamplePos(0),
                                 tab3.build()
                         ),
-                        claw.close(1),
+                        claw.grab(1),
                         new ParallelAction(
                                 mecanumDrive.actionBuilder(startingPose)
                                         .turn(Math.toRadians(-35))
                                         .build(),
                                 slides.liftUp(),
-                                arm.setBasketHeight(0),
-                                wrist.setBasketHeight(0)
+                                arm.setBasketPosition(0),
+                                wrist.setBasketPos(0)
                         ),
-                        claw.open(1)
+                        claw.release(1)
                 )
         );
-
-
 
 
 
@@ -183,5 +189,5 @@ public class SampleBasketAuto extends OpMode {
 
     }
 
-    public
+
 }

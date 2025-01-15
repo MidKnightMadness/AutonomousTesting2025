@@ -4,13 +4,15 @@ import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Claw {
-    final double OPEN_POSITION = 0;
-    final double CLOSED_POSITION = 0;
+    final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
+    final double RELEASE_POSITION = 1;
+    final double GRAB_POSITION = 0;
 
     public Servo servo;
     ElapsedTime elapsedTime;
@@ -21,12 +23,12 @@ public class Claw {
         elapsedTime.startTime();
     }
 
-    public Action open(double waitTime) {
-        return new SetPosition(OPEN_POSITION, waitTime);
+    public Action grab(double waitTime) {
+        return new SetPosition(GRAB_POSITION, waitTime);
     }
 
-    public Action close(double waitTime) {
-        return new SetPosition(CLOSED_POSITION, waitTime);
+    public Action release(double waitTime) {
+        return new SetPosition(RELEASE_POSITION, waitTime);
     }
 
     public Action setPosition(double position, double waitTime) {

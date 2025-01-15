@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Actions;
 
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -16,28 +17,40 @@ public class ActionsTestOpMode extends OpMode {
     MecanumDrive drive;
     Pose2d initialPose;
     Wrist wrist;
+    Arm arm;
     @Override
     public void init() {
         initialPose = new Pose2d(0, 0, 0);
         drive = new MecanumDrive(hardwareMap, initialPose);
         claw = new Claw(hardwareMap);
         wrist = new Wrist(hardwareMap);
+        arm = new Arm(hardwareMap);
         verticalSlides = new VerticalSlides(hardwareMap);
     }
 
     @Override
     public void start() {
         Actions.runBlocking(new SequentialAction(
-            claw.open(0),
-            wrist.open(0),
+                        new ParallelAction(
+                                new SequentialAction(
+                                        drive.actionBuilder(initialPose)
+                                                .lineToX(2)
+                                                .turn(Math.toRadians(90))
+                                                .lineToX(10)
+                                                .build()
+                                ),
+                                verticalSlides.liftUp(),
+                                arm.setBasketPosition(0),
+                                wrist.setBasketPos(0)
+                        ),
+                        claw.release(0.2),
+                        drive.actionBuilder(initialPose)
+                                .waitSeconds(1)
+                                .build()
+                )
+        );
 
-            verticalSlides.liftUp(),
 
-            drive.actionBuilder(initialPose)
-                    .splineTo(new Vector2d(30, 30), Math.PI / 2)
-                    .splineTo(new Vector2d(0, 60), Math.PI)
-                    .build()
-        ));
     }
 
     @Override

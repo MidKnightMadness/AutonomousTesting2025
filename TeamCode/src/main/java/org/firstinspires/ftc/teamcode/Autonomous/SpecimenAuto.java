@@ -19,7 +19,7 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 
-@Autonomous
+@Autonomous(name = "Specimen Auto")
 public class SpecimenAuto extends OpMode {
 
     Claw claw;
