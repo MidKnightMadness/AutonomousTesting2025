@@ -53,6 +53,7 @@ public class SampleBasketAuto extends OpMode {
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
+        claw.grab(0);
     }
 
 
@@ -63,24 +64,14 @@ public class SampleBasketAuto extends OpMode {
         //Starting Action: Output first sample into top basket
 
         Actions.runBlocking(new SequentialAction(
-                new ParallelAction(
-                        new SequentialAction(
-                            mecanumDrive.actionBuilder(startingPose)
-                                    .lineToX(2)
-                                    .turn(Math.toRadians(90))
-                                    .lineToX(10)
-                                    .build()
-                        ),
-                        slides.liftUp(),
-                        arm.setBasketPosition(0),
-                        wrist.setBasketPos(0)
-                ),
-                claw.release(0.2),
                 mecanumDrive.actionBuilder(startingPose)
-                        .waitSeconds(1)
-                        .build()
-                )
-                );
+                        .splineTo(new Vector2d(5,24), 135)
+                        .build(),
+                slides.liftUp(),
+                arm.setBasketPosition(1),
+                wrist.setBasketPos(0),
+                claw.release(1)
+        ));
 
 
         //Trajectory 1: Pickup first sample and Drive
@@ -100,82 +91,74 @@ public class SampleBasketAuto extends OpMode {
                 .splineTo(new Vector2d(20, 0), -90)
                 ;
 
-        state +=1;
-        if(state == 1) {
-            telemetry.addLine("Traj 1");
-        }
-
-
-
-
         //Follow trajectory 1 and reset end effector positions, return back to
-        Actions.runBlocking(
-                new SequentialAction(
-                    new ParallelAction(
-                        slides.bringDown(),
-                        arm.setSamplePosition(0),
-                        wrist.setSamplePos(0),
-                        tab1.build()
-                    ),
-                    claw.grab(1),
-                    new ParallelAction(
-                            new SequentialAction(
-                            mecanumDrive.actionBuilder(startingPose)
-                                .turn(Math.toRadians(-35))
-                                .build(),
-                            slides.liftUp(
-                                    )),
-                        arm.setBasketPosition(0),
-                        wrist.setBasketPos(0)
-                    ),
-                    claw.release(1)
-                )
-        );
+//        Actions.runBlocking(
+//                new SequentialAction(
+//                    new ParallelAction(
+//                        slides.bringDown(),
+//                        arm.setSamplePosition(0),
+//                        wrist.setSamplePos(0),
+//                        tab1.build()
+//                    ),
+//                    claw.grab(1),
+//                    new ParallelAction(
+//                            new SequentialAction(
+//                            mecanumDrive.actionBuilder(startingPose)
+//                                .turn(Math.toRadians(-35))
+//                                .build(),
+//                            slides.liftUp(
+//                                    )),
+//                        arm.setBasketPosition(0),
+//                        wrist.setBasketPos(0)
+//                    ),
+//                    claw.release(1)
+//                )
+//        );
 
 
-        //Follow trajectory 2
-        Actions.runBlocking(
-                new SequentialAction(
-                        new ParallelAction(
-                                slides.bringDown(),
-                                arm.setSamplePosition(0),
-                                wrist.setSamplePos(0),
-                                tab2.build()
-                        ),
-                        claw.grab(1),
-                        new ParallelAction(
-                                mecanumDrive.actionBuilder(startingPose)
-                                        .turn(Math.toRadians(-35))
-                                        .build(),
-                                slides.liftUp(),
-                                arm.setBasketPosition(0),
-                                wrist.setBasketPos(0)
-                        ),
-                        claw.release(1)
-                )
-        );
-
-        //Follow trajectory 3
-        Actions.runBlocking(
-                new SequentialAction(
-                        new ParallelAction(
-                                slides.bringDown(),
-                                arm.setSamplePosition(0),
-                                wrist.setSamplePos(0),
-                                tab3.build()
-                        ),
-                        claw.grab(1),
-                        new ParallelAction(
-                                mecanumDrive.actionBuilder(startingPose)
-                                        .turn(Math.toRadians(-35))
-                                        .build(),
-                                slides.liftUp(),
-                                arm.setBasketPosition(0),
-                                wrist.setBasketPos(0)
-                        ),
-                        claw.release(1)
-                )
-        );
+//        //Follow trajectory 2
+//        Actions.runBlocking(
+//                new SequentialAction(
+//                        new ParallelAction(
+//                                slides.bringDown(),
+//                                arm.setSamplePosition(0),
+//                                wrist.setSamplePos(0),
+//                                tab2.build()
+//                        ),
+//                        claw.grab(1),
+//                        new ParallelAction(
+//                                mecanumDrive.actionBuilder(startingPose)
+//                                        .turn(Math.toRadians(-35))
+//                                        .build(),
+//                                slides.liftUp(),
+//                                arm.setBasketPosition(0),
+//                                wrist.setBasketPos(0)
+//                        ),
+//                        claw.release(1)
+//                )
+//        );
+//
+//        //Follow trajectory 3
+//        Actions.runBlocking(
+//                new SequentialAction(
+//                        new ParallelAction(
+//                                slides.bringDown(),
+//                                arm.setSamplePosition(0),
+//                                wrist.setSamplePos(0),
+//                                tab3.build()
+//                        ),
+//                        claw.grab(1),
+//                        new ParallelAction(
+//                                mecanumDrive.actionBuilder(startingPose)
+//                                        .turn(Math.toRadians(-35))
+//                                        .build(),
+//                                slides.liftUp(),
+//                                arm.setBasketPosition(0),
+//                                wrist.setBasketPos(0)
+//                        ),
+//                        claw.release(1)
+//                )
+//        );
 
 
 

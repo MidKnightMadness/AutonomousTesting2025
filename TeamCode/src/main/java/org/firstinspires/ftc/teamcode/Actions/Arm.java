@@ -17,6 +17,8 @@ public class Arm {
     final double FACING_DOWN_POSITION_AUTO = 0.835; //set already
     final double SUBMERSIBLE_POSITION_AUTO = 0; //not set
     final double BASKET_POSITION_AUTO = 0;
+    final double SPECIMEN_OUTAKE_POSITION = 0;
+    final double SPECIMEN_INTAKE_POSITION = 0;
 
     public Servo leftServo;
     public Servo rightServo;
@@ -31,8 +33,17 @@ public class Arm {
     }
 
     public Action open(double waitTime) {
-        return new SetPosition(LEFT_SERVO_BOUNDS.y, waitTime);
+        return new SetPosition(LEFT_SERVO_BOUNDS.y, RIGHT_SERVO_BOUNDS.x, waitTime);
     }
+
+    public Action setSamplePosition(double waitTime ) {
+        return new SetPosition(LEFT_SERVO_BOUNDS.y, RIGHT_SERVO_BOUNDS.x, waitTime);
+    }
+
+    public Action setBasketPosition(double waitTime ) {
+        return new SetPosition(LEFT_SERVO_BOUNDS.y, RIGHT_SERVO_BOUNDS.x, waitTime);
+    }
+
 
     public Action close(double waitTime) {
         return new SetPosition(LEFT_SERVO_BOUNDS.x, RIGHT_SERVO_BOUNDS.x, waitTime);

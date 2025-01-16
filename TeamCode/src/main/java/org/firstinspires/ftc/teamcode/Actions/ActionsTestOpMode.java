@@ -40,7 +40,7 @@ public class ActionsTestOpMode extends OpMode {
                                                 .build()
                                 ),
                                 verticalSlides.liftUp(),
-                                arm.setBasketPosition(0),
+//                                arm.setBasketPosition(0),
                                 wrist.setBasketPos(0)
                         ),
                         claw.release(0.2),

@@ -10,8 +10,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Claw {
-    public static final double OPEN_POSITION = 0.65;
-    public static double CLOSED_POSITION = 0.46;
+    final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
+    public static final double RELEASE_POSITION = 0.65;
+    public static final double GRAB_POSITION = 0.46;
 
     public Servo servo;
     ElapsedTime elapsedTime;

@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class Wrist {
     final double SAMPLE_POSITION_AUTO = 0 ; //sample pickup in autonomous
     final double BASKET_POSITION_AUTO = 0; //sample dropoff in basket(top basket) at certain arm position
+    final double SPECIMEN_INTAKE_POSITION = 0; //specimen position
+    final double SPECIMEN_OUTAKE_POSITION = 0;
     public Servo servo;
     ElapsedTime elapsedTime;
 

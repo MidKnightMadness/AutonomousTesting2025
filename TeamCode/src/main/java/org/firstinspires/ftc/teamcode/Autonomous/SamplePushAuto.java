@@ -54,7 +54,7 @@ public class SamplePushAuto extends OpMode {
     @Override
     public void start() {
 
-        TrajectoryActionBuilder traj1 = mecanumDrive.actionBuilder(startingPose).
+        TrajectoryActionBuilder traj1 = mecanumDrive.actionBuilder(startingPose);
     }
 
     @Override

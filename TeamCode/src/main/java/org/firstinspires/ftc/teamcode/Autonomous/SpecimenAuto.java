@@ -61,6 +61,4 @@ public class SpecimenAuto extends OpMode {
     public void loop() {
 
     }
-
-    public
 }

@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.teamcode.Actions.Arm;
 import org.firstinspires.ftc.teamcode.Actions.Claw;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Actions.Wrist;
 import org.firstinspires.ftc.teamcode.Drawing;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.TankDrive;
@@ -26,6 +27,7 @@ public class LocalizationTest extends LinearOpMode {
     VerticalSlides lift;
     Claw claw;
     Arm arm;
+    Wrist wrist;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -33,6 +35,7 @@ public class LocalizationTest extends LinearOpMode {
         lift = new VerticalSlides(hardwareMap);
         claw = new Claw(hardwareMap);
         arm = new Arm(hardwareMap);
+        wrist = new Wrist(hardwareMap);
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
@@ -52,19 +55,21 @@ public class LocalizationTest extends LinearOpMode {
             lift.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? 1 : -1));
             lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? 1 : -1));
 
-            if (gamepad1.a) {
+            if (gamepad1.y) {
                 arm.leftServo.setPosition(Arm.LEFT_SERVO_BOUNDS.x);
             }
-            else if (gamepad1.y) {
+            else if (gamepad1.a) {
                 arm.leftServo.setPosition(Arm.LEFT_SERVO_BOUNDS.y);
             }
 
             if (gamepad1.x) {
-                claw.servo.setPosition(Claw.CLOSED_POSITION);
+                claw.servo.setPosition(Claw.GRAB_POSITION);
             }
             else if (gamepad1.b) {
-                claw.servo.setPosition(Claw.OPEN_POSITION);
+                claw.servo.setPosition(Claw.RELEASE_POSITION);
             }
+
+            wrist.servo.setPosition(0.4 * gamepad1.right_trigger);
 
             Pose2d pose = drive.localizer.getPose();
 
