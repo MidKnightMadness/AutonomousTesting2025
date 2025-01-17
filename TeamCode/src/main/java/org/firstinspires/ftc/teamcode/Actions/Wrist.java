@@ -2,17 +2,19 @@ package org.firstinspires.ftc.teamcode.Actions;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+@Config
 public class Wrist {
-    final double SAMPLE_POSITION_AUTO = 0 ; //sample pickup in autonomous
-    final double BASKET_POSITION_AUTO = 0; //sample dropoff in basket(top basket) at certain arm position
-    final double SPECIMEN_INTAKE_POSITION = 0; //specimen position
-    final double SPECIMEN_OUTAKE_POSITION = 0;
+    public static double SAMPLE_POSITION_AUTO = 0 ; //sample pickup in autonomous
+    public static double BASKET_POSITION_AUTO = 0; //sample dropoff in basket(top basket) at certain arm position
+    public static double SPECIMEN_INTAKE_POSITION = 0; //specimen position
+    public static double SPECIMEN_OUTAKE_POSITION = 0;
     public Servo servo;
     ElapsedTime elapsedTime;
 
@@ -35,6 +37,14 @@ public class Wrist {
         return new Wrist.SetPosition(position, waitTime);
     }
 
+    public void setInitPosition() {
+        servo.setPosition(0);
+    }
+
+    public Action setBasketPositionAction(double waitTime) {
+        return new Wrist.SetPosition(BASKET_POSITION_AUTO, waitTime);
+    }
+
 
     public class SetPosition implements Action {
         private final double position;
@@ -53,9 +63,10 @@ public class Wrist {
             if (!initialized) {
                 startTime = elapsedTime.time();
                 servo.setPosition(position);
+                initialized = true;
             }
 
-            return (elapsedTime.time() - startTime) / 1000d > waitTime;
+            return false;
         }
     }
 }

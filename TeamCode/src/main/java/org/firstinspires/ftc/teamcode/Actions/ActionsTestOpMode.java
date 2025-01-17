@@ -43,7 +43,7 @@ public class ActionsTestOpMode extends OpMode {
 //                                arm.setBasketPosition(0),
                                 wrist.setBasketPos(0)
                         ),
-                        claw.release(0.2),
+                        claw.releaseAction(0.2),
                         drive.actionBuilder(initialPose)
                                 .waitSeconds(1)
                                 .build()

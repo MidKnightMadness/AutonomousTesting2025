@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Actions;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,20 +10,18 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+@Config
 public class VerticalSlides {
     DcMotorEx rightMotor;
     DcMotorEx leftMotor;
 
-    double power;
-    double upPosition;
-    double downPosition;
+    public static double power = 0.8;
+    public static double BASKET_SCORING_POSITION = 2100;
+    public static double DOWN_POSITION = 10;
 
     public VerticalSlides(HardwareMap hardwareMap) {
         rightMotor = hardwareMap.get(DcMotorEx.class, "rightSlideMotor");
         leftMotor = hardwareMap.get(DcMotorEx.class, "leftSlideMotor");
-        
-        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -31,34 +30,17 @@ public class VerticalSlides {
 
 
         power = 0.8;
-        upPosition = 3000;
-        downPosition = 0;
-    }
-
-    public VerticalSlides(HardwareMap hardwareMap, double power, double upPosition, double downPosition) {
-        rightMotor = hardwareMap.get(DcMotorEx.class, "rightSlide");
-        leftMotor = hardwareMap.get(DcMotorEx.class, "leftSlide");
-
-        rightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        leftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        this.power = power;
-        this.upPosition = upPosition;
-        this.downPosition = downPosition;
     }
 
     public Action setPosition(double targetPosition) {
         return new Lift(targetPosition);
     }
     public Action liftUp() {
-        return new Lift(upPosition);
+        return new Lift(BASKET_SCORING_POSITION);
     }
 
     public Action bringDown() {
-        return new Lift(downPosition);
+        return new Lift(DOWN_POSITION);
     }
 
     public class Lift implements Action {

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
@@ -23,8 +24,16 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 
 //Start at the left of the 2nd tile
 
+@Config
 @Autonomous(name = "SampleBasketAuto")
 public class SampleBasketAuto extends OpMode {
+
+    public static double secondInitialTargetTangent = 90;
+    public static double firstInitialTargetTangent = 0;
+    public static double toBasketY = 21.5;
+    public static double initialXMove = 8;
+    public static double initialTurn = 135;
+
 
     Claw claw;
     Arm arm;
@@ -34,12 +43,10 @@ public class SampleBasketAuto extends OpMode {
 
     MecanumDrive mecanumDrive;
 
-
-
     RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
     RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
     RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-    Pose2d startingPose = new Pose2d(0, 0, 0);
+    Pose2d startingPose = new Pose2d(0, 0,  Math.toRadians(90));
 
 
     @Override
@@ -49,29 +56,39 @@ public class SampleBasketAuto extends OpMode {
         wrist = new Wrist(hardwareMap);
         slides = new VerticalSlides(hardwareMap);
         imu = hardwareMap.get(IMU.class, "imuExpansion");
-
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
-        claw.grab(0);
+        claw.grab();
+        arm.setInitPosition();
+
+        wrist.setInitPosition();
+
     }
 
 
     @Override
     public void start() {
 
-
         //Starting Action: Output first sample into top basket
 
         Actions.runBlocking(new SequentialAction(
                 mecanumDrive.actionBuilder(startingPose)
-                        .splineTo(new Vector2d(5,24), 135)
+                        .setTangent(Math.toRadians(firstInitialTargetTangent))
+                        .lineToX(initialXMove)
+                        .setTangent(Math.toRadians(secondInitialTargetTangent))
+                        .lineToY(toBasketY)
+                        .turnTo(Math.toRadians(initialTurn))
                         .build(),
                 slides.liftUp(),
-                arm.setBasketPosition(1),
-                wrist.setBasketPos(0),
-                claw.release(1)
+                arm.setBasketPositionAction(0),
+                mecanumDrive.actionBuilder(startingPose)
+                        .waitSeconds(1).build(),
+//                wrist.setBasketPositionAction(0)
+                claw.releaseAction(0)
         ));
+
+
 
 
         //Trajectory 1: Pickup first sample and Drive

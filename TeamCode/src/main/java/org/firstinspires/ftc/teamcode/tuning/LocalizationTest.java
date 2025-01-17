@@ -52,14 +52,14 @@ public class LocalizationTest extends LinearOpMode {
 
             drive.updatePoseEstimate();
 
-            lift.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? 1 : -1));
-            lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? 1 : -1));
+            lift.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
+            lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
 
             if (gamepad1.y) {
-                arm.leftServo.setPosition(Arm.LEFT_SERVO_BOUNDS.x);
+                arm.setBasketPosition();
             }
             else if (gamepad1.a) {
-                arm.leftServo.setPosition(Arm.LEFT_SERVO_BOUNDS.y);
+                arm.setSamplePosition();
             }
 
             if (gamepad1.x) {
@@ -69,7 +69,8 @@ public class LocalizationTest extends LinearOpMode {
                 claw.servo.setPosition(Claw.RELEASE_POSITION);
             }
 
-            wrist.servo.setPosition(0.4 * gamepad1.right_trigger);
+
+            wrist.servo.setPosition(gamepad1.right_trigger);
 
             Pose2d pose = drive.localizer.getPose();
 
@@ -79,6 +80,10 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("Right stick x", gamepad1.right_stick_x);
             telemetry.addData("Right motor pos", lift.getRightMotor().getCurrentPosition());
             telemetry.addData("Left motor pos", lift.getLeftMotor().getCurrentPosition());
+
+            telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
+            telemetry.addData("Wrist Pos", wrist.servo.getPosition());
+            telemetry.addData("Claw Pos", claw.servo.getPosition());
             telemetry.update();
 
             TelemetryPacket packet = new TelemetryPacket();

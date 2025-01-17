@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Actions;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -9,16 +10,16 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class Arm {
-    public static final Vector2d RIGHT_SERVO_BOUNDS = new Vector2d(0, 1);
-    public static final Vector2d LEFT_SERVO_BOUNDS = new Vector2d(0, 0.835);
+import java.util.concurrent.TimeUnit;
 
-                                                        //Left, Right
-    final double FACING_DOWN_POSITION_AUTO = 0.835; //set already
-    final double SUBMERSIBLE_POSITION_AUTO = 0; //not set
-    final double BASKET_POSITION_AUTO = 0;
-    final double SPECIMEN_OUTAKE_POSITION = 0;
-    final double SPECIMEN_INTAKE_POSITION = 0;
+@Config
+public class Arm {
+    public static double FACING_DOWN_POSITION_AUTO = 0.8; //set already
+    public static double SUBMERSIBLE_POSITION_AUTO = 0; //not set
+    public static double BASKET_POSITION_AUTO = 0.4;
+
+    public static double SPECIMEN_OUTAKE_POSITION = 0;
+    public static double SPECIMEN_INTAKE_POSITION = 0;
 
     public Servo leftServo;
     public Servo rightServo;
@@ -32,38 +33,39 @@ public class Arm {
         elapsedTime.startTime();
     }
 
-    public Action open(double waitTime) {
-        return new SetPosition(LEFT_SERVO_BOUNDS.y, RIGHT_SERVO_BOUNDS.x, waitTime);
+
+    public Action setBasketPositionAction(double waitTime ) {
+        return new SetPosition(BASKET_POSITION_AUTO, waitTime);
     }
 
-    public Action setSamplePosition(double waitTime ) {
-        return new SetPosition(LEFT_SERVO_BOUNDS.y, RIGHT_SERVO_BOUNDS.x, waitTime);
+    public Action setSamplePositionAction(double waitTime){
+        return new SetPosition(FACING_DOWN_POSITION_AUTO, waitTime);
+    }
+    public void setSamplePosition(){
+        leftServo.setPosition(FACING_DOWN_POSITION_AUTO);
     }
 
-    public Action setBasketPosition(double waitTime ) {
-        return new SetPosition(LEFT_SERVO_BOUNDS.y, RIGHT_SERVO_BOUNDS.x, waitTime);
+    public void setBasketPosition(){
+        leftServo.setPosition(BASKET_POSITION_AUTO);
     }
 
 
-    public Action close(double waitTime) {
-        return new SetPosition(LEFT_SERVO_BOUNDS.x, RIGHT_SERVO_BOUNDS.x, waitTime);
+    public Action setPosition(double leftPosition, double waitTime) {
+        return new SetPosition(leftPosition, waitTime);
     }
-
-    public Action setPosition(double leftPosition, double rightPosition, double waitTime) {
-        return new SetPosition(leftPosition, rightPosition, waitTime);
+    public void setInitPosition(){
+        leftServo.setPosition(0);
     }
 
     public class SetPosition implements Action {
         private final double leftPosition;
-        private final double rightPosition;
         private final double waitTime;
 
         double startTime;
         boolean initialized = false;
 
-        public SetPosition(double leftPosition, double rightPosition, double waitTime) {
+        public SetPosition(double leftPosition, double waitTime) {
             this.leftPosition = leftPosition;
-            this.rightPosition = rightPosition;
             this.waitTime = waitTime;
         }
 
@@ -73,9 +75,10 @@ public class Arm {
                 startTime = elapsedTime.time();
                 leftServo.setPosition(leftPosition);
 //                rightServo.setPosition(rightPosition);
+                initialized = true;
             }
 
-            return (elapsedTime.time() - startTime) / 1000d > waitTime;
+            return false;
         }
     }
 

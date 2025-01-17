@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Claw {
     final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
-    public static final double RELEASE_POSITION = 0.65;
-    public static final double GRAB_POSITION = 0.46;
+    public static double RELEASE_POSITION = 0.46;
+    public static double GRAB_POSITION = 0.65;
 
     public Servo servo;
     ElapsedTime elapsedTime;
@@ -23,13 +23,22 @@ public class Claw {
         elapsedTime.startTime();
     }
 
-    public Action grab(double waitTime) {
+    public Action grabAction(double waitTime) {
         return new SetPosition(GRAB_POSITION, waitTime);
     }
 
-    public Action release(double waitTime) {
+    public void grab() {
+        servo.setPosition(GRAB_POSITION);
+    }
+
+    public Action releaseAction(double waitTime) {
         return new SetPosition(RELEASE_POSITION, waitTime);
     }
+
+    public void release() {
+        servo.setPosition(RELEASE_POSITION);
+    }
+
 
     public Action setPosition(double position, double waitTime) {
         return new SetPosition(position, waitTime);
@@ -52,9 +61,10 @@ public class Claw {
             if (!initialized) {
                 startTime = elapsedTime.time();
                 servo.setPosition(position);
+                initialized = true;
             }
 
-            return (elapsedTime.time() - startTime) / 1000d > waitTime;
+            return (elapsedTime.time() - startTime) > waitTime;
         }
     }
 
