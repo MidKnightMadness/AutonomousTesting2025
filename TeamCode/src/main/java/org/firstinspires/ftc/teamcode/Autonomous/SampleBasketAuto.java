@@ -35,7 +35,6 @@ public class SampleBasketAuto extends OpMode {
 
     public static Vector2d firstSample = new Vector2d(18, 18);
     public static Vector2d secondSample = new Vector2d(20, 28);
-
     public static Vector2d thirdSample = new Vector2d(18, 30);
 
     public static double thirdSampleOrientation = 30;
@@ -84,17 +83,6 @@ public class SampleBasketAuto extends OpMode {
     }
 
 
-    public void resetAfterScoring(){
-
-        Actions.runBlocking(new SequentialAction(
-                slides.bringDown()
-        ));
-    }
-
-
-
-
-
     @Override
     public void start() {
 //
@@ -104,8 +92,7 @@ public class SampleBasketAuto extends OpMode {
         Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
                     mecanumDrive.actionBuilder(startingPose)
-                        .strafeTo(new Vector2d(initialXMove, toBasketY))
-                        .turnTo(Math.toRadians(initialTurn))
+                        .strafeToLinearHeading(new Vector2d(initialXMove, toBasketY), initialTurn)
                         .build(),
                     slides.liftUp(),
                     arm.setBasketPositionAction(0),
@@ -115,63 +102,27 @@ public class SampleBasketAuto extends OpMode {
         ));
 
 
-        //First Line Sample Action
         firstLineSample();
 
         secondLineSample();
-
-        resetAfterScoring();
 //
 //        thirdLineSample();
-
-
-
-        //Second Action: Grabs 1st Neutral Sample on lines
-//
-//        Actions.runBlocking(new SequentialAction(
-//
-//        ));
-
-//        //Trajectory 1: Pickup first sample and Drive
-//        TrajectoryActionBuilder tab1 = mecanumDrive.actionBuilder(startingPose)
-//                .splineTo(new Vector2d(20, 0), -90)
-//                ;
-//
-//
-//        //Trajectory 2: Pickup second sample and Drive
-//        TrajectoryActionBuilder tab2 = mecanumDrive.actionBuilder(startingPose)
-//                .splineTo(new Vector2d(20, 0), -90)
-//                ;
-//
-//        //Trajectory 3: Pickup third sample and Drive
-//
-//        TrajectoryActionBuilder tab3 = mecanumDrive.actionBuilder(startingPose)
-//                .splineTo(new Vector2d(20, 0), -90)
-//                ;
-//
-//
-//
-
 
     }
     private void firstLineSample() {
         Actions.runBlocking(new SequentialAction(
-                new ParallelAction(
                 mecanumDrive.actionBuilder(startingPose)
-                        .strafeTo((firstSample))
-                        .turnTo(0)
-                        .build(),
-                slides.bringDown()
+                        .turnTo(0).build(),
+                new ParallelAction(
+                    mecanumDrive.actionBuilder(startingPose)
+                            .strafeToConstantHeading((firstSample))
+                            .build(),
+                    slides.bringDown()
                 ),
                 arm.setSamplePositionAction(0),
-
                 wrist.setSampleLinePos(0),
-//                mecanumDrive.actionBuilder(startingPose)
-//                        .strafeTo(new Vector2d(firstSample.x + 4, firstSample.y))
-//                        .turnTo(0)
-//                        .build(),
                 mecanumDrive.actionBuilder(startingPose)
-                                .waitSeconds(1).build(),
+                                .waitSeconds(0.5).build(),
 
                 claw.grabAction(0),
                 mecanumDrive.actionBuilder(startingPose)
@@ -179,11 +130,11 @@ public class SampleBasketAuto extends OpMode {
 
                 arm.setBasketPositionAction(0),
                 wrist.setBasketPos(0),
+
                 new ParallelAction(
                     slides.liftUp(),
                     mecanumDrive.actionBuilder(startingPose)
-                        .turnTo(Math.toRadians(initialTurn))
-                        .strafeTo(new Vector2d(initialXMove, toBasketY))
+                        .strafeToLinearHeading(new Vector2d(initialXMove, toBasketY), initialTurn)
                         .build()
                 ),
                 claw.releaseAction(0)
@@ -192,24 +143,60 @@ public class SampleBasketAuto extends OpMode {
 
     public void secondLineSample(){
         Actions.runBlocking(new SequentialAction(
+                mecanumDrive.actionBuilder(startingPose)
+                        .turnTo(0).build(),
+
                 new ParallelAction(
                         mecanumDrive.actionBuilder(startingPose)
-                                .strafeTo((secondSample))
-                                .turnTo(0)
+                                .strafeToConstantHeading((secondSample))
                                 .build(),
                         slides.bringDown()
                 ),
                 arm.setSamplePositionAction(0),
-
                 wrist.setSampleLinePos(0),
-//                mecanumDrive.actionBuilder(startingPose)
-//                        .strafeTo(new Vector2d(firstSample.x + 4, firstSample.y))
-//                        .turnTo(0)
-//                        .build(),
+
                 mecanumDrive.actionBuilder(startingPose)
-                        .waitSeconds(1).build(),
+                        .waitSeconds(0.5).build(),
+                claw.grabAction(0),
+
+                mecanumDrive.actionBuilder(startingPose)
+                        .waitSeconds(0.5).build(),
+
+                arm.setBasketPositionAction(0),
+                wrist.setBasketPos(0),
+
+                new ParallelAction(
+                        slides.liftUp(),
+                        mecanumDrive.actionBuilder(startingPose)
+                                .turnTo(Math.toRadians(initialTurn))
+                                .strafeTo(new Vector2d(initialXMove, toBasketY))
+                                .build()
+                ),
+                claw.releaseAction(0)
+        ));
+    }
+
+    public void thirdLineSample(){
+        Actions.runBlocking(new SequentialAction(
+                new ParallelAction(
+                        mecanumDrive.actionBuilder(startingPose)
+                                .strafeTo(thirdSample)
+                                .turnTo(thirdSampleOrientation)
+                                .build(),
+                        slides.bringDown()
+                ),
+
+                arm.setSamplePositionAction(0),
+                wrist.setSampleLinePos(0),
+
+                mecanumDrive.actionBuilder(startingPose)
+                        .waitSeconds(0.5).build(),
 
                 claw.grabAction(0),
+
+                mecanumDrive.actionBuilder(startingPose)
+                        .waitSeconds(0.5).build(),
+
                 arm.setBasketPositionAction(0),
                 wrist.setBasketPos(0),
                 new ParallelAction(
@@ -222,39 +209,6 @@ public class SampleBasketAuto extends OpMode {
                 claw.releaseAction(0)
         ));
     }
-
-//    public void thirdLineSample(){
-//        Actions.runBlocking(new SequentialAction(
-//                new ParallelAction(
-//                        mecanumDrive.actionBuilder(startingPose)
-//                                .strafeTo(thirdSample)
-//                                .turnTo(thirdSampleOrientation)
-//                                .build(),
-//                        slides.bringDown()
-//                ),
-//                arm.setSamplePositionAction(0),
-//
-//                wrist.setSampleLinePos(0),
-////                mecanumDrive.actionBuilder(startingPose)
-////                        .strafeTo(new Vector2d(firstSample.x + 4, firstSample.y))
-////                        .turnTo(0)
-////                        .build(),
-//                mecanumDrive.actionBuilder(startingPose)
-//                        .waitSeconds(1).build(),
-//
-//                claw.grabAction(0),
-//                arm.setBasketPositionAction(0),
-//                wrist.setBasketPos(0),
-//                new ParallelAction(
-//                        slides.liftUp(),
-//                        mecanumDrive.actionBuilder(startingPose)
-//                                .turnTo(Math.toRadians(initialTurn))
-//                                .strafeTo(new Vector2d(initialXMove, toBasketY))
-//                                .build()
-//                ),
-//                claw.releaseAction(0)
-//        ));
-//    }
 
     @Override
     public void loop() {
