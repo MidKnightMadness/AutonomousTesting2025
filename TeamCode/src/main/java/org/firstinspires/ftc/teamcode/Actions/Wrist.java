@@ -11,8 +11,10 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 @Config
 public class Wrist {
-    public static double SAMPLE_POSITION_AUTO = 0 ; //sample pickup in autonomous
+    public static double SAMPLE_LINE_POSITION_AUTO = 0.1; //sample pickup in autonomous
+    public static double SAMPLE_SUB_POSITION = 0.1;
     public static double BASKET_POSITION_AUTO = 0; //sample dropoff in basket(top basket) at certain arm position
+    public static double INIT_POSITION = 0.6;
     public static double SPECIMEN_INTAKE_POSITION = 0; //specimen position
     public static double SPECIMEN_OUTAKE_POSITION = 0;
     public Servo servo;
@@ -25,8 +27,11 @@ public class Wrist {
     }
 
 
-    public Action setSamplePos(double waitTime) {
-        return new Wrist.SetPosition(SAMPLE_POSITION_AUTO, waitTime);
+    public Action setSampleLinePos(double waitTime) {
+        return new Wrist.SetPosition(SAMPLE_LINE_POSITION_AUTO, waitTime);
+    }
+    public Action setSampleSubPos(double waitTime){
+        return new Wrist.SetPosition(SAMPLE_SUB_POSITION, waitTime);
     }
 
     public Action setBasketPos(double waitTime){
@@ -38,7 +43,7 @@ public class Wrist {
     }
 
     public void setInitPosition() {
-        servo.setPosition(0);
+        servo.setPosition(INIT_POSITION);
     }
 
     public Action setBasketPositionAction(double waitTime) {

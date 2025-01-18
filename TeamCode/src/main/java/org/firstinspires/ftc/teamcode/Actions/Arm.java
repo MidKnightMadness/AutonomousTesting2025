@@ -14,9 +14,20 @@ import java.util.concurrent.TimeUnit;
 
 @Config
 public class Arm {
-    public static double FACING_DOWN_POSITION_AUTO = 0.8; //set already
-    public static double SUBMERSIBLE_POSITION_AUTO = 0; //not set
+
+    public static double INIT_AUTO_POS = 0.05;
+    public static double FACING_DOWN_POSITION_AUTO = 0.77; //set already
+
+    public static double SPECIMEN_OUTAKE_POSITION_AUTO = 0; //not set
+    public static double SPECIMEN_INTAKE_POSITION_AUTO = 0; //not set
     public static double BASKET_POSITION_AUTO = 0.4;
+    public static double SAMPLE_INTAKE_INTERMEDIATE = 0.7;
+
+
+    //TELEOP
+
+    public static double SAMPLE_INTAKE_POSITION = 0.75;
+    public static double BASKET_POSITION = 0.4;
 
     public static double SPECIMEN_OUTAKE_POSITION = 0;
     public static double SPECIMEN_INTAKE_POSITION = 0;
@@ -41,21 +52,43 @@ public class Arm {
     public Action setSamplePositionAction(double waitTime){
         return new SetPosition(FACING_DOWN_POSITION_AUTO, waitTime);
     }
-    public void setSamplePosition(){
+    public Action setSamplePositionAuto(double waitTime){
+        return new SetPosition(FACING_DOWN_POSITION_AUTO, waitTime);
+    }
+    public void setSamplePositionAuto(){
         leftServo.setPosition(FACING_DOWN_POSITION_AUTO);
     }
 
-    public void setBasketPosition(){
+    public void setBasketPositionAuto(){
         leftServo.setPosition(BASKET_POSITION_AUTO);
     }
 
+
+    public void setSamplePositionTeleOp(){
+        leftServo.setPosition(SAMPLE_INTAKE_POSITION);
+    }
+
+    public void setBasketPositionTeleOp(){
+        leftServo.setPosition(BASKET_POSITION);
+    }
+
+
+    public void setSpecimenOutakePosition(){
+        leftServo.setPosition(SPECIMEN_OUTAKE_POSITION);
+    }
+
+    public void setSpecimenIntakePosition(){
+        leftServo.setPosition(SPECIMEN_INTAKE_POSITION);
+    }
 
     public Action setPosition(double leftPosition, double waitTime) {
         return new SetPosition(leftPosition, waitTime);
     }
     public void setInitPosition(){
-        leftServo.setPosition(0);
+        leftServo.setPosition(INIT_AUTO_POS);
     }
+
+
 
     public class SetPosition implements Action {
         private final double leftPosition;

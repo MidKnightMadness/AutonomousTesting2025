@@ -16,8 +16,9 @@ public class VerticalSlides {
     DcMotorEx leftMotor;
 
     public static double power = 0.8;
-    public static double BASKET_SCORING_POSITION = 2100;
-    public static double DOWN_POSITION = 10;
+    public static double bringDownPower = 0.5;
+    public static double BASKET_SCORING_POSITION = 2250;
+    public static double DOWN_POSITION = 40;
 
     public VerticalSlides(HardwareMap hardwareMap) {
         rightMotor = hardwareMap.get(DcMotorEx.class, "rightSlideMotor");
@@ -51,13 +52,23 @@ public class VerticalSlides {
             this.targetPosition = targetPosition;
         }
 
+        double leftDirection;
+        double rightDirection;
+
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!initialized) {
-                double leftDirection = Math.signum(targetPosition - leftMotor.getCurrentPosition());
-                double rightDirection = Math.signum(targetPosition - rightMotor.getCurrentPosition());
-                rightMotor.setPower(power * rightDirection);
-                leftMotor.setPower(power * leftDirection);
+                leftDirection = Math.signum(targetPosition - leftMotor.getCurrentPosition());
+                rightDirection = Math.signum(targetPosition - rightMotor.getCurrentPosition());
+                if (rightDirection == -1) {
+                    rightMotor.setPower(bringDownPower * rightDirection);
+                    leftMotor.setPower(bringDownPower * leftDirection);
+                }
+                else {
+                    rightMotor.setPower(power * rightDirection);
+                    leftMotor.setPower(power * leftDirection);
+                }
+
                 initialized = true;
             }
 
@@ -67,8 +78,8 @@ public class VerticalSlides {
             packet.put("leftLiftPosition", leftPos);
             packet.put("rightLiftPosition", rightPos);
 
-            boolean leftCompleted = leftPos > targetPosition;
-            boolean rightCompleted = rightPos > targetPosition;
+            boolean leftCompleted = leftDirection == 1 ? (leftPos > targetPosition) : (leftPos < targetPosition);
+            boolean rightCompleted = rightDirection == 1 ? (rightPos > targetPosition) : (leftPos < targetPosition);
 
             if (leftCompleted) leftMotor.setPower(0);
             if (rightCompleted) rightMotor.setPower(0);

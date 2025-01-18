@@ -64,7 +64,7 @@ public class Claw {
                 initialized = true;
             }
 
-            return (elapsedTime.time() - startTime) > waitTime;
+            return false;
         }
     }
 
