@@ -21,7 +21,7 @@ public class Arm {
     public static double SPECIMEN_OUTAKE_POSITION_AUTO = 0; //not set
     public static double SPECIMEN_INTAKE_POSITION_AUTO = 0; //not set
     public static double BASKET_POSITION_AUTO = 0.4;
-    public static double SAMPLE_INTAKE_INTERMEDIATE = 0.7;
+    public static double SAMPLE_INTAKE_INTERMEDIATE = 0.68;
 
 
     //TELEOP
@@ -52,6 +52,11 @@ public class Arm {
     public Action setSamplePositionAction(double waitTime){
         return new SetPosition(FACING_DOWN_POSITION_AUTO, waitTime);
     }
+
+    public Action setSampleIntermediate(double waitTime) {
+        return new SetPosition(SAMPLE_INTAKE_INTERMEDIATE, waitTime);
+    }
+
     public Action setSamplePositionAuto(double waitTime){
         return new SetPosition(FACING_DOWN_POSITION_AUTO, waitTime);
     }

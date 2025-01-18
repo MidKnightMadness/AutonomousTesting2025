@@ -14,6 +14,7 @@ public class Claw {
     public static double RELEASE_POSITION = 0.46;
     public static double GRAB_POSITION = 0.65;
 
+
     public Servo servo;
     ElapsedTime elapsedTime;
 

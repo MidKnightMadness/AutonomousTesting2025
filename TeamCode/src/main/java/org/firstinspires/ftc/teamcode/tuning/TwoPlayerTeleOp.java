@@ -32,7 +32,9 @@ public class TwoPlayerTeleOp extends LinearOpMode {
     Wrist wrist;
     ButtonToggle right_2Bumper = new ButtonToggle();
     boolean armManualPosition = false;
+    boolean wristManualPosition = false;
 
+    double previousTime;
     Timer timer;
 
     boolean clawClosed = false;
@@ -44,45 +46,56 @@ public class TwoPlayerTeleOp extends LinearOpMode {
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
 
+        timer = new Timer();
         clawClosed = true;
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
 
-
+        double currentTime = timer.updateTime();
 
 
         waitForStart();
 
-        while (opModeIsActive()) {
+        double power = 1;
 
+
+        while (opModeIsActive()) {
+            timer.updateTime();
+
+            if (gamepad1.right_bumper) {
+                power = 0.5;
+            }
+            else {
+                power = 1;
+            }
             //Gamepad 1 controls
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
-                            -gamepad1.left_stick_x,
-                            -gamepad1.left_stick_y
+                            -gamepad1.left_stick_x * power,
+                            -gamepad1.left_stick_y * power
                     ),
-                    -gamepad1.right_stick_x
+                    -gamepad1.right_stick_x * power
             ));
 
-            drive.updatePoseEstimate();
 
             lift.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
             lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
 
+            if (gamepad1.left_bumper && gamepad1.y && gamepad1.left_trigger != 0) {
+                while (true) {
+                    lift.getRightMotor().setPower(-gamepad1.left_trigger);
+                    lift.getRightMotor().setPower(-gamepad1.left_trigger);
+                }
+            }
 
             //Gamepad 2 controls
-
-
             //Claw
-            if(right_2Bumper.update(gamepad2.right_bumper)){
-                clawClosed = !clawClosed;
-                if(clawClosed){
-                    claw.release();
-                }
-                else{
-                    claw.grab();
-                }
+            if(gamepad2.right_bumper){
+                claw.release();
+            }
+            else if (gamepad2.right_trigger > 0.5) {
+                claw.grab();
             }
 
 
@@ -96,55 +109,46 @@ public class TwoPlayerTeleOp extends LinearOpMode {
                 arm.setSamplePositionTeleOp();
                 armManualPosition = true;
             }
-            else if(gamepad2.left_bumper){
+            else if(gamepad2.b){
                 arm.setSpecimenOutakePosition();
                 armManualPosition = true;
             }
-            else if(gamepad2.left_trigger > 0.5){
+            else if(gamepad2.x){
                 arm.setSpecimenIntakePosition();
                 armManualPosition = true;
             }
-            else{
-                armManualPosition = false;
-            }
 
             // -1 to 1 -> 0 to 1
-            if(armManualPosition == false){
-                arm.setPosition((gamepad2.left_stick_x / 2) + 0.5, 0);
-
+            if(!armManualPosition){
+//                arm.setPosition((gamepad2.right_stick_x / 2) + 0.5, 0);
+                arm.leftServo.setPosition(arm.leftServo.getPosition() + gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
+                if (gamepad1.right_bumper) {
+                    arm.leftServo.setPosition(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5);
+                }
             }
-
-
-
 
             //Wrist
 
-            boolean wristManualPosition = false;
-            if(gamepad2.b){
-                wrist.setSampleLinePos(0);
+            wristManualPosition = false;
+            if(gamepad2.left_bumper){
+                wrist.setSampleSubPos();
                 wristManualPosition = true;
             }
-
-            else if(gamepad2.x){
-                wrist.setBasketPos(0);
+            else if(gamepad2.left_trigger > 0.5){
+                wrist.servo.setPosition(Wrist.SPECIMEN_INTAKE_POSITION);
                 wristManualPosition = true;
             }
-
-            else{
-                wristManualPosition = false;
-            }
-
-            if(wristManualPosition == false){
-                wrist.setPosition(gamepad2.right_trigger, 0);
+            if(!wristManualPosition){
+                wrist.servo.setPosition(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
             }
 
 
+            previousTime = currentTime;
 
-
-
-            wrist.servo.setPosition(gamepad2.right_stick_x);
 
             Pose2d pose = drive.localizer.getPose();
+
+            telemetry.addData("Gamepad 2 left stick x", gamepad2.left_stick_x);
 
             telemetry.addData("x", pose.position.x);
             telemetry.addData("y", pose.position.y);

@@ -41,7 +41,7 @@ public class ActionsTestOpMode extends OpMode {
                                 ),
                                 verticalSlides.liftUp(),
 //                                arm.setBasketPosition(0),
-                                wrist.setBasketPos(0)
+                                wrist.setBasketPositionAction(0)
                         ),
                         claw.releaseAction(0.2),
                         drive.actionBuilder(initialPose)

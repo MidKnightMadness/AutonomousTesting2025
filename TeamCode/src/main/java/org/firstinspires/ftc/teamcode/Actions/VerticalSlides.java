@@ -17,8 +17,8 @@ public class VerticalSlides {
 
     public static double power = 0.8;
     public static double bringDownPower = 0.5;
-    public static double BASKET_SCORING_POSITION = 2250;
-    public static double DOWN_POSITION = 40;
+    public static double BASKET_SCORING_POSITION = 2150;
+    public static double DOWN_POSITION = 10;
 
     public VerticalSlides(HardwareMap hardwareMap) {
         rightMotor = hardwareMap.get(DcMotorEx.class, "rightSlideMotor");
