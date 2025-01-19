@@ -84,21 +84,14 @@ public class SampleBasketAuto extends OpMode {
     }
 
 
-    public void resetAfterScoring(){
-
-        Actions.runBlocking(new SequentialAction(
-                slides.bringDown()
-        ));
-    }
-
-
-
 
 
     @Override
     public void start() {
 //
 //        Starting Action: Outake first sample into top basket
+        telemetry.addData("Current State:", "Starting Sample");
+
         Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
                         mecanumDrive.actionBuilder(startingPose)
@@ -112,21 +105,28 @@ public class SampleBasketAuto extends OpMode {
                 claw.releaseAction(0)
         ));
 
+        telemetry.addData("Current State:", "First Line Sample");
 
-        //First Line Sample Action
         firstLineSample();
+
+        telemetry.addData("Current State:", "Second Line Sample");
 
         secondLineSample();
 
+        telemetry.addData("Current State:", "Third Line Sample");
+
         thirdLineSample();
+
+        telemetry.addLine("Finished");
 
 
 
     }
+
     private void firstLineSample() {
         Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
-                        mecanumDrive.actionBuilder(startingPose)
+                        mecanumDrive.actionBuilder()
                                 .strafeTo((firstSample))
                                 .turnTo(0)
                                 .build(),
@@ -134,23 +134,23 @@ public class SampleBasketAuto extends OpMode {
                 ),
 
                 arm.setSampleIntermediate(0),
-                mecanumDrive.actionBuilder(startingPose).waitSeconds(0.5).build(),
+                mecanumDrive.actionBuilder().waitSeconds(0.5).build(),
                 arm.setSamplePositionAction(0),
 
 
                 wrist.setSampleLinePos(0),
-                mecanumDrive.actionBuilder(startingPose)
+                mecanumDrive.actionBuilder()
                         .waitSeconds(0.5).build(),
 
                 claw.grabAction(0),
-                mecanumDrive.actionBuilder(startingPose)
+                mecanumDrive.actionBuilder()
                         .waitSeconds(0.5).build(),
 
                 arm.setBasketPositionAction(0),
                 wrist.setBasketPositionAction(0),
                 new ParallelAction(
                         slides.liftUp(),
-                        mecanumDrive.actionBuilder(startingPose)
+                        mecanumDrive.actionBuilder()
                                 .turnTo(Math.toRadians(initialTurn))
                                 .strafeTo(new Vector2d(initialXMove -1, toBasketY - 1))
                                 .build()
@@ -162,7 +162,7 @@ public class SampleBasketAuto extends OpMode {
     public void secondLineSample(){
         Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
-                        mecanumDrive.actionBuilder(startingPose)
+                        mecanumDrive.actionBuilder()
                                 .strafeTo((secondSample))
                                 .turnTo(0)
                                 .build(),
@@ -170,7 +170,7 @@ public class SampleBasketAuto extends OpMode {
                 ),
 
                 arm.setSampleIntermediate(0),
-                mecanumDrive.actionBuilder(startingPose).waitSeconds(0.5).build(),
+                mecanumDrive.actionBuilder().waitSeconds(0.5).build(),
                 arm.setSamplePositionAction(0),
 
 
@@ -179,19 +179,19 @@ public class SampleBasketAuto extends OpMode {
 //                        .strafeTo(new Vector2d(firstSample.x + 4, firstSample.y))
 //                        .turnTo(0)
 //                        .build(),
-                mecanumDrive.actionBuilder(startingPose)
+                mecanumDrive.actionBuilder()
                         .waitSeconds(0.5).build(),
 
                 claw.grabAction(0),
 
-                mecanumDrive.actionBuilder(startingPose)
+                mecanumDrive.actionBuilder()
                         .waitSeconds(0.5).build(),
 
                 arm.setBasketPositionAction(0),
                 wrist.setBasketPositionAction(0),
                 new ParallelAction(
                         slides.liftUp(),
-                        mecanumDrive.actionBuilder(startingPose)
+                        mecanumDrive.actionBuilder()
                                 .turnTo(Math.toRadians(initialTurn))
                                 .strafeTo(new Vector2d(initialXMove - 1.5, toBasketY - 0.5))
                                 .build()
@@ -203,7 +203,7 @@ public class SampleBasketAuto extends OpMode {
     public void thirdLineSample(){
         Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
-                        mecanumDrive.actionBuilder(startingPose)
+                        mecanumDrive.actionBuilder()
                                 .strafeTo(thirdSample)
                                 .turnTo(Math.toRadians(thirdSampleOrientation))
                                 .build(),
@@ -212,12 +212,12 @@ public class SampleBasketAuto extends OpMode {
                 arm.setSamplePositionAction(0),
 
                 wrist.setSampleLinePos(0),
-                mecanumDrive.actionBuilder(startingPose)
+                mecanumDrive.actionBuilder()
                         .waitSeconds(1).build(),
 
                 claw.grabAction(0),
 
-                mecanumDrive.actionBuilder(startingPose)
+                mecanumDrive.actionBuilder()
                         .waitSeconds(0.5).build(),
 
                 arm.setBasketPositionAction(0),
@@ -225,7 +225,7 @@ public class SampleBasketAuto extends OpMode {
 
                 new ParallelAction(
                         slides.liftUp(),
-                        mecanumDrive.actionBuilder(startingPose)
+                        mecanumDrive.actionBuilder()
                                 .turnTo(Math.toRadians(initialTurn))
                                 .strafeTo(new Vector2d(initialXMove, toBasketY))
                                 .build()
