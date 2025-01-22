@@ -15,14 +15,12 @@ import java.util.concurrent.TimeUnit;
 @Config
 public class Arm {
 
-    public static double INIT_AUTO_POS = 0.05;
+    public static double INIT_AUTO_POS = 0.12;
     public static double FACING_DOWN_POSITION_AUTO = 0.77; //set already
-
     public static double SPECIMEN_OUTAKE_POSITION_AUTO = 0; //not set
     public static double SPECIMEN_INTAKE_POSITION_AUTO = 0; //not set
-    public static double BASKET_POSITION_AUTO = 0.4;
+    public static double BASKET_POSITION_AUTO = 0.5;
     public static double SAMPLE_INTAKE_INTERMEDIATE = 0.68;
-
 
     //TELEOP
 
