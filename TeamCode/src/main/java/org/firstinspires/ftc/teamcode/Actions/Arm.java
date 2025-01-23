@@ -16,15 +16,17 @@ import java.util.concurrent.TimeUnit;
 public class Arm {
 
     public static double INIT_AUTO_POS = 0.12;
-    public static double FACING_DOWN_POSITION_AUTO = 0.77; //set already
+    public static double FACING_DOWN_POSITION_AUTO = 0.875; //set already
     public static double SPECIMEN_OUTAKE_POSITION_AUTO = 0; //not set
     public static double SPECIMEN_INTAKE_POSITION_AUTO = 0; //not set
     public static double BASKET_POSITION_AUTO = 0.5;
     public static double SAMPLE_INTAKE_INTERMEDIATE = 0.68;
 
+    public static double STRAIGHT_UP_POSITION = 0.45;
+
     //TELEOP
 
-    public static double SAMPLE_INTAKE_POSITION = 0.75;
+    public static double SAMPLE_INTAKE_POSITION = 0.875;
     public static double BASKET_POSITION = 0.4;
 
     public static double SPECIMEN_OUTAKE_POSITION = 0;
@@ -45,6 +47,14 @@ public class Arm {
 
     public Action setBasketPositionAction(double waitTime ) {
         return new SetPosition(BASKET_POSITION_AUTO, waitTime);
+    }
+
+    public Action setStraightUp(double waitTime ) {
+        return new SetPosition(STRAIGHT_UP_POSITION, waitTime);
+    }
+
+    public Action setBasketPositionAutoSmooth(double interval, double waitTime){
+        return new SetPosition(BASKET_POSITION_AUTO, waitTime, interval);
     }
 
     public Action setSamplePositionAction(double waitTime){
@@ -91,11 +101,15 @@ public class Arm {
         leftServo.setPosition(INIT_AUTO_POS);
     }
 
+    public Action setInitPositionAction(double waitTime) {
+        return new SetPosition(INIT_AUTO_POS, waitTime);
+    }
 
 
     public class SetPosition implements Action {
         private final double leftPosition;
         private final double waitTime;
+
 
         double startTime;
         boolean initialized = false;
@@ -103,13 +117,33 @@ public class Arm {
         public SetPosition(double leftPosition, double waitTime) {
             this.leftPosition = leftPosition;
             this.waitTime = waitTime;
+
         }
 
+
+        public SetPosition(double leftPosition, double waitTime, double interval){
+            this.leftPosition = leftPosition;
+            this.waitTime = waitTime;
+
+        }
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!initialized) {
+
                 startTime = elapsedTime.time();
                 leftServo.setPosition(leftPosition);
+//                if(smooth == false) {
+//                    leftServo.setPosition(leftPosition);
+//                }
+//                if(smooth == true){
+//                    if(leftServo.getPosition() > leftPosition){
+//                        leftServo.setPosition(leftServo.getPosition() - interval);
+//                    }
+//                    else {
+//                        leftServo.setPosition(leftServo.getPosition() + interval);
+//                    }
+//
+//                }
 //                rightServo.setPosition(rightPosition);
                 initialized = true;
             }
