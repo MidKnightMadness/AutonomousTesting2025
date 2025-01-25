@@ -22,7 +22,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 //Start at the left of the 2nd tile
 
 @Config
-@Autonomous(name = "SampleBasketAuto")
+@Autonomous(name = "OldSampleBasketAuto")
 public class OldSampleBasketAuto extends OpMode {
     public static double wristInitialSamplePosition = 0;
     public static double toBasketY = 23;
@@ -126,7 +126,7 @@ public class OldSampleBasketAuto extends OpMode {
                                 .strafeTo((firstSample))
                                 .turnTo(0)
                                 .build(),
-                        slides.bringDown()
+                        slides.bringDown(0.8)
                 ),
 
                 arm.setSampleIntermediate(0),
@@ -162,7 +162,7 @@ public class OldSampleBasketAuto extends OpMode {
                                 .strafeTo((secondSample))
                                 .turnTo(0)
                                 .build(),
-                        slides.bringDown()
+                        slides.bringDown(0.8)
                 ),
 
                 arm.setSampleIntermediate(0),
@@ -203,7 +203,7 @@ public class OldSampleBasketAuto extends OpMode {
                                 .strafeTo(thirdSample)
                                 .turnTo(Math.toRadians(thirdSampleOrientation))
                                 .build(),
-                        slides.bringDown()
+                        slides.bringDown(0.8)
                 ),
                 arm.setSamplePositionAction(0),
 

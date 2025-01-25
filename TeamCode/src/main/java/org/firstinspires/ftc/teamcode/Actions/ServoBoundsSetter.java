@@ -31,6 +31,7 @@ public class ServoBoundsSetter extends OpMode {
 
         clawGrabber = hardwareMap.get(Servo.class, "clawServo");
         leftArmServo = hardwareMap.get(Servo.class, "leftArmServo");
+        rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
         wristServo  = hardwareMap.get(Servo.class, "wristServo");
     }
 

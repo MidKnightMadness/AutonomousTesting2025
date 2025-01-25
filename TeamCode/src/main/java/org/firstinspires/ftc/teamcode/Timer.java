@@ -27,7 +27,7 @@ public class Timer {
 
     public double updateTime(){
         currentTime = elapsedTime.time();
-        deltaTime = (double) currentTime - previousTime;
+        deltaTime = currentTime - previousTime;
         previousTime = currentTime;
 
         return currentTime;
@@ -35,7 +35,7 @@ public class Timer {
 
     public double updateTimeR(){
         currentTime = elapsedTime.time();
-        deltaTime = (double) currentTime - previousTime;
+        deltaTime = currentTime - previousTime;
 
         return currentTime;
     }

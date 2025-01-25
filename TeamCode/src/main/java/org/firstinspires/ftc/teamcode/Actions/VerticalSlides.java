@@ -12,11 +12,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @Config
 public class VerticalSlides {
+    private static final double INTERMEDIATE_POSITION = 800;
     DcMotorEx rightMotor;
     DcMotorEx leftMotor;
 
     public static double power = 0.8;
-    public static double bringDownPower = 0.5;
+    public static double bringDownPower = 0.8;
     public static double BASKET_SCORING_POSITION = 2150;
     public static double DOWN_POSITION = 10;
 
@@ -40,8 +41,13 @@ public class VerticalSlides {
         return new Lift(BASKET_SCORING_POSITION);
     }
 
-    public Action bringDown() {
+    public Action bringDown(double power) {
+        bringDownPower = power;
         return new Lift(DOWN_POSITION);
+    }
+
+    public Action intermediateLiftUp() {
+        return new Lift(INTERMEDIATE_POSITION);
     }
 
     public class Lift implements Action {

@@ -6,10 +6,12 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 
+@TeleOp
 public class ActionsTestOpMode extends OpMode {
 
     Claw claw;
@@ -31,26 +33,9 @@ public class ActionsTestOpMode extends OpMode {
     @Override
     public void start() {
         Actions.runBlocking(new SequentialAction(
-                        new ParallelAction(
-                                new SequentialAction(
-                                        drive.actionBuilder(initialPose)
-                                                .lineToX(2)
-                                                .turn(Math.toRadians(90))
-                                                .lineToX(10)
-                                                .build()
-                                ),
-                                verticalSlides.liftUp(),
-//                                arm.setBasketPosition(0),
-                                wrist.setBasketPositionAction(0)
-                        ),
-                        claw.releaseAction(0.2),
-                        drive.actionBuilder(initialPose)
-                                .waitSeconds(1)
-                                .build()
-                )
-        );
-
-
+                arm.setPositionSmooth(Arm.Left.STRAIGHT_UP_POSITION_LEFT, 2),
+                arm.setPositionSmooth(Arm.Left.FACING_DOWN_POSITION_AUTO_LEFT, 2)
+        ));
     }
 
     @Override

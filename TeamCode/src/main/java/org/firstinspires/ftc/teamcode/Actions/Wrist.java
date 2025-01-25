@@ -72,7 +72,7 @@ public class Wrist {
                 initialized = true;
             }
 
-            return false;
+            return (elapsedTime.seconds() - startTime)  > waitTime;
         }
     }
 }

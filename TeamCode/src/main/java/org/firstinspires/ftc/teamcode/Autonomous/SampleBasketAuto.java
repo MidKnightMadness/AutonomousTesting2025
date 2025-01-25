@@ -20,14 +20,21 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 
 //Start at the left of the 2nd tile
 @Config
-@Autonomous(name = "SampleBasketAuto")
+@Autonomous(name = "UpdatedSampleBasketAuto")
 public class SampleBasketAuto extends OpMode {
 
     public static Pose2d scoringPose = new Pose2d(new Vector2d(5, 23), Math.toRadians(130));
 
-    public static Pose2d firstSamplePose = new Pose2d(new Vector2d(18, 18),0);
-    public static Pose2d secondSamplePose = new Pose2d(new Vector2d(20, 28), 0);
-    public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(18, 30), Math.toRadians(25));
+    public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 17, 17),0);
+    public static Pose2d secondSamplePose = new Pose2d(new Vector2d(17, 28), 0);
+    public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(17, 30), Math.toRadians(25));
+
+    public static double initSlidesUpPos = 10;
+    public static double firstSlidesUpPos = 100;
+    public static double secondSlidesUpPos = 100;
+
+
+
 
     Claw claw;
     Arm arm;
@@ -51,29 +58,30 @@ public class SampleBasketAuto extends OpMode {
         wrist.setInitPosition();
     }
 
-    public Action scoreInBasket() {
+    public Action scoreInBasket() {//TODO: make sure it doesnt hit side wall when outaking sample
         return new SequentialAction(
+                arm.setStraightUpBent(2),
                 new ParallelAction(
                         mecanumDrive.actionBuilder().strafeToSplineHeading(scoringPose.position, scoringPose.heading).build(),
-                        arm.setStraightUp(0),
                         slides.liftUp(),
-                        wrist.setBasketPositionAction(0)
+                        wrist.setBasketPositionAction(0.5)
                 ),
-                arm.setBasketPositionAction(0),
+                waitSeconds(0.5),
+                arm.setBasketPositionAction(2),
                 waitSeconds(0.5),
 
-                claw.releaseAction(0)
+                claw.releaseAction(2)
         );
     }
 
     public Action manipulatorPickUp() {
         return new SequentialAction(
-                arm.setSampleIntermediate(0),
-                wrist.setSampleLinePos(0),
+                arm.setSampleIntermediate(0.5),
+                wrist.setSampleLinePos(0.5),
                 waitSeconds(0.5),
-                arm.setSamplePositionAction(0),
+                arm.setSamplePositionAction(0.5),
                 waitSeconds(0.5),
-                claw.grabAction(0),
+                claw.grabAction(0.5),
                 waitSeconds(0.5)
         );
     }
@@ -89,7 +97,7 @@ public class SampleBasketAuto extends OpMode {
         );
 
         firstLineSample();
-        secondLineSample();
+//        secondLineSample();
 //        thirdLineSample();
     }
 
@@ -106,11 +114,12 @@ public class SampleBasketAuto extends OpMode {
                         //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
                         //slides might go down faster before drives out so arm to initial position
 
-                        arm.setInitPositionAction(0),
+                        arm.setStraightUpBent(0.5),
+                        mecanumDrive.actionBuilder().waitSeconds(0.5).build(),
                         mecanumDrive.actionBuilder()
                                 .strafeToLinearHeading(firstSamplePose.position, firstSamplePose.heading)
                                 .build(),
-                        slides.bringDown()
+                        slides.bringDown(0.6)
                 ),
 
                 manipulatorPickUp(),
@@ -130,11 +139,12 @@ public class SampleBasketAuto extends OpMode {
                 new ParallelAction(
                         //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
                         //slides might go down faster before drives out so arm to initial position
-                        arm.setInitPositionAction(0),
+                        arm.setStraightUpBent(0.5),
+                        mecanumDrive.actionBuilder().waitSeconds(2).build(),
                         mecanumDrive.actionBuilder(startingPose)
                                 .strafeToLinearHeading(secondSamplePose.position, secondSamplePose.heading)
                                 .build(),
-                        slides.bringDown()
+                        slides.bringDown(0.6)
                 ),
 
                 //TODO: after manipulator picks up, going to basket position for second one is off
@@ -158,18 +168,18 @@ public class SampleBasketAuto extends OpMode {
 //                        slides.bringDown()
 //                ),
 
-                arm.setSamplePositionAction(0),
-                wrist.setSampleLinePos(0),
+                arm.setSamplePositionAction(0.5),
+                wrist.setSampleLinePos(0.5),
 
                 mecanumDrive.actionBuilder(startingPose)
                         .waitSeconds(0.5).build(),
 
-                claw.grabAction(0),
+                claw.grabAction(0.5),
 
                 mecanumDrive.actionBuilder(startingPose)
                         .waitSeconds(0.5).build(),
 
-                arm.setBasketPositionAction(0)
+                arm.setBasketPositionAction(0.5)
 //                wrist.setBasketPos(0),
 //                new ParallelAction(
 //                        slides.liftUp(),
