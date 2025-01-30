@@ -2,55 +2,51 @@ package org.firstinspires.ftc.teamcode.Actions;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Timer;
 
-public class Claw {
-    final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
-    public static double RELEASE_POSITION = 0.46;
-    public static double GRAB_POSITION = 0.65;
+@Config
+public class TurnTable {
+    //TODO: Fix whether want seperate positions in auto and teleop or same
+    //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions
+
+
+    //AUTO:
+
+    Timer timer;
+    public static double THIRD_SAMPLE_ANGLE = 0;
+    public static double SECOND_SAMPLE_ANGLE = 0;
+    public static double FIRST_SAMPLE_ANGLE = 0;
+    public static double OUTAKE_POS = 0;
+    public static double INIT_POSITION = 0.8; //Parallel to odo left and rightwheels
 
 
     public Servo servo;
-    Timer timer;
+    ElapsedTime elapsedTime;
 
-    public Claw(HardwareMap hardwareMap) {
-        servo = hardwareMap.get(Servo.class, "Sample Claw");
+    public TurnTable(HardwareMap hardwareMap) {
+        servo = hardwareMap.get(Servo.class, "Turn Table");
+
         timer = new Timer();
     }
 
-
-    public Action grabAction(double waitTime) {
-        return new SetPosition(GRAB_POSITION, waitTime);
-    }
-
-    public void grab() {
-        servo.setPosition(GRAB_POSITION);
-    }
-
-    public Action releaseAction(double waitTime) {
-        return new SetPosition(RELEASE_POSITION, waitTime);
-    }
-
-    public void release() {
-        servo.setPosition(RELEASE_POSITION);
-    }
-
-
-    public Action setPositionSmooth(double position, double movementTime) {
-        return new SetPosition(position, movementTime);
-    }
     public Action setPosition(double position) {
-        return new SetPosition(position);
+        return new TurnTable.SetPosition(position);
     }
 
+    public Action setPositionSmooth(double position, double movementTime){
+        return new TurnTable.SetPosition(position, movementTime);
+    }
 
+    public void setInitPosition() {
+        servo.setPosition(INIT_POSITION);
+    }
 
 
     public class SetPosition implements Action {
@@ -101,6 +97,4 @@ public class Claw {
             }
         }
     }
-
-
 }

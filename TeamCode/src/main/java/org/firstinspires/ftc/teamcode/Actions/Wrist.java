@@ -9,70 +9,93 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Timer;
+
 @Config
 public class Wrist {
+    //TODO: Fix whether want seperate positions in auto and teleop or same
+    //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions
+
+
+    //AUTO:
+
+    Timer timer;
     public static double SAMPLE_LINE_POSITION_AUTO = 0.46; //sample pickup in autonomous
     public static double SAMPLE_SUB_POSITION = 0.46;
     public static double BASKET_POSITION_AUTO = 0.4; //sample dropoff in basket(top basket) at certain arm position
     public static double INIT_POSITION = 0.8;
+
     public static double SPECIMEN_INTAKE_POSITION = 0.63; //specimen position
     public static double SPECIMEN_OUTAKE_POSITION = 0;
+
     public Servo servo;
     ElapsedTime elapsedTime;
 
     public Wrist(HardwareMap hardwareMap) {
-        servo = hardwareMap.get(Servo.class, "wristServo");
-        elapsedTime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-        elapsedTime.startTime();
+        servo = hardwareMap.get(Servo.class, "Wrist");
+
+        timer = new Timer();
     }
 
-
-    public Action setSampleLinePos(double waitTime) {
-        return new Wrist.SetPosition(SAMPLE_LINE_POSITION_AUTO, waitTime);
-    }
-    public void setSampleSubPos(){
-        servo.setPosition(SAMPLE_SUB_POSITION);
+    public Action setPosition(double position) {
+        return new Wrist.SetPosition(position);
     }
 
-    public void setBasketPos(){
-       servo.setPosition(BASKET_POSITION_AUTO);
-    }
-
-
-    public Action setPosition(double position, double waitTime) {
-        return new Wrist.SetPosition(position, waitTime);
+    public Action setPositionSmooth(double position, double movementTime){
+        return new Wrist.SetPosition(position, movementTime);
     }
 
     public void setInitPosition() {
         servo.setPosition(INIT_POSITION);
     }
 
-    public Action setBasketPositionAction(double waitTime) {
-        return new Wrist.SetPosition(BASKET_POSITION_AUTO, waitTime);
-    }
-
 
     public class SetPosition implements Action {
-        private final double position;
-        private final double waitTime;
-
+        private final double targetPosition;
+        private final double movementTime;
         double startTime;
+        double startPosition;
         boolean initialized = false;
 
-        public SetPosition(double position, double waitTime) {
-            this.position = position;
-            this.waitTime = waitTime;
+        public SetPosition(double position) {
+            this.targetPosition = position;
+            this.movementTime = 0;
+        }
+
+        public SetPosition(double position, double movementTime) {
+            this.targetPosition = position;
+            this.movementTime = movementTime;
+
         }
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!initialized) {
-                startTime = elapsedTime.time();
-                servo.setPosition(position);
+                startTime = timer.updateTime();
+                startPosition = servo.getPosition();
                 initialized = true;
             }
 
-            return (elapsedTime.seconds() - startTime)  > waitTime;
+            packet.addLine("Time: " + (timer.updateTime() - startTime));
+
+
+
+            //TODO: CHECK IF movement time = 0
+            if (movementTime != 0) {
+                double timeSinceStart = timer.updateTime() - startTime;
+                double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
+                double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
+
+
+                packet.addLine("Position " + intermediatePoint);
+
+                servo.setPosition(intermediatePoint);
+                return timeSinceStart < movementTime;
+            } else {
+                packet.addLine("Position " + targetPosition);
+                servo.setPosition(targetPosition);
+                return false;
+            }
         }
     }
 }

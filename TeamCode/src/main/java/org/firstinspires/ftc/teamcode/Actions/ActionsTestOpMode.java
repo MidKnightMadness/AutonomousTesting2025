@@ -33,8 +33,8 @@ public class ActionsTestOpMode extends OpMode {
     @Override
     public void start() {
         Actions.runBlocking(new SequentialAction(
-                arm.setPositionSmooth(Arm.Left.STRAIGHT_UP_POSITION_LEFT, 2),
-                arm.setPositionSmooth(Arm.Left.FACING_DOWN_POSITION_AUTO_LEFT, 2)
+                arm.setPositionSmooth(Arm.END, 0.5)
+
         ));
     }
 

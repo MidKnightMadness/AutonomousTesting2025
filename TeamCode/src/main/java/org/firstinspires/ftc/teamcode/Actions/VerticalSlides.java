@@ -22,8 +22,8 @@ public class VerticalSlides {
     public static double DOWN_POSITION = 10;
 
     public VerticalSlides(HardwareMap hardwareMap) {
-        rightMotor = hardwareMap.get(DcMotorEx.class, "rightSlideMotor");
-        leftMotor = hardwareMap.get(DcMotorEx.class, "leftSlideMotor");
+        rightMotor = hardwareMap.get(DcMotorEx.class, "Right Vertical Slides");
+        leftMotor = hardwareMap.get(DcMotorEx.class, "Left Vertical Slides");
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -46,6 +46,7 @@ public class VerticalSlides {
         return new Lift(DOWN_POSITION);
     }
 
+    //TODO: Figure out way to smooth or whether we really need an intermediate lift up
     public Action intermediateLiftUp() {
         return new Lift(INTERMEDIATE_POSITION);
     }

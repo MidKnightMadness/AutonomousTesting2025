@@ -102,28 +102,29 @@ public class TwoPlayerTeleOp extends LinearOpMode {
             armManualPosition = false;
             //Arm
             if (gamepad2.y) {
-                arm.setBasketPositionTeleOp();
+                arm.setPositionSmooth(Arm.INIT_AUTO_POS, 1.5);
                 armManualPosition = true;
             }
             else if (gamepad2.a) {
-                arm.setSamplePositionTeleOp();
+                arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1.5);
                 armManualPosition = true;
             }
             else if(gamepad2.b){
-                arm.setSpecimenOutakePosition();
+                arm.setPositionSmooth(Arm.SPECIMEN_OUTAKE_POSITION_MAIN, 1.5);
                 armManualPosition = true;
             }
             else if(gamepad2.x){
-                arm.setSpecimenIntakePosition();
+                arm.setPositionSmooth(Arm.SPECIMEN_INTAKE_POSITION_MAIN, 1.5);
                 armManualPosition = true;
             }
 
             // -1 to 1 -> 0 to 1
             if(!armManualPosition){
 //                arm.setPosition((gamepad2.right_stick_x / 2) + 0.5, 0);
-                arm.leftServo.setPosition(arm.leftServo.getPosition() + gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
+                arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad2.right_stick_y * timer.getDeltaTime() * 0.5, 1.5);
                 if (gamepad1.right_bumper) {
-                    arm.leftServo.setPosition(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5);
+                    arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5, 1.5);
+
                 }
             }
 
@@ -131,7 +132,7 @@ public class TwoPlayerTeleOp extends LinearOpMode {
 
             wristManualPosition = false;
             if(gamepad2.left_bumper){
-                wrist.setSampleSubPos();
+                wrist.servo.setPosition(Wrist.SAMPLE_SUB_POSITION);
                 wristManualPosition = true;
             }
             else if(gamepad2.left_trigger > 0.5){

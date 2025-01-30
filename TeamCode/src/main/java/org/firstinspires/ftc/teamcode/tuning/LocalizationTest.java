@@ -56,10 +56,10 @@ public class LocalizationTest extends LinearOpMode {
             lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
 
             if (gamepad1.y) {
-                arm.setBasketPositionTeleOp();
+                arm.setPositionSmooth(Arm.BASKET_POSITION_MAIN, 1.5);
             }
             else if (gamepad1.a) {
-                arm.setSamplePositionTeleOp();
+                arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1.5);
             }
 
             if (gamepad1.x) {

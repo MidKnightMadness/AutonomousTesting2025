@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Actions.Arm;
 import org.firstinspires.ftc.teamcode.Actions.Claw;
+import org.firstinspires.ftc.teamcode.Actions.TurnTable;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -34,13 +35,11 @@ public class SampleBasketAuto extends OpMode {
     public static double secondSlidesUpPos = 100;
 
 
-
-
     Claw claw;
     Arm arm;
     VerticalSlides slides;
     Wrist wrist;
-
+    TurnTable turnTable;
     MecanumDrive mecanumDrive;
 
     Pose2d startingPose = new Pose2d(0, 0,  Math.toRadians(90));
@@ -50,37 +49,37 @@ public class SampleBasketAuto extends OpMode {
         claw = new Claw(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
+        turnTable = new TurnTable(hardwareMap);
         slides = new VerticalSlides(hardwareMap);
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
 
         claw.grab();
         arm.setInitPosition();
         wrist.setInitPosition();
+        turnTable.setInitPosition();
     }
 
     public Action scoreInBasket() {//TODO: make sure it doesnt hit side wall when outaking sample
         return new SequentialAction(
-                arm.setStraightUpBent(2),
+                arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 0.7),
                 new ParallelAction(
                         mecanumDrive.actionBuilder().strafeToSplineHeading(scoringPose.position, scoringPose.heading).build(),
                         slides.liftUp(),
-                        wrist.setBasketPositionAction(0.5)
+                        wrist.setPositionSmooth(Wrist.BASKET_POSITION_AUTO, 0.5),
+                        turnTable.setPositionSmooth(TurnTable.OUTAKE_POS, 0.5)
                 ),
+                arm.setPositionSmooth(Arm.BASKET_POSITION_AUTO, 0.5),
                 waitSeconds(0.5),
-                arm.setBasketPositionAction(2),
-                waitSeconds(0.5),
-
                 claw.releaseAction(2)
         );
     }
 
     public Action manipulatorPickUp() {
         return new SequentialAction(
-                arm.setSampleIntermediate(0.5),
-                wrist.setSampleLinePos(0.5),
+                wrist.setPositionSmooth(Wrist.SAMPLE_LINE_POSITION_AUTO, 0.5),
                 waitSeconds(0.5),
-                arm.setSamplePositionAction(0.5),
-                waitSeconds(0.5),
+                arm.setPositionSmooth(Arm.SAMPLE_INTAKE_AUTO, 0.8),
+
                 claw.grabAction(0.5),
                 waitSeconds(0.5)
         );
@@ -104,21 +103,16 @@ public class SampleBasketAuto extends OpMode {
     private void firstLineSample() {
         Actions.runBlocking(new SequentialAction(
 
-                // turn first to avoid collision with basket
-                //Removed b/c turning heading to 0 goes counter clockwise to 0, should go clockwise
-                //check
-                //mecanumDrive.actionBuilder(startingPose)
-                //                        .turnTo(firstSamplePose.heading).build(),
-
                 new ParallelAction(
                         //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
                         //slides might go down faster before drives out so arm to initial position
 
-                        arm.setStraightUpBent(0.5),
-                        mecanumDrive.actionBuilder().waitSeconds(0.5).build(),
+                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 2),
+                        waitSeconds(0.5),
                         mecanumDrive.actionBuilder()
                                 .strafeToLinearHeading(firstSamplePose.position, firstSamplePose.heading)
                                 .build(),
+                        turnTable.setPositionSmooth(TurnTable.FIRST_SAMPLE_ANGLE, 0.5),
                         slides.bringDown(0.6)
                 ),
 
@@ -129,6 +123,28 @@ public class SampleBasketAuto extends OpMode {
 
     public void secondLineSample(){
         Actions.runBlocking(new SequentialAction(
+
+
+                new ParallelAction(
+                        //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
+                        //slides might go down faster before drives out so arm to initial position
+                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 2),
+                        waitSeconds(0.5),
+                        mecanumDrive.actionBuilder(startingPose)
+                                .strafeToLinearHeading(secondSamplePose.position, secondSamplePose.heading)
+                                .build(),
+                        turnTable.setPositionSmooth(TurnTable.SECOND_SAMPLE_ANGLE, 0.5),
+                        slides.bringDown(0.6)
+                ),
+
+                manipulatorPickUp(),
+                scoreInBasket()
+
+        ));
+    }
+
+    public void thirdLineSample(){
+        Actions.runBlocking(new SequentialAction(
                 // turn first to avoid collision with basket
                 //Removed b/c turning heading to 0 goes counter clockwise to 0, should go clockwise
                 //check
@@ -139,56 +155,18 @@ public class SampleBasketAuto extends OpMode {
                 new ParallelAction(
                         //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
                         //slides might go down faster before drives out so arm to initial position
-                        arm.setStraightUpBent(0.5),
-                        mecanumDrive.actionBuilder().waitSeconds(2).build(),
+                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 2),
+                        waitSeconds(0.5),
                         mecanumDrive.actionBuilder(startingPose)
                                 .strafeToLinearHeading(secondSamplePose.position, secondSamplePose.heading)
                                 .build(),
+                        turnTable.setPositionSmooth(TurnTable.THIRD_SAMPLE_ANGLE, 0.5),
                         slides.bringDown(0.6)
                 ),
-
-                //TODO: after manipulator picks up, going to basket position for second one is off
-                //because the sample line pos 2 is more to the left, so it turns more to get to the position at the end of the path(closer to basket)
-                //so it hits the right side of the top basket
-                //need to fix
 
                 manipulatorPickUp(),
                 scoreInBasket()
 
-        ));
-    }
-
-    public void thirdLineSample(){
-        Actions.runBlocking(new SequentialAction(
-//                new ParallelAction(
-//                        mecanumDrive.actionBuilder(startingPose)
-//                                .strafeTo(thirdSample)
-//                                .turnTo(thirdSampleOrientation)
-//                                .build(),
-//                        slides.bringDown()
-//                ),
-
-                arm.setSamplePositionAction(0.5),
-                wrist.setSampleLinePos(0.5),
-
-                mecanumDrive.actionBuilder(startingPose)
-                        .waitSeconds(0.5).build(),
-
-                claw.grabAction(0.5),
-
-                mecanumDrive.actionBuilder(startingPose)
-                        .waitSeconds(0.5).build(),
-
-                arm.setBasketPositionAction(0.5)
-//                wrist.setBasketPos(0),
-//                new ParallelAction(
-//                        slides.liftUp(),
-//                        mecanumDrive.actionBuilder(startingPose)
-//                                .turnTo(Math.toRadians(initialTurn))
-//                                .strafeTo(new Vector2d(initialXMove, toBasketY))
-//                                .build()
-//                ),
-//                claw.releaseAction(0)
         ));
     }
 
