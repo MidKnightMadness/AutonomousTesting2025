@@ -8,7 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.Claw;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -22,7 +23,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 @Autonomous(name = "SamplePushAuto")
 public class SamplePushAuto extends OpMode {
 
-    Claw claw;
+    SampleClaw sampleClaw;
     Arm arm;
     VerticalSlides slides;
     Wrist wrist;
@@ -40,7 +41,7 @@ public class SamplePushAuto extends OpMode {
 
     @Override
     public void init() {
-        claw = new Claw(hardwareMap);
+        sampleClaw = new SampleClaw(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
         slides = new VerticalSlides(hardwareMap);

@@ -8,7 +8,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.Claw;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
 import org.firstinspires.ftc.teamcode.Actions.TurnTable;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
@@ -35,7 +36,7 @@ public class SampleBasketAuto extends OpMode {
     public static double secondSlidesUpPos = 100;
 
 
-    Claw claw;
+    SampleClaw sampleClaw;
     Arm arm;
     VerticalSlides slides;
     Wrist wrist;
@@ -46,14 +47,14 @@ public class SampleBasketAuto extends OpMode {
 
     @Override
     public void init() {
-        claw = new Claw(hardwareMap);
+        sampleClaw = new SampleClaw(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
         turnTable = new TurnTable(hardwareMap);
         slides = new VerticalSlides(hardwareMap);
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
 
-        claw.grab();
+        sampleClaw.grab();
         arm.setInitPosition();
         wrist.setInitPosition();
         turnTable.setInitPosition();
@@ -70,7 +71,7 @@ public class SampleBasketAuto extends OpMode {
                 ),
                 arm.setPositionSmooth(Arm.BASKET_POSITION_AUTO, 0.5),
                 waitSeconds(0.5),
-                claw.releaseAction(2)
+                sampleClaw.releaseAction(2)
         );
     }
 
@@ -80,7 +81,7 @@ public class SampleBasketAuto extends OpMode {
                 waitSeconds(0.5),
                 arm.setPositionSmooth(Arm.SAMPLE_INTAKE_AUTO, 0.8),
 
-                claw.grabAction(0.5),
+                sampleClaw.grabAction(0.5),
                 waitSeconds(0.5)
         );
     }

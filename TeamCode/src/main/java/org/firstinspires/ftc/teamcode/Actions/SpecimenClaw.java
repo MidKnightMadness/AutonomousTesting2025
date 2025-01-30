@@ -2,26 +2,27 @@ package org.firstinspires.ftc.teamcode.Actions;
 
 import androidx.annotation.NonNull;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Timer;
 
-public class Claw {
+@Config
+public class SpecimenClaw {
     final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
-    public static double RELEASE_POSITION = 0.46;
-    public static double GRAB_POSITION = 0.65;
+    public static double RELEASE_POSITION = 0.55;
+    public static double GRAB_POSITION = 0.32;
 
 
     public Servo servo;
     Timer timer;
 
-    public Claw(HardwareMap hardwareMap) {
-        servo = hardwareMap.get(Servo.class, "Sample Claw");
+    public SpecimenClaw(HardwareMap hardwareMap) {
+        servo = hardwareMap.get(Servo.class, "Specimen Claw");
         timer = new Timer();
     }
 

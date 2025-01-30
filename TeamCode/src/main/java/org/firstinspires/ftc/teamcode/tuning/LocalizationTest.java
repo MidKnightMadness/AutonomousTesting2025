@@ -14,7 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.Claw;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
 import org.firstinspires.ftc.teamcode.Drawing;
@@ -25,7 +26,7 @@ import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 @TeleOp(name="LocalizationTest2")
 public class LocalizationTest extends LinearOpMode {
     VerticalSlides lift;
-    Claw claw;
+    SampleClaw sampleClaw;
     Arm arm;
     Wrist wrist;
 
@@ -33,7 +34,7 @@ public class LocalizationTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         lift = new VerticalSlides(hardwareMap);
-        claw = new Claw(hardwareMap);
+        sampleClaw = new SampleClaw(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
 
@@ -63,10 +64,10 @@ public class LocalizationTest extends LinearOpMode {
             }
 
             if (gamepad1.x) {
-                claw.servo.setPosition(Claw.GRAB_POSITION);
+                sampleClaw.servo.setPosition(SampleClaw.GRAB_POSITION);
             }
             else if (gamepad1.b) {
-                claw.servo.setPosition(Claw.RELEASE_POSITION);
+                sampleClaw.servo.setPosition(SampleClaw.RELEASE_POSITION);
             }
 
 
@@ -83,7 +84,7 @@ public class LocalizationTest extends LinearOpMode {
 
             telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
             telemetry.addData("Wrist Pos", wrist.servo.getPosition());
-            telemetry.addData("Claw Pos", claw.servo.getPosition());
+            telemetry.addData("Claw Pos", sampleClaw.servo.getPosition());
             telemetry.update();
 
             TelemetryPacket packet = new TelemetryPacket();

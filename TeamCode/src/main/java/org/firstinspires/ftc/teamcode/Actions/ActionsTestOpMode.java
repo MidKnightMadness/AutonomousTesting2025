@@ -14,17 +14,19 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 @TeleOp
 public class ActionsTestOpMode extends OpMode {
 
-    Claw claw;
+    SampleClaw sampleClaw;
     VerticalSlides verticalSlides;
     MecanumDrive drive;
     Pose2d initialPose;
     Wrist wrist;
     Arm arm;
+    SpecimenClaw specimenClaw;
     @Override
     public void init() {
         initialPose = new Pose2d(0, 0, 0);
         drive = new MecanumDrive(hardwareMap, initialPose);
-        claw = new Claw(hardwareMap);
+        sampleClaw = new SampleClaw(hardwareMap);
+        specimenClaw = new SpecimenClaw(hardwareMap);
         wrist = new Wrist(hardwareMap);
         arm = new Arm(hardwareMap);
         verticalSlides = new VerticalSlides(hardwareMap);
@@ -33,8 +35,9 @@ public class ActionsTestOpMode extends OpMode {
     @Override
     public void start() {
         Actions.runBlocking(new SequentialAction(
-                arm.setPositionSmooth(Arm.END, 0.5)
-
+                specimenClaw.setPosition(SpecimenClaw.GRAB_POSITION),
+                drive.actionBuilder().waitSeconds(2).build(),
+                specimenClaw.setPosition(SpecimenClaw.RELEASE_POSITION)
         ));
     }
 

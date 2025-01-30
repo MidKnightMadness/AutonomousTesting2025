@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Actions;
 
+import android.widget.GridLayout;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -19,7 +21,8 @@ public class ServoBoundsSetter extends OpMode {
 
     Servo leftArmServo;
     Servo rightArmServo;
-    Servo clawGrabber;
+    Servo sampleClaw;
+    Servo specimenClaw;
     Servo wristServo;
     Servo turnTable;
 
@@ -30,7 +33,8 @@ public class ServoBoundsSetter extends OpMode {
         drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        clawGrabber = hardwareMap.get(Servo.class, "Sample Claw");
+        sampleClaw = hardwareMap.get(Servo.class, "Sample Claw");
+        specimenClaw = hardwareMap.get(Servo.class, "Specimen Claw");
         leftArmServo = hardwareMap.get(Servo.class, "Arm Left");
         rightArmServo = hardwareMap.get(Servo.class, "Arm Right");
         wristServo  = hardwareMap.get(Servo.class, "Wrist");
@@ -40,9 +44,9 @@ public class ServoBoundsSetter extends OpMode {
     }
 
     boolean manualControl = false;
-    String activeServo = "Turn Table";
+    String activeServo = "Wrist";
     double servoPosition = 0.5;
-    double currentPos = 0.3;
+
 
     @Override
     public void loop() {
@@ -74,6 +78,14 @@ public class ServoBoundsSetter extends OpMode {
 //            }
 
 
+        telemetry.addLine("A - Left Arm");
+        telemetry.addLine("X - Right Arm");
+        telemetry.addLine("Y - Sample Claw");
+        telemetry.addLine("B - Wrist");
+        telemetry.addLine("Right Bumper - Dual Arm");
+        telemetry.addLine("Left Bumper - Turn Table");
+        telemetry.addLine("Left Trigger - Specimen Claw");
+
         if (gamepad1.a) {
             activeServo = "Left arm";
         }
@@ -92,16 +104,19 @@ public class ServoBoundsSetter extends OpMode {
         if(gamepad1.left_bumper){
             activeServo = "Turn Table";
         }
+        if(gamepad1.left_trigger > 0.5){
+            activeServo = "Specimen Claw";
+        }
 
 
         if (gamepad1.dpad_up) {
             manualControl = false;
-            servoPosition += 0.005;
+            servoPosition += 0.001;
         }
 
         else if (gamepad1.dpad_down) {
             manualControl = false;
-            servoPosition -= 0.005;
+            servoPosition -= 0.001;
         }
 
         else if(gamepad1.dpad_left){
@@ -124,8 +139,11 @@ public class ServoBoundsSetter extends OpMode {
             } else if (activeServo.equals("Wrist")) {
                 wristServo.setPosition(servoPosition);
             } else if (activeServo.equals("Sample Claw")) {
-                clawGrabber.setPosition(servoPosition);
-            } else if(activeServo.equals("Turn Table")){
+                sampleClaw.setPosition(servoPosition);
+            } else if(activeServo.equals("Specimen Claw")){
+                specimenClaw.setPosition(servoPosition);
+            }
+            else if(activeServo.equals("Turn Table")){
                 turnTable.setPosition(servoPosition);
             }
             else {

@@ -14,7 +14,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.Claw;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
 import org.firstinspires.ftc.teamcode.ButtonToggle;
@@ -27,7 +28,7 @@ import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 @TeleOp(name="TeleOp - Two Player")
 public class TwoPlayerTeleOp extends LinearOpMode {
     VerticalSlides lift;
-    Claw claw;
+    SampleClaw sampleClaw;
     Arm arm;
     Wrist wrist;
     ButtonToggle right_2Bumper = new ButtonToggle();
@@ -42,7 +43,7 @@ public class TwoPlayerTeleOp extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         lift = new VerticalSlides(hardwareMap);
-        claw = new Claw(hardwareMap);
+        sampleClaw = new SampleClaw(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
 
@@ -92,10 +93,10 @@ public class TwoPlayerTeleOp extends LinearOpMode {
             //Gamepad 2 controls
             //Claw
             if(gamepad2.right_bumper){
-                claw.release();
+                sampleClaw.release();
             }
             else if (gamepad2.right_trigger > 0.5) {
-                claw.grab();
+                sampleClaw.grab();
             }
 
 
@@ -160,7 +161,7 @@ public class TwoPlayerTeleOp extends LinearOpMode {
 
             telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
             telemetry.addData("Wrist Pos", wrist.servo.getPosition());
-            telemetry.addData("Claw Pos", claw.servo.getPosition());
+            telemetry.addData("Claw Pos", sampleClaw.servo.getPosition());
 
             telemetry.update();
 
