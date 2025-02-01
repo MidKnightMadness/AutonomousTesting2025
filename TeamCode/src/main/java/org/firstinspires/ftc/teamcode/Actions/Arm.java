@@ -17,13 +17,13 @@ import java.util.concurrent.TimeUnit;
 @Config
 public class Arm {
 
-        public static double INIT_AUTO_POS = 0.00;
+        public static double INIT_AUTO_POS = 0.07;
         public static double END = 1;
-        public static double SAMPLE_INTAKE_AUTO = 0.84; //set already
-        public static double BASKET_POSITION_AUTO = 0.47;
+        public static double SAMPLE_INTAKE_AUTO = 0.78; //set already
+        public static double BASKET_POSITION_AUTO = 0.44;
 
 
-        public static double STRAIGHT_UP_POSITION = 0.37;
+        public static double STRAIGHT_UP_POSITION = 0.33;
 
         //TELEOP
 
@@ -95,7 +95,6 @@ public class Arm {
             packet.addLine("Time: " + (timer.updateTime() - startTime));
 
 
-            //TODO: CHECK IF movement time = 0
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
@@ -111,6 +110,7 @@ public class Arm {
                 packet.addLine("Position " + targetPosition);
                 leftServo.setPosition(targetPosition);
                 rightServo.setPosition(targetPosition);
+
                 return false;
             }
         }

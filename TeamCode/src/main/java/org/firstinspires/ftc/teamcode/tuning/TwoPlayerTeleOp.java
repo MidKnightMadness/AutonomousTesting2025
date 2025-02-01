@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.teamcode.Actions.Arm;
 import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
 import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
+import org.firstinspires.ftc.teamcode.Actions.SpecimenClaw;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
 import org.firstinspires.ftc.teamcode.ButtonToggle;
@@ -29,6 +30,7 @@ import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 public class TwoPlayerTeleOp extends LinearOpMode {
     VerticalSlides lift;
     SampleClaw sampleClaw;
+    SpecimenClaw specimenClaw;
     Arm arm;
     Wrist wrist;
     ButtonToggle right_2Bumper = new ButtonToggle();
@@ -46,6 +48,7 @@ public class TwoPlayerTeleOp extends LinearOpMode {
         sampleClaw = new SampleClaw(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
+        specimenClaw = new SpecimenClaw(hardwareMap);
 
         timer = new Timer();
         clawClosed = true;
@@ -115,8 +118,15 @@ public class TwoPlayerTeleOp extends LinearOpMode {
                 armManualPosition = true;
             }
             else if(gamepad2.x){
-                arm.setPositionSmooth(Arm.SPECIMEN_INTAKE_POSITION_MAIN, 1.5);
+                arm.setPositionSmooth(Arm.SPECIMEN_INTAKE_POSITION_MAIN, 0.5);
                 armManualPosition = true;
+            }
+
+            if(gamepad2.dpad_left){
+                specimenClaw.release();
+            }
+            else if(gamepad2.dpad_right){
+                specimenClaw.grab();
             }
 
             // -1 to 1 -> 0 to 1
