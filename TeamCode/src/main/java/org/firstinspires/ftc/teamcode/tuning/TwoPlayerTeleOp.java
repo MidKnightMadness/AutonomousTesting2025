@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -26,6 +27,9 @@ import org.firstinspires.ftc.teamcode.TankDrive;
 import org.firstinspires.ftc.teamcode.Timer;
 import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @TeleOp(name="TeleOp - Two Player")
 public class TwoPlayerTeleOp extends LinearOpMode {
     VerticalSlides lift;
@@ -41,6 +45,9 @@ public class TwoPlayerTeleOp extends LinearOpMode {
     Timer timer;
 
     boolean clawClosed = false;
+    FtcDashboard dash = FtcDashboard.getInstance();
+    List<Action> runningActions = new ArrayList<>();
+
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -65,6 +72,10 @@ public class TwoPlayerTeleOp extends LinearOpMode {
 
 
         while (opModeIsActive()) {
+            TelemetryPacket packet = new TelemetryPacket();
+
+
+            //update actions
             timer.updateTime();
 
             if (gamepad1.right_bumper) {
@@ -96,62 +107,64 @@ public class TwoPlayerTeleOp extends LinearOpMode {
             //Gamepad 2 controls
             //Claw
             if(gamepad2.right_bumper){
-                sampleClaw.release();
+                runningActions.add(sampleClaw.releaseAction(0));
             }
             else if (gamepad2.right_trigger > 0.5) {
-                sampleClaw.grab();
+                runningActions.add(sampleClaw.grabAction(0));
             }
 
 
             armManualPosition = false;
             //Arm
             if (gamepad2.y) {
-                arm.setPositionSmooth(Arm.INIT_AUTO_POS, 1.5);
+                runningActions.add(arm.setPositionSmooth(Arm.INIT_AUTO_POS, 1.5));
                 armManualPosition = true;
             }
             else if (gamepad2.a) {
-                arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1.5);
+                runningActions.add(arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1.5));
                 armManualPosition = true;
             }
             else if(gamepad2.b){
-                arm.setPositionSmooth(Arm.SPECIMEN_OUTAKE_POSITION_MAIN, 1.5);
+                runningActions.add(arm.setPositionSmooth(Arm.SPECIMEN_OUTAKE_POSITION_MAIN, 1.5));
                 armManualPosition = true;
             }
             else if(gamepad2.x){
-                arm.setPositionSmooth(Arm.SPECIMEN_INTAKE_POSITION_MAIN, 0.5);
+                runningActions.add(arm.setPositionSmooth(Arm.SPECIMEN_INTAKE_POSITION_MAIN, 0.5));
                 armManualPosition = true;
             }
 
-            if(gamepad2.dpad_left){
-                specimenClaw.release();
-            }
-            else if(gamepad2.dpad_right){
-                specimenClaw.grab();
-            }
+
 
             // -1 to 1 -> 0 to 1
             if(!armManualPosition){
 //                arm.setPosition((gamepad2.right_stick_x / 2) + 0.5, 0);
-                arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad2.right_stick_y * timer.getDeltaTime() * 0.5, 1.5);
+                runningActions.add(arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad2.right_stick_y * timer.getDeltaTime() * 0.5, 1.5));
                 if (gamepad1.right_bumper) {
-                    arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5, 1.5);
-
+                    runningActions.add(arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5, 1.5));
                 }
+            }
+
+            //Specimen Claw
+            if(gamepad2.dpad_left){
+                runningActions.add(specimenClaw.setPosition(SpecimenClaw.RELEASE_POSITION));
+            }
+            else if(gamepad2.dpad_right){
+                runningActions.add(specimenClaw.setPosition(SpecimenClaw.GRAB_POSITION));
             }
 
             //Wrist
 
             wristManualPosition = false;
             if(gamepad2.left_bumper){
-                wrist.servo.setPosition(Wrist.SAMPLE_SUB_POSITION);
+                runningActions.add(wrist.setPositionSmooth(Wrist.SAMPLE_SUB_POSITION, 0.5));
                 wristManualPosition = true;
             }
             else if(gamepad2.left_trigger > 0.5){
-                wrist.servo.setPosition(Wrist.SPECIMEN_INTAKE_POSITION);
+                runningActions.add(wrist.setPositionSmooth(Wrist.SPECIMEN_INTAKE_POSITION, 0.5));
                 wristManualPosition = true;
             }
             if(!wristManualPosition){
-                wrist.servo.setPosition(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
+                runningActions.add(wrist.setPositionSmooth(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5, 0.5));
             }
 
 
@@ -175,10 +188,16 @@ public class TwoPlayerTeleOp extends LinearOpMode {
 
             telemetry.update();
 
-            TelemetryPacket packet = new TelemetryPacket();
-            packet.fieldOverlay().setStroke("#3F51B5");
-            Drawing.drawRobot(packet.fieldOverlay(), pose);
-            FtcDashboard.getInstance().sendTelemetryPacket(packet);
+
+            List<Action> newActions = new ArrayList<>();
+            for(Action action: runningActions){
+                action.preview(packet.fieldOverlay());
+                if(action.run(packet)){
+                    newActions.add(action);
+                }
+            }
+            runningActions = newActions;
+            dash.sendTelemetryPacket(packet);
         }
     }
 }
