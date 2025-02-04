@@ -194,9 +194,9 @@ public class SampleBasketAuto extends OpMode {
     public void park(){
         Actions.runBlocking(new SequentialAction(
         new ParallelAction(
+            mecanumDrive.actionBuilder().splineTo(parkingPose.position, parkingPose.heading).build(),
             arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 0.5),
-            slides.bringDown(0.7),
-            mecanumDrive.actionBuilder().splineTo(parkingPose.position, parkingPose.heading).build()
+            slides.bringDown(0.7)
         ),
         arm.setPositionSmooth(Arm.ARM_TO_BAR, 0.5)
         ));
