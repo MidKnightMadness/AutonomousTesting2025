@@ -17,13 +17,17 @@ import java.util.concurrent.TimeUnit;
 @Config
 public class Arm {
 
-        public static double INIT_AUTO_POS = 0.07;
+        public static double INIT_AUTO_POS = 0.07 - 0.03;
         public static double END = 1;
-        public static double SAMPLE_INTAKE_AUTO = 0.78; //set already
-        public static double BASKET_POSITION_AUTO = 0.44;
+        public static double SAMPLE_INTAKE_AUTO = 0.78 - 0.07; //set already
+        public static double INTERMEDIATE_DOWN = 0.66 - 0.07;
+        public static double BASKET_POSITION_AUTO = 0.44 - 0.07;
 
 
-        public static double STRAIGHT_UP_POSITION = 0.33;
+        public static double STRAIGHT_UP_POSITION = 0.33 - 0.07;
+        public static double PERPENDICULAR = 0.69;
+
+        public static double ARM_TO_BAR = 0.44 - 0.07;
 
         //TELEOP
 
@@ -97,7 +101,7 @@ public class Arm {
 
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
-                double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
+                double percentOfMovement = Math.sqrt(Math.min(1, timeSinceStart / movementTime));  // square root curve movement
                 double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
 
 

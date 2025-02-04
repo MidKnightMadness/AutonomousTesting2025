@@ -22,7 +22,7 @@ public class TurnTable {
     Timer timer;
     public static double RIGHT_BOUND = 0.131;
     public static double LEFT_BOUND = 0.762;
-    public static double THIRD_SAMPLE_ANGLE = 0;
+    public static double THIRD_SAMPLE_POS = 0.3066;
     public static double NEUTRAL_POS = 0.475; //Parallel to odo left and rightwheels
 
 

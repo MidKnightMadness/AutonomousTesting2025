@@ -30,7 +30,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
     public static class Params {
         public double par0YTicks = -2762.8104; // 138.874mm
         public double par1YTicks = 2762.8104; // 138.874mm
-        public double perpXTicks = 676.4085; // 33mm
+        public double perpXTicks = 850; // 33mm
     }
     public static Params PARAMS = new Params();
 

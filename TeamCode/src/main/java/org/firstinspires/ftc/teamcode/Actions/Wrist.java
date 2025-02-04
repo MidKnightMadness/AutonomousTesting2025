@@ -21,6 +21,7 @@ public class Wrist {
 
     Timer timer;
     public static double SAMPLE_LINE_POSITION_AUTO = 0.56; //sample pickup in autonomous
+    public static double THIRD_SAMPLE = 0.622; //sample pickup in autonomous
     public static double SAMPLE_SUB_POSITION = 0.56;
     public static double BASKET_POSITION_AUTO = 0.56; //sample dropoff in basket(top basket) at certain arm position
     public static double INIT_POSITION = 0.117;

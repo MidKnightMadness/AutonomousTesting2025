@@ -32,6 +32,8 @@ import java.util.List;
 
 @TeleOp(name="TeleOp - Two Player")
 public class TwoPlayerTeleOp extends LinearOpMode {
+    public static double STRAFE_ROTATION_FACTOR = 0.1; // add rotation while strafing to counteract uneven rotation
+
     VerticalSlides lift;
     SampleClaw sampleClaw;
     SpecimenClaw specimenClaw;
@@ -84,13 +86,14 @@ public class TwoPlayerTeleOp extends LinearOpMode {
             else {
                 power = 1;
             }
+            //TODO: Fix strafing within submersible
             //Gamepad 1 controls
             drive.setDrivePowers(new PoseVelocity2d(
                     new Vector2d(
                             -gamepad1.left_stick_x * power,
                             -gamepad1.left_stick_y * power
                     ),
-                    -gamepad1.right_stick_x * power
+                    (-gamepad1.right_stick_x + gamepad1.left_stick_y * STRAFE_ROTATION_FACTOR) * power
             ));
 
 
@@ -112,7 +115,6 @@ public class TwoPlayerTeleOp extends LinearOpMode {
             else if (gamepad2.right_trigger > 0.5) {
                 runningActions.add(sampleClaw.grabAction(0));
             }
-
 
             armManualPosition = false;
             //Arm
@@ -192,6 +194,7 @@ public class TwoPlayerTeleOp extends LinearOpMode {
             List<Action> newActions = new ArrayList<>();
             for(Action action: runningActions){
                 action.preview(packet.fieldOverlay());
+
                 if(action.run(packet)){
                     newActions.add(action);
                 }

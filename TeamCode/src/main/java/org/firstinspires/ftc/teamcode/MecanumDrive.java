@@ -73,7 +73,7 @@ public final class MecanumDrive {
         public double kA = 0.000005;
 
         // TODO: path profile parameters (in inches)
-        public double maxWheelVel = 50;
+        public double maxWheelVel = 40;
         public double minProfileAccel = -30;
         public double maxProfileAccel = 50;
 
@@ -89,7 +89,7 @@ public final class MecanumDrive {
         public double axialVelGain = 0.0;
         public double lateralVelGain = 0.0;
         public double headingVelGain = 0.0; // shared with turn
-        public double errorTolerance = 0.75;
+        public double errorTolerance = 0.5;
         public double velocityTolerance = 1;
     }
 
@@ -249,9 +249,9 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-//        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
+        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
 
-        localizer = new ThreeDeadWheelLocalizer(hardwareMap, lazyImu.get(),  PARAMS.inPerTick, pose);
+//        localizer = new ThreeDeadWheelLocalizer(hardwareMap, lazyImu.get(),  PARAMS.inPerTick, pose);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
