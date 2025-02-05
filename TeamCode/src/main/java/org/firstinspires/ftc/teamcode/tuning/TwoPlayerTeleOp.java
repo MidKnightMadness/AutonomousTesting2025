@@ -49,6 +49,12 @@ public class TwoPlayerTeleOp extends OpMode {
     boolean clawClosed = false;
     FtcDashboard dash = FtcDashboard.getInstance();
 
+    enum Action_Types {
+        WRIST,
+        ARM,
+        CLAW
+    }
+
     MecanumDrive drive;
     double currentTime;
     double previousTime;
@@ -56,6 +62,8 @@ public class TwoPlayerTeleOp extends OpMode {
     double updateRate = 0;
 
     List<Action> runningActions = new ArrayList<>();
+    List<Action_Types> runningActionTypes = new ArrayList<>();
+
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -68,6 +76,7 @@ public class TwoPlayerTeleOp extends OpMode {
 
         timer = new Timer();
         clawClosed = true;
+        runningActionTypes = new ArrayList<>();
 
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
@@ -94,8 +103,6 @@ public class TwoPlayerTeleOp extends OpMode {
             Pose2d pose = drive.localizer.getPose();
 
             telemetry.addData("Update Rate", updateRate);
-
-
             telemetry.addData("Current Time", currentTime);
 
 
@@ -123,15 +130,26 @@ public class TwoPlayerTeleOp extends OpMode {
 
 
             List<Action> newActions = new ArrayList<>();
-            for(Action action: runningActions){
+            List<Action_Types> newActionTypes = new ArrayList<>();
+
+            for (int i = 0; i < newActions.size(); i++){
+                Action action = runningActions.get(i);
+                Action_Types type = runningActionTypes.get(i);
+
                 action.preview(packet.fieldOverlay());
                 boolean stillRunning = action.run(packet);
-                if(stillRunning){
+
+                if (!stillRunning && type == Action_Types.ARM) isArmRunning = false;
+
+                if (stillRunning){
                     newActions.add(action);
+                    runningActionTypes.add(type);
                 }
             }
 
             runningActions = newActions;
+            runningActionTypes = newActionTypes;
+
             dash.sendTelemetryPacket(packet);
     }
 
@@ -167,6 +185,9 @@ public class TwoPlayerTeleOp extends OpMode {
     }
 
     String activeClaw = "Sample Claw";
+    boolean isArmRunning;
+    boolean isWristRunning;
+
     public void gamepad2Controls(){
 
         //Change Claws
@@ -200,18 +221,26 @@ public class TwoPlayerTeleOp extends OpMode {
         //Arm
         if (gamepad2.y) {
             runningActions.add(arm.setPositionSmooth(Arm.INIT_AUTO_POS, 1.5));
+            runningActionTypes.add(Action_Types.ARM);
+            isArmRunning = true;
             armManualPosition = true;
         }
         else if (gamepad2.a) {
             runningActions.add(arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1.5));
+            runningActionTypes.add(Action_Types.ARM);
+            isArmRunning = true;
             armManualPosition = true;
         }
         else if(gamepad2.b){
-            runningActions.add(arm.setPositionSmooth(Arm.BASKET_POSITION_MAIN, 1.5));
+            runningActions.add(arm.setPositionSmooth(Arm.BASKET_POSITION, 1.5));
+            runningActionTypes.add(Action_Types.ARM);
+            isArmRunning = true;
             armManualPosition = true;
         }
         else if(gamepad2.x){
             runningActions.add(arm.setPositionSmooth(Arm.SPECIMEN_INTAKE_POSITION_MAIN, 0.5));
+            runningActionTypes.add(Action_Types.ARM);
+            isArmRunning = true;
             armManualPosition = true;
         }
 
@@ -222,16 +251,17 @@ public class TwoPlayerTeleOp extends OpMode {
         }
 
         //Arm
-        if(!armManualPosition){
-            runningActions.add(arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad2.right_stick_y * timer.getDeltaTime() * 0.5, 1.5));
-            if (gamepad1.right_bumper) {
-                runningActions.add(arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5, 1.5));
-            }
-        }
+//        if(!armManualPosition && (gamepad2.right_stick_y != 0 || gamepad1.right_trigger != 0)){
+//            runningActions.add(arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad2.right_stick_y * timer.getDeltaTime() * 0.5, 1.5));
+//            if (gamepad1.right_bumper) {
+//                runningActions.add(arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5, 1.5));
+//            }
+//        }
 
 
         //Wrist
         wristManualPosition = false;
+
         if(gamepad2.left_bumper){
             runningActions.add(wrist.setPositionSmooth(Wrist.SAMPLE_SUB_POSITION, 0.5));
             wristManualPosition = true;
@@ -240,7 +270,7 @@ public class TwoPlayerTeleOp extends OpMode {
             runningActions.add(wrist.setPositionSmooth(Wrist.SPECIMEN_INTAKE_POSITION, 0.5));
             wristManualPosition = true;
         }
-        if(!wristManualPosition){
+        if(!wristManualPosition && gamepad2.left_stick_y != 0){
             runningActions.add(wrist.setPositionSmooth(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5, 0.5));
         }
 

@@ -43,7 +43,7 @@ public class ActionsTestOpMode extends OpMode {
     public void start() {
         Actions.runBlocking(new SequentialAction(new ParallelAction(
                 arm.setPositionSmooth(Arm.SAMPLE_INTAKE_AUTO, 1),
-                wrist.setPositionSmooth(Wrist.SAMPLE_LINE_POSITION_AUTO, 0.5)
+                wrist.setPositionSmooth(Wrist.SAMPLE_LINE_POSITION_AUTO, 0.7)
         ),
                 sampleClaw.setPosition(SampleClaw.GRAB_POSITION),
                 drive.actionBuilder().waitSeconds(0.2).build(),
@@ -56,6 +56,7 @@ public class ActionsTestOpMode extends OpMode {
     public void loop() {
 
     }
+
 
 
 

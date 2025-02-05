@@ -146,7 +146,7 @@ public class ServoBoundsSetter extends OpMode {
             else if(activeServo.equals("Turn Table")){
                 turnTable.setPosition(servoPosition);
             }
-            else {
+            else if(activeServo.equals("Dual Arm")) {
                 leftArmServo.setPosition(servoPosition);
                 rightArmServo.setPosition(servoPosition);
             }
