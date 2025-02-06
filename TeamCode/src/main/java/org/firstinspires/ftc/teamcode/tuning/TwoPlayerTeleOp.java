@@ -1,12 +1,16 @@
 package org.firstinspires.ftc.teamcode.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -16,7 +20,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
 import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
 import org.firstinspires.ftc.teamcode.Actions.SpecimenClaw;
 import org.firstinspires.ftc.teamcode.Actions.TurnTable;
@@ -33,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @TeleOp(name="TeleOp - Two Player")
+@Config
 public class TwoPlayerTeleOp extends OpMode {
     public static double STRAFE_ROTATION_FACTOR = 0.1; // add rotation while strafing to counteract uneven rotation
 
@@ -52,7 +56,8 @@ public class TwoPlayerTeleOp extends OpMode {
     enum Action_Types {
         WRIST,
         ARM,
-        CLAW
+        CLAW,
+        TURNTABLE
     }
 
     MecanumDrive drive;
@@ -80,8 +85,10 @@ public class TwoPlayerTeleOp extends OpMode {
 
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
+        turnTable.servo.setPosition(TurnTable.NEUTRAL_POS);
+        arm.leftServo.setPosition(Arm.STRAIGHT_UP_POSITION);
+        arm.rightServo.setPosition(Arm.STRAIGHT_UP_POSITION);
 
-        double currentTime = timer.updateTime();
         startTime = timer.updateTime();
         previousTime = 0;
 
@@ -120,8 +127,12 @@ public class TwoPlayerTeleOp extends OpMode {
             telemetry.addData("Specimen Claw Pos", specimenClaw.servo.getPosition());
             telemetry.addData("Turntable Wrist Pos", turnTable.servo.getPosition());
 
+            telemetry.addData("Arm Manual", armManualPosition);
+            telemetry.addData("Is Arm Running", isArmRunning);
+            telemetry.addData("Is Wrist Running", isWristRunning);
             telemetry.addLine("-----------Gamepad Values -----------");
             telemetry.addData("Gamepad 2 left stick x", gamepad2.left_stick_x);
+            telemetry.addData("Gamepad 2 Right Stick y", gamepad2.right_stick_y);
             telemetry.addData("Right stick x", gamepad1.right_stick_x);
             telemetry.addData("Right motor pos", lift.getRightMotor().getCurrentPosition());
             telemetry.addData("Left motor pos", lift.getLeftMotor().getCurrentPosition());
@@ -132,30 +143,40 @@ public class TwoPlayerTeleOp extends OpMode {
             List<Action> newActions = new ArrayList<>();
             List<Action_Types> newActionTypes = new ArrayList<>();
 
-            for (int i = 0; i < newActions.size(); i++){
+            for (int i = 0; i < runningActions.size(); i++){
                 Action action = runningActions.get(i);
                 Action_Types type = runningActionTypes.get(i);
 
                 action.preview(packet.fieldOverlay());
                 boolean stillRunning = action.run(packet);
 
-                if (!stillRunning && type == Action_Types.ARM) isArmRunning = false;
+                if(!stillRunning){
+                    if(type == Action_Types.ARM){
+                        isArmRunning = false;
+                    }
+                    if(type == Action_Types.WRIST){
+                        isWristRunning = false;
+                    }
+                }
+
 
                 if (stillRunning){
                     newActions.add(action);
-                    runningActionTypes.add(type);
+                    newActionTypes.add(type);
                 }
             }
 
             runningActions = newActions;
             runningActionTypes = newActionTypes;
 
+            packet.addLine("Running Actions: " + runningActions);
+            packet.addLine("Running Actions Types: " + runningActionTypes);
             dash.sendTelemetryPacket(packet);
     }
 
     public void gamepad1Controls(){
 
-        if (gamepad1.right_bumper) {
+        if (gamepad1.x) {
             power = 0.5;
         }
         else {
@@ -169,7 +190,7 @@ public class TwoPlayerTeleOp extends OpMode {
                         -gamepad1.left_stick_x * power,
                         -gamepad1.left_stick_y * power
                 ),
-                (-gamepad1.right_stick_x + gamepad1.left_stick_y * STRAFE_ROTATION_FACTOR) * power
+                (-gamepad1.right_stick_x + gamepad1.left_stick_x * STRAFE_ROTATION_FACTOR) * power
         ));
 
 
@@ -177,12 +198,36 @@ public class TwoPlayerTeleOp extends OpMode {
         lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
 
         if (gamepad1.left_bumper && gamepad1.y && gamepad1.left_trigger != 0) {
-            while (true) {
-                lift.getRightMotor().setPower(-gamepad1.left_trigger);
-                lift.getRightMotor().setPower(-gamepad1.left_trigger);
-            }
+            lift.getLeftMotor().setPower(-gamepad1.left_trigger);
+            lift.getRightMotor().setPower(-gamepad1.left_trigger);
+        }
+
+        double turnTableDirection = 1;
+        if (gamepad1.right_bumper) {
+            turnTableDirection = -1;
+        }
+
+        if(gamepad1.right_trigger > 0.05){
+            turnTable.servo.setPosition(turnTable.servo.getPosition() + turnTableDirection * gamepad1.right_trigger * timer.getDeltaTime() * 0.5);
+        }
+
+        if (gamepad1.a) {
+
         }
     }
+
+
+    public Action scoreInBasket() {
+        drive.localizer.setPose(new Pose2d(new Vector2d(0, 0), 0));
+
+        return new SequentialAction(
+            new ParallelAction(
+                    wrist.setPosition(Wrist.STRAIGHT_POSITION)
+
+            )
+        );
+    }
+
 
     String activeClaw = "Sample Claw";
     boolean isArmRunning;
@@ -190,91 +235,73 @@ public class TwoPlayerTeleOp extends OpMode {
 
     public void gamepad2Controls(){
 
+        double deltaTime = 0;
+
         //Change Claws
+        if(gamepad2.dpad_right) {
+           activeClaw = "Specimen Claw";
+        }
         if(gamepad2.dpad_left) {
-            if(activeClaw.equals("Specimen Claw")){
-                activeClaw = "Sample Claw";
-            }
-            else{
-                activeClaw = "Specimen Claw";
-            }
+            activeClaw = "Sample Claw";
         }
 
         //Claw
         if(activeClaw.equals("Sample Claw")) {
             if (gamepad2.right_bumper) {
-                runningActions.add(sampleClaw.releaseAction(0));
+                sampleClaw.release();
             } else if (gamepad2.right_trigger > 0.5) {
-                runningActions.add(sampleClaw.grabAction(0));
+                sampleClaw.grab();;
+                runningActionTypes.add(Action_Types.CLAW);
             }
         }
+
         else{
             if (gamepad2.right_bumper) {
-                runningActions.add(specimenClaw.releaseAction(0));
+                specimenClaw.release();
             } else if (gamepad2.right_trigger > 0.5) {
-                runningActions.add(specimenClaw.grabAction(0));
+                specimenClaw.grab();
             }
         }
 
 
         armManualPosition = false;
         //Arm
-        if (gamepad2.y) {
-            runningActions.add(arm.setPositionSmooth(Arm.INIT_AUTO_POS, 1.5));
+        if (gamepad2.y && !isArmRunning) {
+            Actions.runBlocking(arm.setPositionSmooth(Arm.BASKET_POSITION_MAIN, 0.5));
             runningActionTypes.add(Action_Types.ARM);
-            isArmRunning = true;
             armManualPosition = true;
         }
-        else if (gamepad2.a) {
-            runningActions.add(arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1.5));
+        else if (gamepad2.a && !isArmRunning) {
+            Actions.runBlocking(arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1));
             runningActionTypes.add(Action_Types.ARM);
-            isArmRunning = true;
             armManualPosition = true;
         }
-        else if(gamepad2.b){
-            runningActions.add(arm.setPositionSmooth(Arm.BASKET_POSITION, 1.5));
+        else if(gamepad2.x && !isArmRunning){
+            Actions.runBlocking(arm.setPositionSmooth(Arm.INIT_AUTO_POS, 1));
             runningActionTypes.add(Action_Types.ARM);
-            isArmRunning = true;
             armManualPosition = true;
         }
-        else if(gamepad2.x){
-            runningActions.add(arm.setPositionSmooth(Arm.SPECIMEN_INTAKE_POSITION_MAIN, 0.5));
+        else if(gamepad2.b && !isArmRunning){
+            Actions.runBlocking(arm.setPositionSmooth(Arm.SPECIMEN_INTAKE_POSITION_MAIN, 0.5));
             runningActionTypes.add(Action_Types.ARM);
-            isArmRunning = true;
             armManualPosition = true;
         }
 
-
-        //Turn Table
-        if(gamepad2.left_stick_y!= 0) {
-            turnTable.setPositionSmooth(gamepad2.left_stick_y, 0.3);
-        }
 
         //Arm
-//        if(!armManualPosition && (gamepad2.right_stick_y != 0 || gamepad1.right_trigger != 0)){
-//            runningActions.add(arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad2.right_stick_y * timer.getDeltaTime() * 0.5, 1.5));
+        if(!isArmRunning && Math.abs(gamepad2.right_stick_y) > 0.05){
+            arm.leftServo.setPosition(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
+            arm.rightServo.setPosition(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
 //            if (gamepad1.right_bumper) {
-//                runningActions.add(arm.setPositionSmooth(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5, 1.5));
+//                arm.setPosition(arm.leftServo.getPosition() + gamepad1.right_trigger * timer.getDeltaTime() * 0.5);
 //            }
-//        }
-
-
-        //Wrist
-        wristManualPosition = false;
-
-        if(gamepad2.left_bumper){
-            runningActions.add(wrist.setPositionSmooth(Wrist.SAMPLE_SUB_POSITION, 0.5));
-            wristManualPosition = true;
-        }
-        else if(gamepad2.left_trigger > 0.5){
-            runningActions.add(wrist.setPositionSmooth(Wrist.SPECIMEN_INTAKE_POSITION, 0.5));
-            wristManualPosition = true;
-        }
-        if(!wristManualPosition && gamepad2.left_stick_y != 0){
-            runningActions.add(wrist.setPositionSmooth(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5, 0.5));
         }
 
+        if(Math.abs(gamepad2.left_stick_y) > 0.05){
+            wrist.servo.setPosition(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
+        }
 
+        telemetry.addData("Delta Time", deltaTime);
     }
 }
 

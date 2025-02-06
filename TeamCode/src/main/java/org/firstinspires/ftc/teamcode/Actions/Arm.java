@@ -13,22 +13,22 @@ import org.firstinspires.ftc.teamcode.Timer;
 @Config
 public class Arm {
 
-        public static double INIT_AUTO_POS = 0.23;
 
-        public static double END = 1;
-        public static double SAMPLE_INTAKE_AUTO = 0.98; //set already
-        public static double BASKET_POSITION = 0.63;
+    public static double INIT_AUTO_POS = 0.07;
+    public static double END = 1;
+    public static double SAMPLE_INTAKE_AUTO = 0.76; //set already
+    public static double BASKET_POSITION = 0.42;
 
-        public static double STRAIGHT_UP_POSITION = 0.49;
+    public static double STRAIGHT_UP_POSITION = 0.33;
+    public static double PERPENDICULAR = 0.69;
 
-        public static double ARM_TO_BAR = 0.44 - 0.07;
+    public static double ARM_TO_BAR = 0.44;
 
-        //TELEOP
+    //TELEOP
+    public static double SPECIMEN_INTAKE_POSITION_MAIN = 0.6;
 
-        public static double SAMPLE_INTAKE_POSITION_MAIN = 0.875;
-
-        public static double SPECIMEN_OUTAKE_POSITION_MAIN = 0;
-        public static double SPECIMEN_INTAKE_POSITION_MAIN = 0;
+    public static double SAMPLE_INTAKE_POSITION_MAIN = 0.875;
+    public static double BASKET_POSITION_MAIN = 0.575;
 
 
     public Servo leftServo;

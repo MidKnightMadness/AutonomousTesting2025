@@ -69,7 +69,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
  * The rotational velocities should follow the change in corresponding axes.
  */
 
-@TeleOp(name="Concept: IMU Orientation", group="Concept")
 
 public class ConceptExploringIMUOrientation extends LinearOpMode {
     static RevHubOrientationOnRobot.LogoFacingDirection[] logoFacingDirections

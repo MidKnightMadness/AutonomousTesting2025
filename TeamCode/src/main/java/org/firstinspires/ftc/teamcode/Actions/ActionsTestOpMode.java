@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Actions;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -41,15 +42,12 @@ public class ActionsTestOpMode extends OpMode {
 
     @Override
     public void start() {
-        Actions.runBlocking(new SequentialAction(new ParallelAction(
-                arm.setPositionSmooth(Arm.SAMPLE_INTAKE_AUTO, 1),
-                wrist.setPositionSmooth(Wrist.SAMPLE_LINE_POSITION_AUTO, 0.7)
-        ),
-                sampleClaw.setPosition(SampleClaw.GRAB_POSITION),
-                drive.actionBuilder().waitSeconds(0.2).build(),
-                arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 2)));
-
-
+        Actions.runBlocking(new ParallelAction(
+                new SequentialAction(
+                        new SleepAction(1),
+                    arm.setPositionSmooth(Arm.SAMPLE_INTAKE_AUTO, 2)
+                ),
+                wrist.setPosition(Wrist.THIRD_SAMPLE)));
     }
 
     @Override

@@ -25,6 +25,7 @@ public class Wrist {
     public static double SAMPLE_SUB_POSITION = 0.56;
     public static double BASKET_POSITION_AUTO = 0.56; //sample dropoff in basket(top basket) at certain arm position
     public static double INIT_POSITION = 0.117;
+    public static double STRAIGHT_POSITION = 0.36;
 
     public static double SPECIMEN_INTAKE_POSITION = 0.63; //specimen position
     public static double SPECIMEN_OUTAKE_POSITION = 0;
