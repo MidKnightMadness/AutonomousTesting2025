@@ -30,6 +30,7 @@ public class LocalizationTest extends LinearOpMode {
     Arm arm;
     Wrist wrist;
 
+
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -38,7 +39,7 @@ public class LocalizationTest extends LinearOpMode {
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
 
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 90));
 
         waitForStart();
 
@@ -57,7 +58,7 @@ public class LocalizationTest extends LinearOpMode {
             lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
 
             if (gamepad1.y) {
-                arm.setPositionSmooth(Arm.BASKET_POSITION_MAIN, 1.5);
+                arm.setPositionSmooth(Arm.BASKET_POSITION, 1.5);
             }
             else if (gamepad1.a) {
                 arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1.5);
