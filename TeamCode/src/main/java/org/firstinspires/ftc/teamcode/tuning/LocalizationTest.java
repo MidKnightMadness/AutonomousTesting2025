@@ -61,7 +61,7 @@ public class LocalizationTest extends LinearOpMode {
                 arm.setPositionSmooth(Arm.BASKET_POSITION, 1.5);
             }
             else if (gamepad1.a) {
-                arm.setPositionSmooth(Arm.SAMPLE_INTAKE_POSITION_MAIN, 1.5);
+                arm.setPositionSmooth(Arm.SAMPLE_INTAKE, 1.5);
             }
 
             if (gamepad1.x) {

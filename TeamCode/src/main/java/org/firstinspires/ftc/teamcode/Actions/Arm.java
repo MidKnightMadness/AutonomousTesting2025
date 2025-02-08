@@ -13,23 +13,18 @@ import org.firstinspires.ftc.teamcode.Timer;
 @Config
 public class Arm {
 
-
     public static double INIT_AUTO_POS = 0.07;
     public static double END = 1;
-    public static double SAMPLE_INTAKE_AUTO = 0.76; //set already
+    public static double SAMPLE_INTAKE = 0.74; //set already
     public static double BASKET_POSITION = 0.42;
 
-    public static double STRAIGHT_UP_POSITION = 0.33;
+    public static double STRAIGHT_UP_POSITION = 0.30;
     public static double PERPENDICULAR = 0.69;
 
     public static double ARM_TO_BAR = 0.44;
 
-    //TELEOP
-    public static double SPECIMEN_INTAKE_POSITION_MAIN = 0.6;
 
-    public static double SAMPLE_INTAKE_POSITION_MAIN = 0.875;
-    public static double BASKET_POSITION_MAIN = 0.575;
-
+    public static double TIME_FULL_ROTATION = 2;
 
     public Servo leftServo;
     public Servo rightServo;
@@ -40,22 +35,32 @@ public class Arm {
         leftServo = hardwareMap.get(Servo.class, "Arm Left");
         rightServo = hardwareMap.get(Servo.class, "Arm Right");
         timer = new Timer();
-
     }
-
 
     boolean smooth = false;
     double interval = 0.05;
     //Still being used:
-    public Action setPositionSmooth(double position, double movementTime){
+    public Action setPositionSmooth(double position, double movementTime) {
+        lastSetPosition = position;
         return new SetPosition(position, movementTime);
     }
 
+    double lastSetPosition = Arm.INIT_AUTO_POS;
+
+    public Action setPositionSmooth(double position){
+        double lastPos = lastSetPosition;
+        lastSetPosition = position;
+
+        return new SetPosition(position, Math.abs(position - lastPos) * TIME_FULL_ROTATION);
+    }
+
     public Action setPosition(double position){
+        lastSetPosition = position;
         return new SetPosition(position);
     }
 
     public void setInitPosition() {
+        lastSetPosition = Arm.INIT_AUTO_POS;
         leftServo.setPosition(Arm.INIT_AUTO_POS);
         rightServo.setPosition(Arm.INIT_AUTO_POS);
     }
@@ -92,14 +97,15 @@ public class Arm {
 
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
-                double percentOfMovement = Math.sqrt(Math.min(1, timeSinceStart / movementTime));  // square root curve movement
+                double percentOfMovement = (Math.min(1, timeSinceStart / movementTime));  // square root curve movement
                 double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
 
                 packet.addLine("Position " + intermediatePoint);
 
                 leftServo.setPosition(intermediatePoint);
                 rightServo.setPosition(intermediatePoint);
-                if (timeSinceStart >= movementTime - 0.05) {
+
+                if (timeSinceStart > movementTime) {
                     leftServo.setPosition(targetPosition);
                     rightServo.setPosition(targetPosition);
                     return false;

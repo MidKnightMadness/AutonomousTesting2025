@@ -75,7 +75,7 @@ public final class MecanumDrive {
         // TODO: path profile parameters (in inches)
         public double maxWheelVel = 40;
         public double minProfileAccel = -30;
-        public double maxProfileAccel = 50;
+        public double maxProfileAccel = 45;
 
         // TODO: turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
@@ -370,9 +370,29 @@ public final class MecanumDrive {
         private double beginTs = -1;
 
         private final double[] xPoints, yPoints;
+        private final double timeOffset;
 
         public FollowTrajectoryNoCorrection(TimeTrajectory t) {
             timeTrajectory = t;
+
+            this.timeOffset = 0;
+
+            List<Double> disps = com.acmerobotics.roadrunner.Math.range(
+                    0, t.path.length(),
+                    Math.max(2, (int) Math.ceil(t.path.length() / 2)));
+            xPoints = new double[disps.size()];
+            yPoints = new double[disps.size()];
+            for (int i = 0; i < disps.size(); i++) {
+                Pose2d p = t.path.get(disps.get(i), 1).value();
+                xPoints[i] = p.position.x;
+                yPoints[i] = p.position.y;
+            }
+        }
+
+        public FollowTrajectoryNoCorrection(TimeTrajectory t, double timeOffset) {
+            timeTrajectory = t;
+
+            this.timeOffset = timeOffset;
 
             List<Double> disps = com.acmerobotics.roadrunner.Math.range(
                     0, t.path.length(),

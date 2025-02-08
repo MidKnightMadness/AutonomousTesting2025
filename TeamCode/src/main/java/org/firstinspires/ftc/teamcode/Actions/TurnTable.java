@@ -20,11 +20,10 @@ public class TurnTable {
     //AUTO:
 
     Timer timer;
-    public static double RIGHT_BOUND = 0.131;
-    public static double LEFT_BOUND = 0.762;
-    public static double THIRD_SAMPLE_POS = 0.3066;
+    public static double RIGHT_BOUND = 0.086;
+    public static double LEFT_BOUND = 0.81;
+    public static double THIRD_SAMPLE_POS = 0.28;
     public static double NEUTRAL_POS = 0.475; //Parallel to odo left and rightwheels
-
 
     public Servo servo;
     ElapsedTime elapsedTime;
@@ -44,7 +43,7 @@ public class TurnTable {
     }
 
     public void setInitPosition() {
-        servo.setPosition(NEUTRAL_POS);
+        servo.setPosition(LEFT_BOUND);
     }
 
 
