@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.Timer;
 public class SampleClaw {
     final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
     public static double RELEASE_POSITION = 0.46;
-    public static double GRAB_POSITION = 0.71;
+    public static double GRAB_POSITION = 0.73;
 
 
     public Servo servo;

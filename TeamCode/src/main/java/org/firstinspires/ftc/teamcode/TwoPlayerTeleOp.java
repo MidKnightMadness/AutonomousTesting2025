@@ -10,7 +10,6 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -21,16 +20,15 @@ import org.firstinspires.ftc.teamcode.Actions.TurnTable;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @TeleOp(name="TeleOp - Two Player")
 @Config
 public class TwoPlayerTeleOp extends OpMode {
     public static double STRAFE_ROTATION_FACTOR = 0.1; // add rotation while strafing to counteract uneven rotation
 
     public static Vector2d basketTrajectoryIntermediate = new Vector2d(0, 20);
-    public static Vector2d basketTrajectoryPosition = new Vector2d(-40, 31);
+    public static Vector2d basketTrajectoryPosition = new Vector2d(-40, 28);
+
+    public static double rotationFactor = 0.5;
 
     VerticalSlides slides;
     SampleClaw sampleClaw;
@@ -75,6 +73,7 @@ public class TwoPlayerTeleOp extends OpMode {
         turnTable.servo.setPosition(TurnTable.NEUTRAL_POS);
         arm.leftServo.setPosition(Arm.STRAIGHT_UP_POSITION);
         arm.rightServo.setPosition(Arm.STRAIGHT_UP_POSITION);
+        wrist.servo.setPosition(Wrist.BASKET_POSITION);
 
         startTime = timer.updateTime();
         previousTime = 0;
@@ -85,23 +84,6 @@ public class TwoPlayerTeleOp extends OpMode {
     double power = 1;
     @Override
     public void loop(){
-
-
-            if (isInActionCommand) {
-                isInActionCommand = activeAction.run(packet);
-
-                // stop running
-                if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
-                    isInActionCommand = false;
-                }
-
-                telemetry.addLine("Running automation");
-
-                telemetry.update();
-
-                return;
-            }
-
             gamepad1Controls();
             gamepad2Controls();
 
@@ -138,7 +120,34 @@ public class TwoPlayerTeleOp extends OpMode {
             telemetry.addData("Left motor pos", slides.getLeftMotor().getCurrentPosition());
 
             telemetry.update();
+    }
 
+    public void runSlideControls() {
+        if (isInActionCommand) {
+            isInActionCommand = activeAction.run(packet);
+
+            // stop running
+            if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
+                isInActionCommand = false;
+            }
+
+            telemetry.addLine("Running automation");
+
+            telemetry.update();
+
+            return;
+        }
+
+        slides.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
+        slides.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
+
+
+        if (gamepad1.left_bumper && gamepad1.y && gamepad1.left_trigger != 0) {
+            while (true) {
+                slides.getLeftMotor().setPower(-gamepad1.left_trigger);
+                slides.getRightMotor().setPower(-gamepad1.left_trigger);
+            }
+        }
 
     }
 
@@ -156,17 +165,12 @@ public class TwoPlayerTeleOp extends OpMode {
                         -gamepad1.left_stick_x * power,
                         -gamepad1.left_stick_y * power
                 ),
-                (-gamepad1.right_stick_x + gamepad1.left_stick_x * STRAFE_ROTATION_FACTOR) * power
+                (-gamepad1.right_stick_x * rotationFactor + gamepad1.left_stick_x * STRAFE_ROTATION_FACTOR) * power
         ));
 
+        runSlideControls();
 
-        slides.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
-        slides.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
 
-        if (gamepad1.left_bumper && gamepad1.y && gamepad1.left_trigger != 0) {
-            slides.getLeftMotor().setPower(-gamepad1.left_trigger);
-            slides.getRightMotor().setPower(-gamepad1.left_trigger);
-        }
 
         double turnTableDirection = 1;
         if (gamepad1.right_bumper) {
@@ -174,15 +178,15 @@ public class TwoPlayerTeleOp extends OpMode {
         }
 
         if(gamepad1.right_trigger > 0.05){
-            turnTable.servo.setPosition(turnTable.servo.getPosition() + turnTableDirection * gamepad1.right_trigger * timer.getDeltaTime() * 0.5);
+            turnTable.servo.setPosition(turnTable.servo.getPosition() + turnTableDirection * gamepad1.right_trigger * timer.getDeltaTime() * 1);
         }
 
         if (gamepad1.a) {
-            activeAction = scoreInBasket();
+            activeAction = slidesDown();
             isInActionCommand = true;
         }
         else if (gamepad1.b) {
-            activeAction = resetAfterScoring();
+            activeAction = slidesUp();
             isInActionCommand = true;
         }
     }
@@ -201,7 +205,8 @@ public class TwoPlayerTeleOp extends OpMode {
             new ParallelAction(
                     arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 1),
                     drive.actionBuilderNoCorrection(new Pose2d(basketTrajectoryIntermediate, Math.toRadians(-225))).strafeToLinearHeading(basketTrajectoryPosition, Math.toRadians(-225)).build(),
-                    slides.liftUp()
+                    wrist.setPosition(Wrist.BASKET_POSITION),
+                    slides.liftUp(0.8)
             )
         );
     }
@@ -226,14 +231,17 @@ public class TwoPlayerTeleOp extends OpMode {
         );
     }
 
-    public Action resetAfterScoring() {
+    public Action slidesDown() {
         return new SequentialAction(
-                new ParallelAction(
-                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 1)
-                )
-
+                slides.bringDown(0.5)
         );
+    }
 
+    public Action slidesUp() {
+        return new ParallelAction(
+                slides.liftUp(0.8),
+                turnTable.setPosition(TurnTable.NEUTRAL_POS)
+        );
     }
 
 
@@ -266,12 +274,22 @@ public class TwoPlayerTeleOp extends OpMode {
             }
         }
 
+
+        runWristControls();
+        runArmControls();
+    }
+
+    public void runWristControls() {
+        if (gamepad2.left_bumper) {
+            wrist.servo.setPosition(Wrist.BASKET_POSITION);
+            return;
+        }
+
         if(Math.abs(gamepad2.left_stick_y) > 0.05){
             wrist.servo.setPosition(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
         }
-
-        runArmControls();
     }
+
 
     public void runArmControls() {
         if (inArmAction) {

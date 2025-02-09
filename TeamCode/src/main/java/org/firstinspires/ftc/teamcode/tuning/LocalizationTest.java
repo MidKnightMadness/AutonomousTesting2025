@@ -25,21 +25,19 @@ import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 
 @TeleOp(name="LocalizationTest2")
 public class LocalizationTest extends LinearOpMode {
-    VerticalSlides lift;
-    SampleClaw sampleClaw;
-    Arm arm;
-    Wrist wrist;
+
+    IMU imuControl;
+    IMU imuExpansion;
 
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        lift = new VerticalSlides(hardwareMap);
-        sampleClaw = new SampleClaw(hardwareMap);
-        arm = new Arm(hardwareMap);
-        wrist = new Wrist(hardwareMap);
 
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 90));
+
+        imuControl = hardwareMap.get(IMU.class, "imuControl");
+        imuExpansion = hardwareMap.get(IMU.class, "imuExpansion");
 
         waitForStart();
 
@@ -54,38 +52,15 @@ public class LocalizationTest extends LinearOpMode {
 
             drive.updatePoseEstimate();
 
-            lift.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
-            lift.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
-
-            if (gamepad1.y) {
-                arm.setPositionSmooth(Arm.BASKET_POSITION, 1.5);
-            }
-            else if (gamepad1.a) {
-                arm.setPositionSmooth(Arm.SAMPLE_INTAKE, 1.5);
-            }
-
-            if (gamepad1.x) {
-                sampleClaw.servo.setPosition(SampleClaw.GRAB_POSITION);
-            }
-            else if (gamepad1.b) {
-                sampleClaw.servo.setPosition(SampleClaw.RELEASE_POSITION);
-            }
-
-
-            wrist.servo.setPosition(gamepad1.right_trigger);
-
             Pose2d pose = drive.localizer.getPose();
 
             telemetry.addData("x", pose.position.x);
             telemetry.addData("y", pose.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+            telemetry.addData("heading (control)", (imuControl.getRobotYawPitchRollAngles().getYaw()));
+            telemetry.addData("heading (expansion)", (imuExpansion.getRobotYawPitchRollAngles().getYaw()));
             telemetry.addData("Right stick x", gamepad1.right_stick_x);
-            telemetry.addData("Right motor pos", lift.getRightMotor().getCurrentPosition());
-            telemetry.addData("Left motor pos", lift.getLeftMotor().getCurrentPosition());
 
-            telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
-            telemetry.addData("Wrist Pos", wrist.servo.getPosition());
-            telemetry.addData("Claw Pos", sampleClaw.servo.getPosition());
             telemetry.update();
 
             TelemetryPacket packet = new TelemetryPacket();

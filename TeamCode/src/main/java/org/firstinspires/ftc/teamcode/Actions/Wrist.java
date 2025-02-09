@@ -7,7 +7,6 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Timer;
 
@@ -23,7 +22,7 @@ public class Wrist {
     public static double SAMPLE_LINE_POSITION_AUTO = 0.43; //sample pickup in autonomous
     public static double THIRD_SAMPLE = 0.40; //sample pickup in autonomous
     public static double SAMPLE_SUB_POSITION = 0.43;
-    public static double BASKET_POSITION_AUTO = 0.43; //sample dropoff in basket(top basket) at certain arm position
+    public static double BASKET_POSITION = 0.43; //sample dropoff in basket(top basket) at certain arm position
     public static double INIT_POSITION = 0.37;
     public static double STRAIGHT_POSITION = 0.66;
 
@@ -31,11 +30,9 @@ public class Wrist {
     public static double SPECIMEN_OUTAKE_POSITION = 0;
 
     public Servo servo;
-    ElapsedTime elapsedTime;
 
     public Wrist(HardwareMap hardwareMap) {
         servo = hardwareMap.get(Servo.class, "Wrist");
-
         timer = new Timer();
     }
 
@@ -81,8 +78,6 @@ public class Wrist {
             packet.addLine("Time: " + (timer.updateTime() - startTime));
 
 
-
-            //TODO: CHECK IF movement time = 0
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);

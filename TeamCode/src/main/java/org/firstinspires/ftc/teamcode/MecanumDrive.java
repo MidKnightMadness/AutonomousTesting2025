@@ -82,14 +82,15 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // TODO: path controller gains
-        public double axialGain = 4.0;
-        public double lateralGain = 4.0;
+        public double axialGain = 5;
+        public double lateralGain = 5;
         public double headingGain = 3.5; // shared with turn
 
-        public double axialVelGain = 0.0;
-        public double lateralVelGain = 0.0;
+        public double axialVelGain = 0;
+        public double lateralVelGain = 0;
         public double headingVelGain = 0.0; // shared with turn
         public double errorTolerance = 0.5;
+        public double headingToleranceDeg = 1;
         public double velocityTolerance = 1;
     }
 
@@ -145,7 +146,7 @@ public final class MecanumDrive {
 //        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
 //        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        lazyImu = new LazyImu(hardwareMap, "imuExpansion", new RevHubOrientationOnRobot(
+        lazyImu = new LazyImu(hardwareMap, "imuControl", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
@@ -219,7 +220,7 @@ public final class MecanumDrive {
 
             Pose2d error = txWorldTarget.value().minusExp(localizer.getPose());
 
-            if (t >= timeTrajectory.duration && Math.abs(error.heading.toDouble()) < Math.toRadians(5) && error.position.norm() < MecanumDrive.PARAMS.errorTolerance && robotVelRobot.linearVel.norm() < MecanumDrive.PARAMS.velocityTolerance || t >= timeTrajectory.duration + 5) {
+            if (t >= timeTrajectory.duration && Math.abs(error.heading.toDouble()) < PARAMS.headingToleranceDeg  && error.position.norm() < PARAMS.errorTolerance && robotVelRobot.linearVel.norm() < MecanumDrive.PARAMS.velocityTolerance || t >= timeTrajectory.duration + 1) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
                 rightBack.setPower(0);

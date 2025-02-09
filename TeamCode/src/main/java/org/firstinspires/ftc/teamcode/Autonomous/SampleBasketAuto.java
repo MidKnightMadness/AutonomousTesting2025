@@ -26,10 +26,10 @@ public class SampleBasketAuto extends OpMode {
 
     public static Pose2d scoringPose = new Pose2d(new Vector2d(8.5, 25), Math.toRadians(130));
 
-    public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 19.75, 18.5),0);
-    public static Pose2d secondSamplePose = new Pose2d(new Vector2d(18.75, 30), 0);
+    public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 19.75, 17.5),0);
+    public static Pose2d secondSamplePose = new Pose2d(new Vector2d(18.75, 27.25), 0);
     public static Pose2d thirdSampleIntermediate = new Pose2d(new Vector2d(22, 26), Math.toRadians(45));
-    public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(22, 28.25), Math.toRadians(45));
+    public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(23.5, 24.75), Math.toRadians(45));
 
     public static Pose2d parkingPose = new Pose2d(new Vector2d(60, -8), Math.toRadians(90));
 
@@ -62,6 +62,7 @@ public class SampleBasketAuto extends OpMode {
         arm.setInitPosition();
         wrist.setInitPosition();
         turnTable.setInitPosition();
+        slides.resetEncoders();
     }
 
     public Action scoreInBasket(double xOffset, double yOffset) {//TODO: make sure it doesnt hit side wall when outaking sample
@@ -69,8 +70,8 @@ public class SampleBasketAuto extends OpMode {
                 arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
                 new ParallelAction(
                         mecanumDrive.actionBuilder().strafeToSplineHeading(new Vector2d(scoringPose.position.x + xOffset, scoringPose.position.y + yOffset), scoringPose.heading).build(),
-                        slides.liftUp(),
-                        wrist.setPositionSmooth(Wrist.BASKET_POSITION_AUTO, 0.7),
+                        slides.liftUp(0.8),
+                        wrist.setPositionSmooth(Wrist.BASKET_POSITION, 0.7),
                         turnTable.setPositionSmooth(TurnTable.NEUTRAL_POS, 0.5)
                 ),
                 arm.setPositionSmooth(Arm.BASKET_POSITION),
@@ -125,7 +126,7 @@ public class SampleBasketAuto extends OpMode {
                         ),
                 new SleepAction(0.3),
                 manipulatorPickUp(),
-                scoreInBasket(1, 0)
+                scoreInBasket(1, -1)
         ));
     }
 
@@ -140,7 +141,7 @@ public class SampleBasketAuto extends OpMode {
                 ),
                 new SleepAction(0.3),
                 manipulatorPickUp(),
-                scoreInBasket(2, 2)
+                scoreInBasket(2, -3)
         ));
     }
 
@@ -173,9 +174,9 @@ public class SampleBasketAuto extends OpMode {
                 wrist.setPosition(0.5),
 
                 manipulatorPickUp(),
-                wrist.setPosition(Wrist.BASKET_POSITION_AUTO),
+                wrist.setPosition(Wrist.BASKET_POSITION),
 
-                scoreInBasket(-1, 2)
+                scoreInBasket(0, 0)
         ));
     }
 

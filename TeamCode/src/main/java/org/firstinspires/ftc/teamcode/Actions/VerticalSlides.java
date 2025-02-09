@@ -21,6 +21,9 @@ public class VerticalSlides {
     public static double BASKET_SCORING_POSITION = 2150;
     public static double DOWN_POSITION = 10;
 
+    public static double SPECIMEN_INTAKE = 650;
+    public static double SPECIMEN_OUTTAKE = 2200;
+
     public VerticalSlides(HardwareMap hardwareMap) {
         rightMotor = hardwareMap.get(DcMotorEx.class, "Right Vertical Slides");
         leftMotor = hardwareMap.get(DcMotorEx.class, "Left Vertical Slides");
@@ -31,34 +34,31 @@ public class VerticalSlides {
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        resetEncoders();
-
-
         power = 0.8;
     }
 
-    public Action setPosition(double targetPosition) {
-        return new Lift(targetPosition);
+    public Action setPosition(double targetPosition, double power) {
+        return new Lift(targetPosition, power);
     }
-    public Action liftUp() {
-        return new Lift(BASKET_SCORING_POSITION);
+
+    public Action liftUp(double power) {
+        return new Lift(BASKET_SCORING_POSITION, power);
     }
 
     public Action bringDown(double power) {
-        bringDownPower = power;
-        return new Lift(DOWN_POSITION);
+        return new Lift(DOWN_POSITION, power);
     }
 
     //TODO: Figure out way to smooth or whether we really need an intermediate lift up
     public Action intermediateLiftUp() {
-        return new Lift(INTERMEDIATE_POSITION);
+        return new Lift(INTERMEDIATE_POSITION, power);
     }
 
     public class Lift implements Action {
         private boolean initialized = false;
         private final double targetPosition;
 
-        public Lift(double targetPosition) {
+        public Lift(double targetPosition, double power) {
             this.targetPosition = targetPosition;
         }
 
@@ -71,8 +71,8 @@ public class VerticalSlides {
                 leftDirection = Math.signum(targetPosition - leftMotor.getCurrentPosition());
                 rightDirection = Math.signum(targetPosition - rightMotor.getCurrentPosition());
                 if (rightDirection == -1) {
-                    rightMotor.setPower(bringDownPower * rightDirection);
-                    leftMotor.setPower(bringDownPower * leftDirection);
+                    rightMotor.setPower(power * rightDirection);
+                    leftMotor.setPower(power * leftDirection);
                 }
                 else {
                     rightMotor.setPower(power * rightDirection);
