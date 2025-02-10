@@ -9,7 +9,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.Timer;
+import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config()
 public class SampleClaw {

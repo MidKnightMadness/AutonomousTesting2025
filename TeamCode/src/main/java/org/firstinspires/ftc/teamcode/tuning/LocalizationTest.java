@@ -6,29 +6,18 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
-import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
-import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
-import org.firstinspires.ftc.teamcode.Actions.Wrist;
 import org.firstinspires.ftc.teamcode.Drawing;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.TankDrive;
-import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 
 @TeleOp(name="LocalizationTest2")
 public class LocalizationTest extends LinearOpMode {
 
     IMU imuControl;
     IMU imuExpansion;
-
 
     @Override
     public void runOpMode() throws InterruptedException {

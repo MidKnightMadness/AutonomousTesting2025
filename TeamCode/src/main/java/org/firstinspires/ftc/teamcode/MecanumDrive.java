@@ -152,7 +152,6 @@ public final class MecanumDrive {
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
-
 //        localizer = new ThreeDeadWheelLocalizer(hardwareMap, lazyImu.get(),  PARAMS.inPerTick, pose);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
@@ -366,6 +365,7 @@ public final class MecanumDrive {
             c.fillCircle(turn.beginPose.position.x, turn.beginPose.position.y, 2);
         }
     }
+
     public final class FollowTrajectoryNoCorrection implements Action {
         public final TimeTrajectory timeTrajectory;
         private double beginTs = -1;

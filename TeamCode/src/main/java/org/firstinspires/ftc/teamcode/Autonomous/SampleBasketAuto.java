@@ -71,7 +71,7 @@ public class SampleBasketAuto extends OpMode {
                 new ParallelAction(
                         mecanumDrive.actionBuilder().strafeToSplineHeading(new Vector2d(scoringPose.position.x + xOffset, scoringPose.position.y + yOffset), scoringPose.heading).build(),
                         slides.liftUp(0.8),
-                        wrist.setPositionSmooth(Wrist.BASKET_POSITION, 0.7),
+                        wrist.setPosition(Wrist.BASKET_POSITION),
                         turnTable.setPositionSmooth(TurnTable.NEUTRAL_POS, 0.5)
                 ),
                 arm.setPositionSmooth(Arm.BASKET_POSITION),
@@ -84,7 +84,7 @@ public class SampleBasketAuto extends OpMode {
     public Action manipulatorPickUp() {
         return new SequentialAction(
                 new ParallelAction(
-//                        wrist.setPositionSmooth(Wrist.SAMPLE_LINE_POSITION_AUTO, 0.7),
+//                        wrist.setPosition(Wrist.SAMPLE_LINE_POSITION_AUTO),
                         arm.setPositionSmooth(Arm.SAMPLE_INTAKE),
                         sampleClaw.releaseAction(0)
                 ),
@@ -111,7 +111,7 @@ public class SampleBasketAuto extends OpMode {
                 //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
                 //slides might go down faster before drives out so arm to initial position
                 arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
-                wrist.setPositionSmooth(Wrist.SAMPLE_LINE_POSITION_AUTO, 0.7)
+                wrist.setPosition(Wrist.SAMPLE_LINE_POSITION_AUTO)
         );
     }
 
@@ -150,7 +150,7 @@ public class SampleBasketAuto extends OpMode {
                 new ParallelAction(
                         //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
                         //slides might go down faster before drives out so arm to initial position
-                        wrist.setPositionSmooth(Wrist.THIRD_SAMPLE, 0.5),
+                        wrist.setPosition(Wrist.THIRD_SAMPLE),
                         arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION)
                 ),
                 new ParallelAction(
@@ -160,7 +160,7 @@ public class SampleBasketAuto extends OpMode {
                                 .waitSeconds(0.5)
                                 .build(),
                         turnTable.setPositionSmooth(TurnTable.THIRD_SAMPLE_POS, 0.5),
-                        wrist.setPositionSmooth(Wrist.SAMPLE_LINE_POSITION_AUTO, 0.5),
+                        wrist.setPosition(Wrist.SAMPLE_LINE_POSITION_AUTO),
                         sampleClaw.setPosition(SampleClaw.GRAB_POSITION),
 
                         new SequentialAction(

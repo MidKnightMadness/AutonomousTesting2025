@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.Drawing;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
@@ -27,6 +28,7 @@ public class ServoBoundsSetter extends OpMode {
     Servo turnTable;
 
     MecanumDrive drive;
+    Timer timer;
 
     @Override
     public void init() {
@@ -40,7 +42,7 @@ public class ServoBoundsSetter extends OpMode {
         wristServo  = hardwareMap.get(Servo.class, "Wrist");
         turnTable = hardwareMap.get(Servo.class, "Turn Table");
 
-
+        timer = new Timer();
     }
 
     boolean manualControl = false;
@@ -108,15 +110,16 @@ public class ServoBoundsSetter extends OpMode {
             activeServo = "Specimen Claw";
         }
 
+        timer.updateTime();
 
         if (gamepad1.dpad_up) {
             manualControl = false;
-            servoPosition += 0.001;
+            servoPosition += 0.25 * timer.getDeltaTime();
         }
 
         else if (gamepad1.dpad_down) {
             manualControl = false;
-            servoPosition -= 0.001;
+            servoPosition -= 0.25 * timer.getDeltaTime();
         }
 
         else if(gamepad1.dpad_left){
@@ -131,7 +134,7 @@ public class ServoBoundsSetter extends OpMode {
             rightArmServo.setPosition(0.6);
         }
 
-        if(manualControl == false) {
+        if(!manualControl) {
             if (activeServo.equals("Left arm")) {
                 leftArmServo.setPosition((servoPosition));
             } else if (activeServo.equals("Right arm")) {
@@ -151,9 +154,6 @@ public class ServoBoundsSetter extends OpMode {
                 rightArmServo.setPosition(servoPosition);
             }
         }
-
-
-
 
         telemetry.addData("Dpad Right", gamepad1.dpad_right);
         telemetry.addData("Dpad Up", gamepad1.dpad_up);

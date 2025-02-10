@@ -9,15 +9,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Timer;
+import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config
 public class TurnTable {
-    //TODO: Fix whether want seperate positions in auto and teleop or same
     //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions
-
-
-    //AUTO:
 
     Timer timer;
     public static double RIGHT_BOUND = 0.086;
@@ -75,9 +71,6 @@ public class TurnTable {
 
             packet.addLine("Time: " + (timer.updateTime() - startTime));
 
-
-
-            //TODO: CHECK IF movement time = 0
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);

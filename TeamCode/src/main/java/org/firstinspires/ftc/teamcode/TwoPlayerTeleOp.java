@@ -19,8 +19,9 @@ import org.firstinspires.ftc.teamcode.Actions.SpecimenClaw;
 import org.firstinspires.ftc.teamcode.Actions.TurnTable;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
+import org.firstinspires.ftc.teamcode.Components.Timer;
 
-@TeleOp(name="TeleOp - Two Player")
+@TeleOp(name="TeleOp - Two Player", group="A")
 @Config
 public class TwoPlayerTeleOp extends OpMode {
     public static double STRAFE_ROTATION_FACTOR = 0.1; // add rotation while strafing to counteract uneven rotation

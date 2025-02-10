@@ -1,10 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Components;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 
 public class Timer {
-
     ElapsedTime elapsedTime;
     double previousTime;
     double currentTime;
@@ -22,8 +21,6 @@ public class Timer {
     public double getPreviousTime(){
         return previousTime;
     }
-
-
 
     public double updateTime(){
         currentTime = elapsedTime.time();

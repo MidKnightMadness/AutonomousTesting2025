@@ -8,28 +8,24 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.Timer;
+import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config
 public class Arm {
 
     public static double INIT_AUTO_POS = 0.07;
-    public static double END = 1;
-    public static double SAMPLE_INTAKE = 0.74; //set already
+    public static double SAMPLE_INTAKE = 0.74;
     public static double BASKET_POSITION = 0.42;
 
     public static double STRAIGHT_UP_POSITION = 0.30;
     public static double PERPENDICULAR = 0.69;
-
     public static double ARM_TO_BAR = 0.44;
 
-
-    public static double TIME_FULL_ROTATION = 2;
+    public static double TIME_FULL_ROTATION = 1;
 
     public Servo leftServo;
     public Servo rightServo;
     Timer timer;
-
 
     public Arm(HardwareMap hardwareMap) {
         leftServo = hardwareMap.get(Servo.class, "Arm Left");
