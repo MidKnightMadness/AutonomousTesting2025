@@ -35,7 +35,7 @@ public class Area {
     }
 
 
-    public Vector2d[] getArea() {
+    public Vector2d[] getAreaCoordinates() {
         return areaCoordinates;
     }
     public Pose2d getSamplePos(){

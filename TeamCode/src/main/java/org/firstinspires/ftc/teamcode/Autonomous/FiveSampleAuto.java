@@ -87,7 +87,8 @@ public class FiveSampleAuto extends OpMode {
     double gamepadInterval = 0.1;
     String mode = "Sample Pos";
 
-    Area area;
+    Area areaOne;
+    Area areaTwo;
 
     double xTolerence = 0;
     double yTolerence = 0;
@@ -115,12 +116,13 @@ public class FiveSampleAuto extends OpMode {
         }
 
 
+        double xChange = 0;
+        double yChange = 0;
+        double xToleranceChange = 0;
+        double yToleranceChange = 0;
+        double headingChange = 0;
 
         if(settingSubSampleNumber == 1 || settingSubSampleNumber == 2){
-            double xChange = 0;
-            double yChange = 0;
-            double xToleranceChange = 0;
-            double yToleranceChange = 0;
 
 
             if (gamepad1.dpad_up) {
@@ -132,7 +134,8 @@ public class FiveSampleAuto extends OpMode {
             } else if (gamepad1.dpad_down) {
                 yChange -= gamepadInterval;
             }
-            double headingChange = 0;
+            //TODO: Add heading change based off of gamepad
+
 
             if(gamepad1.left_stick_y > 0.2){
                 xToleranceChange += gamepad1.left_stick_y * gamepadInterval * timer.getDeltaTime();
@@ -146,17 +149,30 @@ public class FiveSampleAuto extends OpMode {
             if(mode.equals("Sample Pos")){//Change samplePosition based on dpad values
                 changeSamplePos(xChange, yChange, headingChange, settingSubSampleNumber);
                 if(settingSubSampleNumber == 1){
-                    area = new Area(subFirstSamplePose, xTolerence + xToleranceChange, yTolerence + yToleranceChange);
+                    areaOne = new Area(subFirstSamplePose, xTolerence + xToleranceChange, yTolerence + yToleranceChange);
                 }
                 else if(settingSubSampleNumber == 2){
-                    area = new Area(subFirstSamplePose, xTolerence + xToleranceChange, yTolerence + yToleranceChange);
+                    areaTwo = new Area(subSecondSamplePose, xTolerence + xToleranceChange, yTolerence + yToleranceChange);
                 }
             }
 
 
         }
 
-
+        telemetry.addLine("-------------------------------------------------");
+        telemetry.addData("Currently Editing Sample Pos", settingSubSampleNumber);
+        telemetry.addData("Mode", mode);
+        telemetry.addData("SubFirstSamplePose", subFirstSamplePose.toString());
+        telemetry.addData("SubSecondSamplePose", subSecondSamplePose.toString());
+        telemetry.addLine("-------------------------------------------------");
+        telemetry.addData("XChange", xChange);
+        telemetry.addData("YChange", yChange);
+        telemetry.addData("HeadingChange", headingChange);
+        telemetry.addData("XTolerenceChange", xToleranceChange);
+        telemetry.addData("YTolerenceChange", yToleranceChange);
+        telemetry.addLine("-------------------------------------------------");
+        telemetry.addData("Area One", areaOne.getAreaCoordinates().toString());
+        telemetry.addData("Area Two", areaTwo.getAreaCoordinates().toString());
 
     }
 
