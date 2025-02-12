@@ -23,8 +23,8 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 
 //Start at the left of the 2nd tile
 @Config
-@Autonomous(name = "SampleBasketAuto")
-public class SampleBasketAuto extends OpMode {
+@Autonomous(name = "FourSampleAuto")
+public class FourSampleAuto extends OpMode {
 
     public static Pose2d scoringPose = new Pose2d(new Vector2d(8.5, 25), Math.toRadians(130));
 
