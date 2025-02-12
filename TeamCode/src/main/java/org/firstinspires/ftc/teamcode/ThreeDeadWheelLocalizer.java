@@ -28,9 +28,9 @@ import org.firstinspires.ftc.teamcode.messages.ThreeDeadWheelInputsMessage;
 @Config
 public final class ThreeDeadWheelLocalizer implements Localizer {
     public static class Params {
-        public double par0YTicks = -2762.8104; // 138.874mm
-        public double par1YTicks = 2762.8104; // 138.874mm
-        public double perpXTicks = 850; // 33mm
+        public double par0YTicks = -2670.3024191349978; // 138.874mm
+        public double par1YTicks = 2818.6487656319737; // 138.874mm
+        public double perpXTicks = 258.7077891799051; // 33mm
     }
     public static Params PARAMS = new Params();
 

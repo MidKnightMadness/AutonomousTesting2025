@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SleepAction;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
 import org.firstinspires.ftc.teamcode.Actions.TurnTable;
 import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
+import org.firstinspires.ftc.teamcode.Components.EndEffectorPosition;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -104,6 +106,12 @@ public class SampleBasketAuto extends OpMode {
         secondLineSample();
         thirdLineSample();
 //        park();
+    }
+
+    public Action pickUpWithFeedback() {
+        return new SequentialAction(
+                new InstantAction(() -> EndEffectorPosition.updatePosition(slides, arm, wrist, turnTable))
+        );
     }
 
     public Action resetAfterScoring() {

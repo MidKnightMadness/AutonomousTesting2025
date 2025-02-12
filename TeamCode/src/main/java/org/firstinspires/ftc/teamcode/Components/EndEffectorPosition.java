@@ -4,11 +4,15 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Vector2d;
 
+import org.firstinspires.ftc.teamcode.Actions.Arm;
 import org.firstinspires.ftc.teamcode.Actions.TurnTable;
+import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Actions.Wrist;
 
 public class EndEffectorPosition {
     // values in inches
+    public static Pose2d endEffectorPosition;
+
     public static class RobotConstants {
         public static double ARM_LENGTH = 350.52 / 25.4;
         public static double WRIST_LENGTH = 68.65 / 25.4;
@@ -52,7 +56,7 @@ public class EndEffectorPosition {
         public static double IN_PER_TICK = WINCH_DIAMETER / TICKS_PER_REV;
     }
 
-    public Pose2d updatePosition(double slidesTicks, double armServoPosition, double wristServoPosition, double turnTableServoPosition) {
+    public static Pose2d updatePosition(double slidesTicks, double armServoPosition, double wristServoPosition, double turnTableServoPosition) {
         double armOrientation = (ArmConstants.SERVO_ZERO_POSITION - armServoPosition) * ArmConstants.ARM_RADIANS;
         double wristOrientation = (wristServoPosition - WristConstants.SERVO_ZERO_POSITION) * WristConstants.WRIST_RADIANS;
 
@@ -63,6 +67,15 @@ public class EndEffectorPosition {
                       RobotConstants.ARM_HEIGHT + Math.sin(armOrientation) * RobotConstants.ARM_LENGTH +
                       Math.sin(wristOrientation) * (RobotConstants.WRIST_LENGTH + RobotConstants.COLOR_SENSOR_THICKNESS);
 
-        return new Pose2d(posX, posY, wristOrientation);
+        endEffectorPosition = new Pose2d(posX, posY, wristOrientation);
+
+        return endEffectorPosition;
+    }
+
+    public static Pose2d updatePosition(VerticalSlides slides, Arm arm, Wrist wrist, TurnTable turntable) {
+        return updatePosition((slides.getLeftMotor().getCurrentPosition() + slides.getRightMotor().getCurrentPosition()) / 2d,
+                                arm.leftServo.getPosition(),
+                                wrist.servo.getPosition(),
+                                turntable.servo.getPosition());
     }
 }

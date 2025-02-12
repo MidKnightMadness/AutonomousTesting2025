@@ -65,7 +65,7 @@ public final class MecanumDrive {
         public double tickPerRev = 2000;
         public double inPerTick = 32 / 25.4 * Math.PI / tickPerRev;  // for dead wheel encoders
         public double lateralInPerTick = inPerTick;
-        public double trackWidthTicks = 6114;
+        public double trackWidthTicks = 6092.428200957173;
 
         // TODO: feedforward parameters (in tick units)
         public double kS = 1.0606485902050728;
