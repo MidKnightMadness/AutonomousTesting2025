@@ -92,8 +92,10 @@ public class TwoPlayerTeleOp extends OpMode {
             currentTime = timer.updateTime();
             updateRate = 1 / (currentTime - previousTime);
 
+            drive.updatePoseEstimate();
 
             Pose2d pose = drive.localizer.getPose();
+
 
             telemetry.addData("Update Rate", updateRate);
             telemetry.addData("Current Time", currentTime);
