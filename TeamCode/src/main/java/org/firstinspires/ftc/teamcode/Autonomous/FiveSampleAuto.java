@@ -5,14 +5,15 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Twist2d;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
-import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
-import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
-import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
+import org.firstinspires.ftc.teamcode.Actions.Arm;
+import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
+import org.firstinspires.ftc.teamcode.Actions.TurnTable;
+import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Actions.Wrist;
 import org.firstinspires.ftc.teamcode.Components.Area;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -20,6 +21,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 
 
 //Start at the left of the 2nd tile
@@ -31,6 +33,7 @@ public class FiveSampleAuto extends OpMode {
 
     public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 19.75, 17.5),Math.toRadians(0));
     public static Pose2d secondSamplePose = new Pose2d(new Vector2d(18.75, 27.25), Math.toRadians(0));
+    public static Pose2d thirdSampleIntermediate = new Pose2d(new Vector2d(22, 26), Math.toRadians(45));
     public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(23.5, 24.75), Math.toRadians(45));
 
     public static Pose2d parkingPose = new Pose2d(new Vector2d(60, -8), Math.toRadians(90));
@@ -39,9 +42,18 @@ public class FiveSampleAuto extends OpMode {
     public static Pose2d subFirstSamplePose = new Pose2d(new Vector2d(0,0), Math.toRadians(0));
     public static Pose2d subSecondSamplePose = new Pose2d(new Vector2d(0,0), Math.toRadians(0));
 
+
+    public double firstSubHeading = 0;
+    public double secondSubHeading = 0;
+
+    public boolean subOneFinalized;
+    public boolean subTwoFinalized;
+
+
     public static double initSlidesUpPos = 10;
     public static double firstSlidesUpPos = 100;
     public static double secondSlidesUpPos = 100;
+
 
     SampleClaw sampleClaw;
     Arm arm;
@@ -52,7 +64,13 @@ public class FiveSampleAuto extends OpMode {
 
     Pose2d startingPose = new Pose2d(0, 0,  Math.toRadians(90));
 
+    double armSpeedMultiplier = 1;
     Timer timer;
+    double currentTime;
+    double previousTime;
+    double deltaTime;
+    RevColorSensorV3 clawColorSensor;
+
 
     @Override
     public void init() {
@@ -69,7 +87,10 @@ public class FiveSampleAuto extends OpMode {
         turnTable.setInitPosition();
         slides.resetEncoders();
 
+        clawColorSensor = hardwareMap.get(RevColorSensorV3.class, "Claw Color Sensor");
+
         timer = new Timer();
+        currentTime = timer.updateTime();
     }
     double settingSubSampleNumber = 1;
 
@@ -83,16 +104,18 @@ public class FiveSampleAuto extends OpMode {
     double yTolerence = 0;
     @Override
     public void init_loop(){
-        timer.updateTime();
+        previousTime = currentTime;
+        currentTime = timer.updateTime();
+        deltaTime = currentTime - previousTime;
 
-        if(gamepad1.left_bumper){
-            if(mode.equals("Sample Pos")){
-                mode = "Rectangular coordinates";
-            }
-            else{
-                mode = "Sample Pos";
-            }
-        }
+//        if(gamepad1.left_bumper){
+//            if(mode.equals("Sample Pos")){
+//                mode = "Rectangular coordinates";
+//            }
+//            else{
+//                mode = "Sample Pos";
+//            }
+//        }
 
         if(gamepad1.left_bumper){//set 1st sub sample
             settingSubSampleNumber = 1;
@@ -109,7 +132,9 @@ public class FiveSampleAuto extends OpMode {
         double yToleranceChange = 0;
         double headingChange = 0;
 
+
         if(settingSubSampleNumber == 1 || settingSubSampleNumber == 2){
+
 
 
             if (gamepad1.dpad_up) {
@@ -123,7 +148,12 @@ public class FiveSampleAuto extends OpMode {
             }
             //TODO: Add heading change based off of gamepad
 
-
+            if(gamepad1.b){
+                headingChange += gamepadInterval;
+            }
+            else if(gamepad1.x){
+                headingChange -= gamepadInterval;
+            }
             if(gamepad1.left_stick_y > 0.2){
                 xToleranceChange += gamepad1.left_stick_y * gamepadInterval * timer.getDeltaTime();
             }
@@ -132,16 +162,27 @@ public class FiveSampleAuto extends OpMode {
             }
 
 
+            if(gamepad1.left_trigger > 0.5){
+                subOneFinalized = true;
+            }
+
+            if(gamepad1.right_trigger > 0.5){
+                subTwoFinalized = true;
+            }
 
             if(mode.equals("Sample Pos")){//Change samplePosition based on dpad values
                 changeSamplePos(xChange, yChange, headingChange, settingSubSampleNumber);
-                if(settingSubSampleNumber == 1){
+                if(settingSubSampleNumber == 1 && subOneFinalized == false){
+                    firstSubHeading += headingChange;
                     areaOne = new Area(subFirstSamplePose, xTolerence + xToleranceChange, yTolerence + yToleranceChange);
                 }
-                else if(settingSubSampleNumber == 2){
+                else if(settingSubSampleNumber == 2 && subTwoFinalized == false){
+                    secondSubHeading += headingChange;
                     areaTwo = new Area(subSecondSamplePose, xTolerence + xToleranceChange, yTolerence + yToleranceChange);
                 }
             }
+
+
 
 
         }
@@ -160,6 +201,10 @@ public class FiveSampleAuto extends OpMode {
         telemetry.addLine("-------------------------------------------------");
         telemetry.addData("Area One", areaOne.getAreaCoordinates().toString());
         telemetry.addData("Area Two", areaTwo.getAreaCoordinates().toString());
+        telemetry.addLine("-------------------------------------------------");
+        telemetry.addData("Sub One Finalized", subOneFinalized);
+        telemetry.addData("Sub One Finalized", subTwoFinalized);
+
 
     }
 
@@ -193,34 +238,33 @@ public class FiveSampleAuto extends OpMode {
     }
 
     public boolean changeSamplePos(double xChange, double yChange, double headingChange, double sampleNumber) {
-        Pose2d currentSubSampleNumber = null;
 
-        if(sampleNumber == 1) {
-            currentSubSampleNumber = subFirstSamplePose;
-        }
-        else if(sampleNumber == 2) {
-            currentSubSampleNumber = subSecondSamplePose;
-        }
-        else {
+
+        if(sampleNumber != 1 || sampleNumber != 2) {
             return false;
         }
 
 
 
-        currentSubSampleNumber.plus(new Twist2d(new Vector2d( xChange, yChange), headingChange));
+
 
         if(sampleNumber == 1) {
-            subFirstSamplePose.copy(currentSubSampleNumber.position, currentSubSampleNumber.heading);
+            subFirstSamplePose.plus(new Twist2d(new Vector2d( xChange, yChange), headingChange));
         }
         else{
-            subSecondSamplePose.copy(currentSubSampleNumber.position, currentSubSampleNumber.heading);
+            subSecondSamplePose.plus(new Twist2d(new Vector2d( xChange, yChange), headingChange));
         }
         return true;
     }
 
+    public Action subSampleSearch(Area area, double heading, double timeSearch){
+        //TODO: Create method and way to search the area with a given heading for the sample and a given amount of time allowed to search
+        return null;
+    }
 
 
-    public Action scoreInBasket(double xOffset, double yOffset) {//TODO: make sure it doesnt hit side wall when outaking sample
+
+    public Action scoreInBasket(double xOffset, double yOffset) {
         return new SequentialAction(
                 arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
                 new ParallelAction(
@@ -258,7 +302,16 @@ public class FiveSampleAuto extends OpMode {
         firstLineSample();
         secondLineSample();
         thirdLineSample();
-//        park();
+
+        if(timer.updateTime() < 18 && subOneFinalized) {
+            subSampleSearch(areaOne, firstSubHeading, 7);
+        }
+        if(timer.updateTime() < 23 && subTwoFinalized) {
+            subSampleSearch(areaTwo, secondSubHeading, 7);
+        }
+        if(timer.updateTime() < 27){
+            park();
+        }
     }
 
     public Action resetAfterScoring() {

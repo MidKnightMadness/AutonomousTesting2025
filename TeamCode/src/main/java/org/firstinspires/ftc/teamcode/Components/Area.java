@@ -16,12 +16,6 @@ public class Area {
     public Area(Pose2d samplePos, double xTolerance, double yTolerance){
         this.samplePos = samplePos;
 
-
-        areaCoordinates[0] = new Vector2d(samplePos.position.x - xTolerance, samplePos.position.y + yTolerance);
-        areaCoordinates[1] = new Vector2d(samplePos.position.x + xTolerance, samplePos.position.y + yTolerance);
-        areaCoordinates[2] = new Vector2d(samplePos.position.x - xTolerance, samplePos.position.y - yTolerance);
-        areaCoordinates[3] = new Vector2d(samplePos.position.x + xTolerance, samplePos.position.y - yTolerance);
-
         turnTableHeading = samplePos.heading;
     }
 
