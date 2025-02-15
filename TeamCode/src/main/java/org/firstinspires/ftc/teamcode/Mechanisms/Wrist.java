@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Actions;
+package org.firstinspires.ftc.teamcode.Mechanisms;
 
 import androidx.annotation.NonNull;
 
@@ -7,41 +7,51 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Components.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config
-public class TurnTable {
+public class Wrist {
+    //TODO: Fix whether want seperate positions in auto and teleop or same
     //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions
 
+
+    //AUTO:
+
     Timer timer;
-    public static double RIGHT_BOUND = 0.086;
-    public static double LEFT_BOUND = 0.81;
-    public static double THIRD_SAMPLE_POS = 0.28;
-    public static double NEUTRAL_POS = 0.475; //Parallel to odo left and rightwheels
+    public static double SAMPLE_LINE_POSITION_AUTO = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184)); // sample pickup in autonomous
+    public static double THIRD_SAMPLE = Kinematics.wristOrientationToPosition(Math.toRadians(-65)); // sample pickup in autonomous
+    public static double SAMPLE_SUB_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184));
+    public static double BASKET_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184));; // sample dropoff in basket(top basket) at certain arm position
+    public static double INIT_POSITION = 0.37;
+    public static double STRAIGHT_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(0));
+
+    public static double SPECIMEN_INTAKE_POSITION = 0.63; //specimen position
+    public static double SPECIMEN_OUTAKE_POSITION = 0;
 
     public Servo servo;
-    ElapsedTime elapsedTime;
 
-    public TurnTable(HardwareMap hardwareMap) {
-        servo = hardwareMap.get(Servo.class, "Turn Table");
-
+    public Wrist(HardwareMap hardwareMap) {
+        servo = hardwareMap.get(Servo.class, "Wrist");
         timer = new Timer();
     }
 
     public Action setPosition(double position) {
-        return new TurnTable.SetPosition(position);
+        return new Wrist.SetPosition(position);
     }
 
     public Action setPositionSmooth(double position, double movementTime){
-        return new TurnTable.SetPosition(position, movementTime);
+        return new Wrist.SetPosition(position, movementTime);
     }
 
     public void setInitPosition() {
-        servo.setPosition(LEFT_BOUND);
+        servo.setPosition(INIT_POSITION);
     }
 
+    public void setPositionDirect(double position) {
+        servo.setPosition(position);
+    }
 
     public class SetPosition implements Action {
         private final double targetPosition;
@@ -70,6 +80,7 @@ public class TurnTable {
             }
 
             packet.addLine("Time: " + (timer.updateTime() - startTime));
+
 
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Actions;
+package org.firstinspires.ftc.teamcode.Mechanisms;
 
 import androidx.annotation.NonNull;
 
@@ -15,13 +15,13 @@ public class Arm {
 
     public static double INIT_AUTO_POS = 0.07;
     public static double SAMPLE_INTAKE = 0.74;
-    public static double BASKET_POSITION = 0.42;
+    public static double BASKET_POSITION = 0.40;
 
     public static double STRAIGHT_UP_POSITION = 0.30;
-    public static double PERPENDICULAR = 0.69;
+    public static double PERPENDICULAR = 0.631;
     public static double ARM_TO_BAR = 0.44;
 
-    public static double TIME_FULL_ROTATION = 1;
+    public static double TIME_FULL_ROTATION = 2;
 
     public Servo leftServo;
     public Servo rightServo;
@@ -53,6 +53,12 @@ public class Arm {
     public Action setPosition(double position){
         lastSetPosition = position;
         return new SetPosition(position);
+    }
+
+    public void setPositionDirect(double position) {
+        lastSetPosition = position;
+        leftServo.setPosition(position);
+        rightServo.setPosition(position);
     }
 
     public void setInitPosition() {

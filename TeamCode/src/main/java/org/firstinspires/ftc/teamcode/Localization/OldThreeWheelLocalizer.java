@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Localization;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
@@ -9,7 +9,6 @@ import com.acmerobotics.roadrunner.Twist2dDual;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.Vector2dDual;
 import com.acmerobotics.roadrunner.ftc.Encoder;
-import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
@@ -17,14 +16,12 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.messages.ThreeDeadWheelInputsMessage;
-
 @Config
-public final class ThreeDeadWheelLocalizer implements Localizer {
+public final class OldThreeWheelLocalizer implements Localizer {
     public static class Params {
-        public double par0YTicks = -2670.302419; // y position of the first parallel encoder (in tick units)
-        public double par1YTicks = 2818.6487; // y position of the second parallel encoder (in tick units)
-        public double perpXTicks = 258.7077; // x position of the perpendicular encoder (in tick units)
+        public double par0YTicks = ThreeDeadWheelLocalizer.PARAMS.par0YTicks; // 139.1662678093mm
+        public double par1YTicks = ThreeDeadWheelLocalizer.PARAMS.par1YTicks; // 138.874mm
+        public double perpXTicks = ThreeDeadWheelLocalizer.PARAMS.perpXTicks; // 33mm
     }
 
     public static Params PARAMS = new Params();
@@ -37,10 +34,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
     private boolean initialized;
     private Pose2d pose;
 
-    public ThreeDeadWheelLocalizer(HardwareMap hardwareMap, double inPerTick, Pose2d initialPose) {
-        // TODO: make sure your config has **motors** with these names (or change them)
-        //   the encoders should be plugged into the slot matching the named motor
-        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
+    public OldThreeWheelLocalizer(HardwareMap hardwareMap, double inPerTick, Pose2d initialPose) {
         par0 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "Left Encoder")));
         par1 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "FR")));
         perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "Front Encoder")));
@@ -48,8 +42,6 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         par0.setDirection(DcMotorSimple.Direction.REVERSE);
 
         this.inPerTick = inPerTick;
-
-        FlightRecorder.write("THREE_DEAD_WHEEL_PARAMS", PARAMS);
 
         pose = initialPose;
     }
@@ -70,7 +62,7 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         PositionVelocityPair par1PosVel = par1.getPositionAndVelocity();
         PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
 
-        FlightRecorder.write("THREE_DEAD_WHEEL_INPUTS", new ThreeDeadWheelInputsMessage(par0PosVel, par1PosVel, perpPosVel));
+        // FlightRecorder.write("THREE_DEAD_WHEEL_INPUTS", new ThreeDeadWheelInputsMessage(par0PosVel, par1PosVel, perpPosVel));
 
         if (!initialized) {
             initialized = true;

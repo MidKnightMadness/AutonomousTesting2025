@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Localization;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.DualNum;
@@ -10,28 +10,28 @@ import com.acmerobotics.roadrunner.Twist2dDual;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.Vector2dDual;
 import com.acmerobotics.roadrunner.ftc.Encoder;
-import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.messages.ThreeDeadWheelInputsMessage;
 
 @Config
 public final class ThreeDeadWheelIMULocalizer implements Localizer {
     public static class Params {
-        public double par0YTicks = -2670.302419; // 138.874mm
-        public double par1YTicks = 2818.6487; // 138.874mm
-        public double perpXTicks = 258.7077; // 33mm
+        public double par0YTicks = ThreeDeadWheelLocalizer.PARAMS.par0YTicks; // 138.874mm
+        public double par1YTicks = ThreeDeadWheelLocalizer.PARAMS.par1YTicks; // 138.874mm
+        public double perpXTicks = ThreeDeadWheelLocalizer.PARAMS.perpXTicks; // 33mm
     }
+
     public static Params PARAMS = new Params();
 
     public final Encoder par0, par1, perp;
@@ -41,16 +41,13 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
     private int lastPar0Pos, lastPar1Pos, lastPerpPos;
     private boolean initialized;
 
-    public final IMU imu;
+    public final BNO055IMU imu;
     private Rotation2d lastHeading;
     private double lastRawHeadingVel, headingVelOffset;
 
     private Pose2d pose;
 
-    public ThreeDeadWheelIMULocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick, Pose2d pose) {
-        // TODO: make sure your config has **motors** with these names (or change them)
-        //   the encoders should be plugged into the slot matching the named motor
-        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
+    public ThreeDeadWheelIMULocalizer(HardwareMap hardwareMap, BNO055IMU imu, double inPerTick, Pose2d pose) {
         par0 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "Left Encoder")));
         par1 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "FR")));
         perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "Front Encoder")));
@@ -60,7 +57,7 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
         this.inPerTick = inPerTick;
         this.imu = imu;
 
-        FlightRecorder.write("THREE_DEAD_WHEEL_IMU_PARAMS", PARAMS);
+//        FlightRecorder.write("THREE_DEAD_WHEEL_IMU_PARAMS", PARAMS);
 
         this.pose = pose;
     }
@@ -93,20 +90,18 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
         PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
 
 
-        FlightRecorder.write("THREE_DEAD_WHEEL_INPUTS", new ThreeDeadWheelInputsMessage(par0PosVel, par1PosVel, perpPosVel));
+        // FlightRecorder.write("THREE_DEAD_WHEEL_IMU_INPUTS", new ThreeDeadWheelInputsMessage(par0PosVel, par1PosVel, perpPosVel));
 
-        YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
-
-        AngularVelocity angularVelocityDegrees = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
+        AngularVelocity angularVelocityDegrees = imu.getAngularVelocity();
         AngularVelocity angularVelocity = new AngularVelocity(
                 UnnormalizedAngleUnit.RADIANS,
-                (float) Math.toRadians(angularVelocityDegrees.xRotationRate),
-                (float) Math.toRadians(angularVelocityDegrees.yRotationRate),
-                (float) Math.toRadians(angularVelocityDegrees.zRotationRate),
+                angularVelocityDegrees.xRotationRate,
+                angularVelocityDegrees.yRotationRate,
+                angularVelocityDegrees.zRotationRate,
                 angularVelocityDegrees.acquisitionTime
         );
 
-        Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
+        Rotation2d heading = Rotation2d.exp(imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
 
         // see https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/617
         double rawHeadingVel = angularVelocity.zRotationRate;
@@ -156,16 +151,11 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
         lastPerpPos = perpPosVel.position;
 
         lastHeading = heading;
-
         pose = pose.plus(twist.value());
-//
+
 //        pose = new Pose2d(new Vector2d(pose.position.x + (PARAMS.par0YTicks * par1PosDelta - PARAMS.par1YTicks * par0PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks) * inPerTick,
 //                pose.position.y + (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosDelta - par0PosDelta) + perpPosDelta) * inPerTick)
 //                , headingDelta);
-
-
-
-//        pose = new Pose2d(new Vector2d(lastPar0Pos, lastPar1Pos), lastPerpPos);  // see individual ticks
 
         return twist.velocity().value();
 

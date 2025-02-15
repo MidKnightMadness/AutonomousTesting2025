@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.annotation.SuppressLint;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -13,12 +15,13 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
-import org.firstinspires.ftc.teamcode.Actions.SpecimenClaw;
-import org.firstinspires.ftc.teamcode.Actions.TurnTable;
-import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
-import org.firstinspires.ftc.teamcode.Actions.Wrist;
+import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
+import org.firstinspires.ftc.teamcode.Mechanisms.SpecimenClaw;
+import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
+import org.firstinspires.ftc.teamcode.Components.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @TeleOp(name="TeleOp - Two Player", group="A")
@@ -83,6 +86,7 @@ public class TwoPlayerTeleOp extends OpMode {
     TelemetryPacket packet = new TelemetryPacket();
 
     double power = 1;
+    @SuppressLint("DefaultLocale")
     @Override
     public void loop(){
             gamepad1Controls();
@@ -92,10 +96,16 @@ public class TwoPlayerTeleOp extends OpMode {
             currentTime = timer.updateTime();
             updateRate = 1 / (currentTime - previousTime);
 
-            drive.updatePoseEstimate();
+            PoseVelocity2d vel = drive.updatePoseEstimate();
 
             Pose2d pose = drive.localizer.getPose();
 
+            Kinematics.updatePosition(slides, arm, wrist, turnTable);
+            Pose2d endEffectorPose = Kinematics.endEffectorPosition;
+
+
+            telemetry.addData("End effector pose", String.format("(%f, %f)", endEffectorPose.position.x, endEffectorPose.position.y));
+            telemetry.addData("End effector rotation", Math.toDegrees(endEffectorPose.heading.toDouble()));
 
             telemetry.addData("Update Rate", updateRate);
             telemetry.addData("Current Time", currentTime);
@@ -105,6 +115,7 @@ public class TwoPlayerTeleOp extends OpMode {
             telemetry.addData("x", pose.position.x);
             telemetry.addData("y", pose.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+            telemetry.addData("velocity (translational)", Math.sqrt(vel.linearVel.x * vel.linearVel.x + vel.linearVel.y * vel.linearVel.y));
 
             telemetry.addLine("-----------Servo Positions -----------");
             telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
@@ -115,10 +126,6 @@ public class TwoPlayerTeleOp extends OpMode {
             telemetry.addData("Turntable Wrist Pos", turnTable.servo.getPosition());
 
             telemetry.addData("Is Arm Running", inArmAction);
-            telemetry.addLine("-----------Gamepad Values -----------");
-            telemetry.addData("Gamepad 2 left stick x", gamepad2.left_stick_x);
-            telemetry.addData("Gamepad 2 Right Stick y", gamepad2.right_stick_y);
-            telemetry.addData("Right stick x", gamepad1.right_stick_x);
             telemetry.addData("Right motor pos", slides.getRightMotor().getCurrentPosition());
             telemetry.addData("Left motor pos", slides.getLeftMotor().getCurrentPosition());
 
@@ -149,6 +156,11 @@ public class TwoPlayerTeleOp extends OpMode {
             while (true) {
                 slides.getLeftMotor().setPower(-gamepad1.left_trigger);
                 slides.getRightMotor().setPower(-gamepad1.left_trigger);
+
+                if (gamepad1.y && gamepad1.a) {
+                    slides.getLeftMotor().setPower(-0.1);
+                    slides.getRightMotor().setPower(-0.1);
+                }
             }
         }
 

@@ -22,9 +22,10 @@ import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
 import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
-import com.acmerobotics.roadrunner.ftc.FlightRecorder;
 import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -33,6 +34,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+import org.firstinspires.ftc.teamcode.Localization.Localizer;
+import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelIMULocalizer;
+import org.firstinspires.ftc.teamcode.messages.Drawing;
 import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.PoseMessage;
@@ -55,11 +59,11 @@ public final class MecanumDrive {
         public double tickPerRev = 2000;
         public double inPerTick = 32 / 25.4 * Math.PI / tickPerRev;  // for dead wheel encoders
         public double lateralInPerTick = inPerTick;
-        public double trackWidthTicks = 5905.26;
+        public double trackWidthTicks = 6134.355708484638;
 
         // TODO: feedforward parameters (in tick units)
-        public double kS = 1.0606485902050728;
-        public double kV = 0.0002788443462801018;
+        public double kS = 1.4899765990532745;
+        public double kV = 0.0002607849072569287;
         public double kA = 0.000005;
 
         // TODO: path profile parameters (in inches)
@@ -103,7 +107,6 @@ public final class MecanumDrive {
 
     public final VoltageSensor voltageSensor;
 
-    public final LazyImu lazyImu;
 
     public final Localizer localizer;
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
@@ -112,6 +115,9 @@ public final class MecanumDrive {
     private final DownsampledWriter targetPoseWriter = new DownsampledWriter("TARGET_POSE", 50_000_000);
     private final DownsampledWriter driveCommandWriter = new DownsampledWriter("DRIVE_COMMAND", 50_000_000);
     private final DownsampledWriter mecanumCommandWriter = new DownsampledWriter("MECANUM_COMMAND", 50_000_000);
+
+    BNO055IMU imuExpansion;
+    public final LazyImu lazyImu;
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
@@ -136,19 +142,27 @@ public final class MecanumDrive {
 //        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
 //        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        lazyImu = new LazyImu(hardwareMap, "imuControl", new RevHubOrientationOnRobot(
-                PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
-
-        lazyImu.get().resetYaw();
-
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
 //        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
-        localizer = new ThreeDeadWheelIMULocalizer(hardwareMap, lazyImu.get(),  PARAMS.inPerTick, pose);
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.RADIANS;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample OpMode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
+        imuExpansion = hardwareMap.get(BNO055IMU.class, "imuExpansion");
+        imuExpansion.initialize(parameters);
 
-        FlightRecorder.write("MECANUM_PARAMS", PARAMS);
+        localizer = new ThreeDeadWheelIMULocalizer(hardwareMap, imuExpansion, PARAMS.inPerTick, pose);
+
+        lazyImu = new LazyImu(hardwareMap, "imuControl", new RevHubOrientationOnRobot(
+                PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
+
+//        FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
 
     public void setDrivePowers(PoseVelocity2d powers) {

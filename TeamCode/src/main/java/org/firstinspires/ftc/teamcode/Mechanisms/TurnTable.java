@@ -1,57 +1,46 @@
-package org.firstinspires.ftc.teamcode.Actions;
+package org.firstinspires.ftc.teamcode.Mechanisms;
 
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config
-public class SpecimenClaw {
-    final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
-    public static double RELEASE_POSITION = 0.55;
-    public static double GRAB_POSITION = 0.32;
+public class TurnTable {
+    //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions
 
+    Timer timer;
+    public static double RIGHT_BOUND = 0.086;
+    public static double LEFT_BOUND = 0.81;
+    public static double THIRD_SAMPLE_POS = 0.28;
+    public static double NEUTRAL_POS = 0.475; //Parallel to odo left and rightwheels
 
     public Servo servo;
-    Timer timer;
+    ElapsedTime elapsedTime;
 
-    public SpecimenClaw(HardwareMap hardwareMap) {
-        servo = hardwareMap.get(Servo.class, "Specimen Claw");
+    public TurnTable(HardwareMap hardwareMap) {
+        servo = hardwareMap.get(Servo.class, "Turn Table");
+
         timer = new Timer();
     }
 
-
-    public Action grabAction(double waitTime) {
-        return new SetPosition(GRAB_POSITION, waitTime);
-    }
-
-    public void grab() {
-        servo.setPosition(GRAB_POSITION);
-    }
-
-    public Action releaseAction(double waitTime) {
-        return new SetPosition(RELEASE_POSITION, waitTime);
-    }
-
-    public void release() {
-        servo.setPosition(RELEASE_POSITION);
-    }
-
-
-    public Action setPositionSmooth(double position, double movementTime) {
-        return new SetPosition(position, movementTime);
-    }
     public Action setPosition(double position) {
-        return new SetPosition(position);
+        return new TurnTable.SetPosition(position);
     }
 
+    public Action setPositionSmooth(double position, double movementTime){
+        return new TurnTable.SetPosition(position, movementTime);
+    }
 
+    public void setInitPosition() {
+        servo.setPosition(LEFT_BOUND);
+    }
 
 
     public class SetPosition implements Action {
@@ -82,9 +71,6 @@ public class SpecimenClaw {
 
             packet.addLine("Time: " + (timer.updateTime() - startTime));
 
-
-
-            //TODO: CHECK IF movement time = 0
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
@@ -102,6 +88,4 @@ public class SpecimenClaw {
             }
         }
     }
-
-
 }

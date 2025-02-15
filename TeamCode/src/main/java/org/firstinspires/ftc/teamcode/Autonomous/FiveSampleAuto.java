@@ -8,11 +8,11 @@ import com.acmerobotics.roadrunner.Twist2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
-import org.firstinspires.ftc.teamcode.Actions.TurnTable;
-import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
-import org.firstinspires.ftc.teamcode.Actions.Wrist;
+import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
+import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Components.Area;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -31,7 +31,6 @@ public class FiveSampleAuto extends OpMode {
 
     public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 19.75, 17.5),Math.toRadians(0));
     public static Pose2d secondSamplePose = new Pose2d(new Vector2d(18.75, 27.25), Math.toRadians(0));
-    public static Pose2d thirdSampleIntermediate = new Pose2d(new Vector2d(22, 26), Math.toRadians(45));
     public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(23.5, 24.75), Math.toRadians(45));
 
     public static Pose2d parkingPose = new Pose2d(new Vector2d(60, -8), Math.toRadians(90));
@@ -40,12 +39,9 @@ public class FiveSampleAuto extends OpMode {
     public static Pose2d subFirstSamplePose = new Pose2d(new Vector2d(0,0), Math.toRadians(0));
     public static Pose2d subSecondSamplePose = new Pose2d(new Vector2d(0,0), Math.toRadians(0));
 
-
-
     public static double initSlidesUpPos = 10;
     public static double firstSlidesUpPos = 100;
     public static double secondSlidesUpPos = 100;
-
 
     SampleClaw sampleClaw;
     Arm arm;
@@ -56,12 +52,7 @@ public class FiveSampleAuto extends OpMode {
 
     Pose2d startingPose = new Pose2d(0, 0,  Math.toRadians(90));
 
-    double armSpeedMultiplier = 1;
     Timer timer;
-    double currentTime;
-    double previousTime;
-    double deltaTime;
-
 
     @Override
     public void init() {
@@ -78,9 +69,7 @@ public class FiveSampleAuto extends OpMode {
         turnTable.setInitPosition();
         slides.resetEncoders();
 
-
         timer = new Timer();
-        currentTime = timer.updateTime();
     }
     double settingSubSampleNumber = 1;
 
@@ -94,9 +83,7 @@ public class FiveSampleAuto extends OpMode {
     double yTolerence = 0;
     @Override
     public void init_loop(){
-        previousTime = currentTime;
-        currentTime = timer.updateTime();
-        deltaTime = currentTime - previousTime;
+        timer.updateTime();
 
         if(gamepad1.left_bumper){
             if(mode.equals("Sample Pos")){

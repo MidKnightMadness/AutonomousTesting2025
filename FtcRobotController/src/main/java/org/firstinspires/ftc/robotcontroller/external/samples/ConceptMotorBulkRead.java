@@ -205,14 +205,14 @@ public class ConceptMotorBulkRead extends LinearOpMode {
             v4 = m4.getVelocity();
 
             // Put Control loop action code here.
-
         }
+
         // calculate the average cycle time.
         t3 = timer.milliseconds() / cycles;
         displayCycleTimes("Complete");
 
         // wait until op-mode is stopped by user, before clearing display.
-        while (opModeIsActive()) ;
+        while (opModeIsActive());
     }
 
     // Display three comparison times.
