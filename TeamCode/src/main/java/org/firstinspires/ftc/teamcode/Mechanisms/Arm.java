@@ -25,6 +25,8 @@ public class Arm {
 
     public Servo leftServo;
     public Servo rightServo;
+
+    double lastSetPosition = Arm.INIT_AUTO_POS;
     Timer timer;
 
     public Arm(HardwareMap hardwareMap) {
@@ -33,15 +35,10 @@ public class Arm {
         timer = new Timer();
     }
 
-    boolean smooth = false;
-    double interval = 0.05;
-    //Still being used:
     public Action setPositionSmooth(double position, double movementTime) {
         lastSetPosition = position;
         return new SetPosition(position, movementTime);
     }
-
-    double lastSetPosition = Arm.INIT_AUTO_POS;
 
     public Action setPositionSmooth(double position){
         double lastPos = lastSetPosition;
@@ -66,7 +63,6 @@ public class Arm {
         leftServo.setPosition(Arm.INIT_AUTO_POS);
         rightServo.setPosition(Arm.INIT_AUTO_POS);
     }
-
 
     public class SetPosition implements Action {
         private final double targetPosition;
@@ -94,15 +90,10 @@ public class Arm {
                 initialized = true;
             }
 
-            packet.addLine("Time: " + (timer.updateTime() - startTime));
-
-
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = (Math.min(1, timeSinceStart / movementTime));  // square root curve movement
                 double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
-
-                packet.addLine("Position " + intermediatePoint);
 
                 leftServo.setPosition(intermediatePoint);
                 rightServo.setPosition(intermediatePoint);
@@ -122,6 +113,4 @@ public class Arm {
             }
         }
     }
-
-
 }

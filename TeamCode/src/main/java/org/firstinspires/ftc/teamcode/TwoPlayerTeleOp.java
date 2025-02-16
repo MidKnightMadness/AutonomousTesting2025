@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.annotation.SuppressLint;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -12,6 +10,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -23,6 +22,8 @@ import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Components.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
+
+import java.util.List;
 
 @TeleOp(name="TeleOp - Two Player", group="A")
 @Config
@@ -52,13 +53,11 @@ public class TwoPlayerTeleOp extends OpMode {
     FtcDashboard dash = FtcDashboard.getInstance();
 
     MecanumDrive drive;
-    double currentTime;
-    double previousTime;
-    double startTime;
-    double updateRate;
 
     Action armAction;
 
+    List<LynxModule> allHubs;
+    TelemetryPacket packet = new TelemetryPacket();
 
     @Override
     public void init() {
@@ -74,62 +73,70 @@ public class TwoPlayerTeleOp extends OpMode {
         clawClosed = true;
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
+        if (RunOptions.useBulkReads) {
+            allHubs = hardwareMap.getAll(LynxModule.class);
+
+            for (LynxModule module : allHubs) {
+                module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+            }
+        }
+    }
+
+    @Override
+    public void start() {
         turnTable.servo.setPosition(TurnTable.NEUTRAL_POS);
         arm.leftServo.setPosition(Arm.STRAIGHT_UP_POSITION);
         arm.rightServo.setPosition(Arm.STRAIGHT_UP_POSITION);
         wrist.servo.setPosition(Wrist.BASKET_POSITION);
-
-        startTime = timer.updateTime();
-        previousTime = 0;
-
+        timer.updateTime();
     }
-    TelemetryPacket packet = new TelemetryPacket();
 
-    double power = 1;
-    @SuppressLint("DefaultLocale")
+    double drivingPower = 1;
     @Override
     public void loop(){
+            if (RunOptions.useBulkReads) {
+                for (LynxModule module : allHubs) {
+                    module.clearBulkCache();
+                }
+            }
+
             gamepad1Controls();
             gamepad2Controls();
 
-            previousTime = currentTime;
-            currentTime = timer.updateTime();
-            updateRate = 1 / (currentTime - previousTime);
 
             PoseVelocity2d vel = drive.updatePoseEstimate();
-
             Pose2d pose = drive.localizer.getPose();
 
-            Kinematics.updatePosition(slides, arm, wrist, turnTable);
-            Pose2d endEffectorPose = Kinematics.endEffectorPosition;
+            telemetry.addData("Update Rate (Hz)", 1 / timer.getDeltaTime());
 
+            if (RunOptions.enableTelemetry) {
+                Kinematics.updatePosition(slides, arm, wrist, turnTable);
+                Pose2d endEffectorPose = Kinematics.endEffectorPosition;
 
-            telemetry.addData("End effector pose", String.format("(%f, %f)", endEffectorPose.position.x, endEffectorPose.position.y));
-            telemetry.addData("End effector rotation", Math.toDegrees(endEffectorPose.heading.toDouble()));
+                telemetry.addData("End effector pose", String.format("(%f, %f)", endEffectorPose.position.x, endEffectorPose.position.y));
+                telemetry.addData("End effector rotation", Math.toDegrees(endEffectorPose.heading.toDouble()));
 
-            telemetry.addData("Update Rate", updateRate);
-            telemetry.addData("Current Time", currentTime);
+                telemetry.addLine("-----------Robot Values -----------");
 
-            telemetry.addLine("-----------Robot Values -----------");
+                telemetry.addData("x", pose.position.x);
+                telemetry.addData("y", pose.position.y);
+                telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+                telemetry.addData("velocity (translational)", Math.sqrt(vel.linearVel.x * vel.linearVel.x + vel.linearVel.y * vel.linearVel.y));
 
-            telemetry.addData("x", pose.position.x);
-            telemetry.addData("y", pose.position.y);
-            telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
-            telemetry.addData("velocity (translational)", Math.sqrt(vel.linearVel.x * vel.linearVel.x + vel.linearVel.y * vel.linearVel.y));
+                telemetry.addLine("-----------Servo Positions -----------");
+                telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
+                telemetry.addData("Arm Right Pos", arm.rightServo.getPosition());
+                telemetry.addData("Wrist Pos", wrist.servo.getPosition());
+                telemetry.addData("Sample Claw Pos", sampleClaw.servo.getPosition());
+                telemetry.addData("Specimen Claw Pos", specimenClaw.servo.getPosition());
+                telemetry.addData("Turntable Wrist Pos", turnTable.servo.getPosition());
 
-            telemetry.addLine("-----------Servo Positions -----------");
-            telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
-            telemetry.addData("Arm Right Pos", arm.rightServo.getPosition());
-            telemetry.addData("Wrist Pos", wrist.servo.getPosition());
-            telemetry.addData("Sample Claw Pos", sampleClaw.servo.getPosition());
-            telemetry.addData("Specimen Claw Pos", specimenClaw.servo.getPosition());
-            telemetry.addData("Turntable Wrist Pos", turnTable.servo.getPosition());
+                telemetry.addData("Is Arm Running", inArmAction);
+                telemetry.addData("Right motor pos", slides.getRightMotor().getCurrentPosition());
+                telemetry.addData("Left motor pos", slides.getLeftMotor().getCurrentPosition());
 
-            telemetry.addData("Is Arm Running", inArmAction);
-            telemetry.addData("Right motor pos", slides.getRightMotor().getCurrentPosition());
-            telemetry.addData("Left motor pos", slides.getLeftMotor().getCurrentPosition());
-
-            telemetry.update();
+                telemetry.update();
+            }
     }
 
     public void runSlideControls() {
@@ -158,8 +165,11 @@ public class TwoPlayerTeleOp extends OpMode {
                 slides.getRightMotor().setPower(-gamepad1.left_trigger);
 
                 if (gamepad1.y && gamepad1.a) {
-                    slides.getLeftMotor().setPower(-0.1);
-                    slides.getRightMotor().setPower(-0.1);
+                    while (true) {
+                        slides.getLeftMotor().setPower(-0.1);
+                        slides.getRightMotor().setPower(-0.1);
+                    }
+
                 }
             }
         }
@@ -169,23 +179,21 @@ public class TwoPlayerTeleOp extends OpMode {
     public void gamepad1Controls(){
 
         if (gamepad1.x) {
-            power = 0.5;
+            drivingPower = 0.5;
         }
         else {
-            power = 1;
+            drivingPower = 1;
         }
 
         drive.setDrivePowers(new PoseVelocity2d(
                 new Vector2d(
-                        -gamepad1.left_stick_x * power,
-                        -gamepad1.left_stick_y * power
+                        -gamepad1.left_stick_x * drivingPower,
+                        -gamepad1.left_stick_y * drivingPower
                 ),
-                (-gamepad1.right_stick_x * rotationFactor + gamepad1.left_stick_x * STRAFE_ROTATION_FACTOR) * power
+                (-gamepad1.right_stick_x * rotationFactor + gamepad1.left_stick_x * STRAFE_ROTATION_FACTOR) * drivingPower
         ));
 
         runSlideControls();
-
-
 
         double turnTableDirection = 1;
         if (gamepad1.right_bumper) {
@@ -206,7 +214,6 @@ public class TwoPlayerTeleOp extends OpMode {
         }
     }
 
-
     public Action scoreInBasket() {
         drive.localizer.setPose(new Pose2d(new Vector2d(0, 0), Math.toRadians(-90)));
 
@@ -226,8 +233,6 @@ public class TwoPlayerTeleOp extends OpMode {
         );
     }
 
-
-    //TODO: Redefine coordinates for gotoSub from basket
     public Action goToSub(){
         drive.localizer.setPose(new Pose2d(new Vector2d(0, 0), Math.toRadians(-225)));
 
@@ -237,7 +242,7 @@ public class TwoPlayerTeleOp extends OpMode {
                         drive.actionBuilderNoCorrection().strafeToLinearHeading(basketTrajectoryIntermediate, Math.toRadians(-225)).build(),
                         slides.bringDown(0.6),
                         turnTable.setPosition(TurnTable.NEUTRAL_POS),
-                        wrist.setPosition(Wrist.SAMPLE_SUB_POSITION)
+                        wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
                 ),
                 arm.setPositionSmooth(Arm.SAMPLE_INTAKE, 0.5),
                 new ParallelAction(
@@ -289,7 +294,6 @@ public class TwoPlayerTeleOp extends OpMode {
             }
         }
 
-
         runWristControls();
         runArmControls();
     }
@@ -304,7 +308,6 @@ public class TwoPlayerTeleOp extends OpMode {
             wrist.servo.setPosition(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
         }
     }
-
 
     public void runArmControls() {
         if (inArmAction) {

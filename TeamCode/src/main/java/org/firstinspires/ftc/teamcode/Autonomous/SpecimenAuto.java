@@ -23,13 +23,10 @@ public class SpecimenAuto extends OpMode {
 
     MecanumDrive mecanumDrive;
 
-
-
     RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
     RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
     RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
     Pose2d startingPose = new Pose2d(0, 0, 0);
-
 
     @Override
     public void init() {

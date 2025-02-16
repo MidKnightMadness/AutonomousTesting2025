@@ -70,23 +70,15 @@ public class VerticalSlides {
             if (!initialized) {
                 leftDirection = Math.signum(targetPosition - leftMotor.getCurrentPosition());
                 rightDirection = Math.signum(targetPosition - rightMotor.getCurrentPosition());
-                if (rightDirection == -1) {
-                    rightMotor.setPower(power * rightDirection);
-                    leftMotor.setPower(power * leftDirection);
-                }
-                else {
-                    rightMotor.setPower(power * rightDirection);
-                    leftMotor.setPower(power * leftDirection);
-                }
+
+                rightMotor.setPower(power * rightDirection);
+                leftMotor.setPower(power * leftDirection);
 
                 initialized = true;
             }
 
             double leftPos = leftMotor.getCurrentPosition();
             double rightPos = rightMotor.getCurrentPosition();
-
-            packet.put("leftLiftPosition", leftPos);
-            packet.put("rightLiftPosition", rightPos);
 
             boolean leftCompleted = leftDirection == 1 ? (leftPos > targetPosition) : (leftPos < targetPosition);
             boolean rightCompleted = rightDirection == 1 ? (rightPos > targetPosition) : (leftPos < targetPosition);

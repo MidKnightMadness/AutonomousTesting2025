@@ -9,11 +9,11 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.Actions.Arm;
-import org.firstinspires.ftc.teamcode.Actions.SampleClaw;
-import org.firstinspires.ftc.teamcode.Actions.TurnTable;
-import org.firstinspires.ftc.teamcode.Actions.VerticalSlides;
-import org.firstinspires.ftc.teamcode.Actions.Wrist;
+import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
+import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Components.Area;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -102,12 +102,9 @@ public class FiveSampleAuto extends OpMode {
 
     double xTolerence = 0;
     double yTolerence = 0;
+
     @Override
     public void init_loop(){
-        previousTime = currentTime;
-        currentTime = timer.updateTime();
-        deltaTime = currentTime - previousTime;
-
 //        if(gamepad1.left_bumper){
 //            if(mode.equals("Sample Pos")){
 //                mode = "Rectangular coordinates";
@@ -238,15 +235,9 @@ public class FiveSampleAuto extends OpMode {
     }
 
     public boolean changeSamplePos(double xChange, double yChange, double headingChange, double sampleNumber) {
-
-
         if(sampleNumber != 1 || sampleNumber != 2) {
             return false;
         }
-
-
-
-
 
         if(sampleNumber == 1) {
             subFirstSamplePose.plus(new Twist2d(new Vector2d( xChange, yChange), headingChange));
@@ -319,7 +310,7 @@ public class FiveSampleAuto extends OpMode {
                 //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
                 //slides might go down faster before drives out so arm to initial position
                 arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
-                wrist.setPosition(Wrist.SAMPLE_LINE_POSITION_AUTO)
+                wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
         );
     }
 
@@ -368,7 +359,7 @@ public class FiveSampleAuto extends OpMode {
                                 .waitSeconds(0.5)
                                 .build(),
                         turnTable.setPositionSmooth(TurnTable.THIRD_SAMPLE_POS, 0.5),
-                        wrist.setPosition(Wrist.SAMPLE_LINE_POSITION_AUTO),
+                        wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION),
                         sampleClaw.setPosition(SampleClaw.GRAB_POSITION),
 
                         new SequentialAction(

@@ -37,41 +37,6 @@ public class InverseKinematics {
 
     }
 
-//    public static IKResult solve(Pose2d targetPose) {
-//        double baseX = Kinematics.RobotConstants.ARM_DISTANCE_TO_EDGE;
-//        double baseY = Kinematics.RobotConstants.ARM_HEIGHT;
-//
-//        double L2 = Kinematics.RobotConstants.WRIST_LENGTH + Kinematics.RobotConstants.COLOR_SENSOR_THICKNESS;
-//        double L1 = Kinematics.RobotConstants.ARM_LENGTH;
-//
-//        double phi = targetPose.heading.toDouble();
-//
-//        double xPrime = targetPose.position.x - baseX - L2 * Math.cos(phi);
-//        double yPrime = targetPose.position.y - baseY - L2 * Math.sin(phi);
-//
-//        double r = Math.hypot(xPrime, yPrime);
-//
-//        // Check reachability: the arm can only reach points on a circle of radius L1.
-//        if (Math.abs(r - L1) > TOLERANCE) {
-//            // Not reachable: compute the offset vector that tells you how far the base must shift.
-//            // Direction of P' (xPrime, yPrime)
-//            double dx = xPrime * (L1 - r) / r;
-//            double dy = yPrime * (L1 - r) / r;
-//            Pose2d offset = new Pose2d(dx, dy, 0);
-//            return new IKResult(false, 0, 0, Kinematics.slidesInchesToTicks(0), offset);
-//        }
-//
-//        double armAngle = Math.atan2(yPrime, xPrime);
-//        double wristAngle = phi - armAngle;
-//
-//        double armServoPos = Kinematics.armOrientationToPosition(armAngle);
-//        double wristServoPos = Kinematics.wristOrientationToPosition(wristAngle);
-//
-//        double slidesTicks = Kinematics.slidesInchesToTicks(0);
-//
-//        return new IKResult(true, armServoPos, wristServoPos, slidesTicks, new Pose2d(0, 0, 0));
-//    }
-
     public Action setArmOrientationWithEndEffectorAngle(Arm arm, Wrist wrist, double armOrientation, double endEffectorOrientation) {
 
         return new ParallelAction(

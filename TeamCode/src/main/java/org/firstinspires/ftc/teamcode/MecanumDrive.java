@@ -464,28 +464,30 @@ public final class MecanumDrive {
             rightBack.setPower(rightBackPower);
             rightFront.setPower(rightFrontPower);
 
-            p.put("x", localizer.getPose().position.x);
-            p.put("y", localizer.getPose().position.y);
-            p.put("heading (deg)", Math.toDegrees(localizer.getPose().heading.toDouble()));
+            if (RunOptions.enableTelemetry) {
+                p.put("x", localizer.getPose().position.x);
+                p.put("y", localizer.getPose().position.y);
+                p.put("heading (deg)", Math.toDegrees(localizer.getPose().heading.toDouble()));
 
-            Pose2d error = txWorldTarget.value().minusExp(localizer.getPose());
-            p.put("xError", error.position.x);
-            p.put("yError", error.position.y);
-            p.put("headingError (deg)", Math.toDegrees(error.heading.toDouble()));
+                Pose2d error = txWorldTarget.value().minusExp(localizer.getPose());
+                p.put("xError", error.position.x);
+                p.put("yError", error.position.y);
+                p.put("headingError (deg)", Math.toDegrees(error.heading.toDouble()));
 
-            // only draw when active; only one drive action should be active at a time
-            Canvas c = p.fieldOverlay();
-            drawPoseHistory(c);
+                // only draw when active; only one drive action should be active at a time
+                Canvas c = p.fieldOverlay();
+                drawPoseHistory(c);
 
-            c.setStroke("#4CAF50");
-            Drawing.drawRobot(c, txWorldTarget.value());
+                c.setStroke("#4CAF50");
+                Drawing.drawRobot(c, txWorldTarget.value());
 
-            c.setStroke("#3F51B5");
-            Drawing.drawRobot(c, localizer.getPose());
+                c.setStroke("#3F51B5");
+                Drawing.drawRobot(c, localizer.getPose());
 
-            c.setStroke("#4CAF50FF");
-            c.setStrokeWidth(1);
-            c.strokePolyline(xPoints, yPoints);
+                c.setStroke("#4CAF50FF");
+                c.setStrokeWidth(1);
+                c.strokePolyline(xPoints, yPoints);
+            }
 
             return true;
         }
@@ -523,9 +525,11 @@ public final class MecanumDrive {
             i++;
         }
 
-        c.setStrokeWidth(1);
-        c.setStroke("#3F51B5");
-        c.strokePolyline(xPoints, yPoints);
+        if (RunOptions.enableTelemetry) {
+            c.setStrokeWidth(1);
+            c.setStroke("#3F51B5");
+            c.strokePolyline(xPoints, yPoints);
+        }
     }
 
     public TrajectoryActionBuilder actionBuilder(Pose2d beginPose) {

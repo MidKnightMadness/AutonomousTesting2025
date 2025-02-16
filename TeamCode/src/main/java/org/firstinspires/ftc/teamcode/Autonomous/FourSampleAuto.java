@@ -110,7 +110,7 @@ public class FourSampleAuto extends OpMode {
                 //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
                 //slides might go down faster before drives out so arm to initial position
                 arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
-                wrist.setPosition(Wrist.SAMPLE_LINE_POSITION_AUTO)
+                wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
         );
     }
 
@@ -159,7 +159,7 @@ public class FourSampleAuto extends OpMode {
                                 .waitSeconds(0.5)
                                 .build(),
                         turnTable.setPositionSmooth(TurnTable.THIRD_SAMPLE_POS, 0.5),
-                        wrist.setPosition(Wrist.SAMPLE_LINE_POSITION_AUTO),
+                        wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION),
                         sampleClaw.setPosition(SampleClaw.GRAB_POSITION),
 
                         new SequentialAction(

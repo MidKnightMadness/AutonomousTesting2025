@@ -19,10 +19,9 @@ public class TurnTable {
     public static double RIGHT_BOUND = 0.086;
     public static double LEFT_BOUND = 0.81;
     public static double THIRD_SAMPLE_POS = 0.28;
-    public static double NEUTRAL_POS = 0.475; //Parallel to odo left and rightwheels
+    public static double NEUTRAL_POS = 0.475;
 
     public Servo servo;
-    ElapsedTime elapsedTime;
 
     public TurnTable(HardwareMap hardwareMap) {
         servo = hardwareMap.get(Servo.class, "Turn Table");
@@ -69,20 +68,14 @@ public class TurnTable {
                 initialized = true;
             }
 
-            packet.addLine("Time: " + (timer.updateTime() - startTime));
-
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
                 double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
 
-
-                packet.addLine("Position " + intermediatePoint);
-
                 servo.setPosition(intermediatePoint);
                 return timeSinceStart < movementTime;
             } else {
-                packet.addLine("Position " + targetPosition);
                 servo.setPosition(targetPosition);
                 return false;
             }

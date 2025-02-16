@@ -16,13 +16,13 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.Components.Timer;
-import org.firstinspires.ftc.teamcode.tuning.HeadingFusion;
 
 @Config
 public final class ThreeDeadWheelLocalizer implements Localizer {
@@ -57,7 +57,8 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
     double headingOffset;
 
     Timer timer;
-    BNO055IMU imu;
+    IMU imuExpansion;
+    IMU imuControl;
 
     Telemetry tel;
 

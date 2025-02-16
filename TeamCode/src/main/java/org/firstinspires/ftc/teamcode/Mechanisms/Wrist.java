@@ -13,16 +13,9 @@ import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config
 public class Wrist {
-    //TODO: Fix whether want seperate positions in auto and teleop or same
-    //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions
-
-
-    //AUTO:
-
     Timer timer;
-    public static double SAMPLE_LINE_POSITION_AUTO = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184)); // sample pickup in autonomous
+    public static double SAMPLE_PICKUP_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184)); // sample pickup in autonomous
     public static double THIRD_SAMPLE = Kinematics.wristOrientationToPosition(Math.toRadians(-65)); // sample pickup in autonomous
-    public static double SAMPLE_SUB_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184));
     public static double BASKET_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184));; // sample dropoff in basket(top basket) at certain arm position
     public static double INIT_POSITION = 0.37;
     public static double STRAIGHT_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(0));
@@ -79,21 +72,14 @@ public class Wrist {
                 initialized = true;
             }
 
-            packet.addLine("Time: " + (timer.updateTime() - startTime));
-
-
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
                 double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
 
-
-                packet.addLine("Position " + intermediatePoint);
-
                 servo.setPosition(intermediatePoint);
                 return timeSinceStart < movementTime;
             } else {
-                packet.addLine("Position " + targetPosition);
                 servo.setPosition(targetPosition);
                 return false;
             }

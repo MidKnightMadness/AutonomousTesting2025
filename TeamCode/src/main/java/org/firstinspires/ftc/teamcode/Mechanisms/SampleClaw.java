@@ -13,10 +13,8 @@ import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config()
 public class SampleClaw {
-    final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
     public static double RELEASE_POSITION = 0.46;
     public static double GRAB_POSITION = 0.73;
-
 
     public Servo servo;
     Timer timer;
@@ -25,7 +23,6 @@ public class SampleClaw {
         servo = hardwareMap.get(Servo.class, "Sample Claw");
         timer = new Timer();
     }
-
 
     public Action grabAction(double waitTime) {
         return new SetPosition(GRAB_POSITION, waitTime);
@@ -43,16 +40,12 @@ public class SampleClaw {
         servo.setPosition(RELEASE_POSITION);
     }
 
-
     public Action setPositionSmooth(double position, double movementTime) {
         return new SetPosition(position, movementTime);
     }
     public Action setPosition(double position) {
         return new SetPosition(position);
     }
-
-
-
 
     public class SetPosition implements Action {
         private final double targetPosition;
@@ -69,7 +62,6 @@ public class SampleClaw {
         public SetPosition(double position, double movementTime) {
             this.targetPosition = position;
             this.movementTime = movementTime;
-
         }
 
         @Override
@@ -80,23 +72,14 @@ public class SampleClaw {
                 initialized = true;
             }
 
-            packet.addLine("Time: " + (timer.updateTime() - startTime));
-
-
-
-            //TODO: CHECK IF movement time = 0
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
                 double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
 
-
-                packet.addLine("Position " + intermediatePoint);
-
                 servo.setPosition(intermediatePoint);
                 return timeSinceStart < movementTime;
             } else {
-                packet.addLine("Position " + targetPosition);
                 servo.setPosition(targetPosition);
                 return false;
             }

@@ -80,23 +80,14 @@ public class SpecimenClaw {
                 initialized = true;
             }
 
-            packet.addLine("Time: " + (timer.updateTime() - startTime));
-
-
-
-            //TODO: CHECK IF movement time = 0
             if (movementTime != 0) {
                 double timeSinceStart = timer.updateTime() - startTime;
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
                 double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
 
-
-                packet.addLine("Position " + intermediatePoint);
-
                 servo.setPosition(intermediatePoint);
                 return timeSinceStart < movementTime;
             } else {
-                packet.addLine("Position " + targetPosition);
                 servo.setPosition(targetPosition);
                 return false;
             }
