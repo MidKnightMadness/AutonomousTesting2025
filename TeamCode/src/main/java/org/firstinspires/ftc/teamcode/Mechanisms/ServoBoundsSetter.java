@@ -20,12 +20,10 @@ public class ServoBoundsSetter extends OpMode {
     Servo wristServo;
     Servo turnTable;
 
-    MecanumDrive drive;
     Timer timer;
 
     @Override
     public void init() {
-        drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         sampleClaw = hardwareMap.get(Servo.class, "Sample Claw");

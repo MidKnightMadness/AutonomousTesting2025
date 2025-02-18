@@ -34,12 +34,15 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Localization.DualIMU;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelIMULocalizer;
-import org.firstinspires.ftc.teamcode.messages.Drawing;
-import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
-import org.firstinspires.ftc.teamcode.messages.MecanumCommandMessage;
-import org.firstinspires.ftc.teamcode.messages.PoseMessage;
+import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
+import org.firstinspires.ftc.teamcode.Localization.messages.DriveCommandMessage;
+import org.firstinspires.ftc.teamcode.Localization.messages.MecanumCommandMessage;
+import org.firstinspires.ftc.teamcode.Localization.messages.PoseMessage;
 
 import java.lang.Math;
 import java.util.Arrays;
@@ -116,8 +119,10 @@ public final class MecanumDrive {
     private final DownsampledWriter driveCommandWriter = new DownsampledWriter("DRIVE_COMMAND", 50_000_000);
     private final DownsampledWriter mecanumCommandWriter = new DownsampledWriter("MECANUM_COMMAND", 50_000_000);
 
-    BNO055IMU imuExpansion;
+    DualIMU dualIMU;
     public final LazyImu lazyImu;
+    Telemetry telemetry;
+
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
@@ -139,30 +144,48 @@ public final class MecanumDrive {
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
-//        rightFront.setDirection(DcMotorSimple.Direction.REVERSE);
-//        rightBack.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        voltageSensor = hardwareMap.voltageSensor.iterator().next();
+
+        dualIMU = DualIMU.getInstance(hardwareMap);
+
+        localizer = new ThreeDeadWheelLocalizer(hardwareMap, dualIMU.imuControl, dualIMU.imuExpansion, PARAMS.inPerTick, pose, telemetry);
+
+        lazyImu = new LazyImu(hardwareMap, "imuControl", new RevHubOrientationOnRobot(
+                PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
+    }
+
+    public MecanumDrive(HardwareMap hardwareMap, Pose2d pose, Telemetry telemetry) {
+        LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
+
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
+        leftFront = hardwareMap.get(DcMotorEx.class, "FL");
+        leftBack = hardwareMap.get(DcMotorEx.class, "BL");
+        rightBack = hardwareMap.get(DcMotorEx.class, "BR");
+        rightFront = hardwareMap.get(DcMotorEx.class, "FR");
+
+        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        this.telemetry = telemetry;
 
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-//        localizer = new TwoDeadWheelLocalizer(hardwareMap, lazyImu.get(), PARAMS.inPerTick, pose);
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.RADIANS;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample OpMode
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        dualIMU = DualIMU.getInstance(hardwareMap);
 
-        imuExpansion = hardwareMap.get(BNO055IMU.class, "imuExpansion");
-        imuExpansion.initialize(parameters);
-
-        localizer = new ThreeDeadWheelIMULocalizer(hardwareMap, imuExpansion, PARAMS.inPerTick, pose);
+        localizer = new ThreeDeadWheelLocalizer(hardwareMap, dualIMU.imuControl, dualIMU.imuExpansion, PARAMS.inPerTick, pose, telemetry);
 
         lazyImu = new LazyImu(hardwareMap, "imuControl", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
-
-//        FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
 
     public void setDrivePowers(PoseVelocity2d powers) {

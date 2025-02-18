@@ -17,6 +17,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
@@ -41,13 +42,13 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
     private int lastPar0Pos, lastPar1Pos, lastPerpPos;
     private boolean initialized;
 
-    public final BNO055IMU imu;
+    public final IMU imu;
     private Rotation2d lastHeading;
     private double lastRawHeadingVel, headingVelOffset;
 
     private Pose2d pose;
 
-    public ThreeDeadWheelIMULocalizer(HardwareMap hardwareMap, BNO055IMU imu, double inPerTick, Pose2d pose) {
+    public ThreeDeadWheelIMULocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick, Pose2d pose) {
         par0 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "Left Encoder")));
         par1 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "FR")));
         perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "Front Encoder")));
@@ -92,16 +93,16 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
 
         // FlightRecorder.write("THREE_DEAD_WHEEL_IMU_INPUTS", new ThreeDeadWheelInputsMessage(par0PosVel, par1PosVel, perpPosVel));
 
-        AngularVelocity angularVelocityDegrees = imu.getAngularVelocity();
+        AngularVelocity angularVelocityRad = imu.getRobotAngularVelocity(AngleUnit.RADIANS);
         AngularVelocity angularVelocity = new AngularVelocity(
                 UnnormalizedAngleUnit.RADIANS,
-                angularVelocityDegrees.xRotationRate,
-                angularVelocityDegrees.yRotationRate,
-                angularVelocityDegrees.zRotationRate,
-                angularVelocityDegrees.acquisitionTime
+                angularVelocityRad.xRotationRate,
+                angularVelocityRad.yRotationRate,
+                angularVelocityRad.zRotationRate,
+                angularVelocityRad.acquisitionTime
         );
 
-        Rotation2d heading = Rotation2d.exp(imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle);
+        Rotation2d heading = Rotation2d.exp(imu.getRobotYawPitchRollAngles().getYaw());
 
         // see https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/617
         double rawHeadingVel = angularVelocity.zRotationRate;

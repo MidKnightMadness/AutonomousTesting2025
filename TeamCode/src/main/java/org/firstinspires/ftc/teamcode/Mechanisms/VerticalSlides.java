@@ -16,8 +16,6 @@ public class VerticalSlides {
     DcMotorEx rightMotor;
     DcMotorEx leftMotor;
 
-    public static double power = 0.8;
-    public static double bringDownPower = 0.8;
     public static double BASKET_SCORING_POSITION = 2150;
     public static double DOWN_POSITION = 10;
 
@@ -33,8 +31,6 @@ public class VerticalSlides {
 
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        power = 0.8;
     }
 
     public Action setPosition(double targetPosition, double power) {
@@ -49,17 +45,14 @@ public class VerticalSlides {
         return new Lift(DOWN_POSITION, power);
     }
 
-    //TODO: Figure out way to smooth or whether we really need an intermediate lift up
-    public Action intermediateLiftUp() {
-        return new Lift(INTERMEDIATE_POSITION, power);
-    }
-
     public class Lift implements Action {
         private boolean initialized = false;
         private final double targetPosition;
+        private final double power;
 
         public Lift(double targetPosition, double power) {
             this.targetPosition = targetPosition;
+            this.power = power;
         }
 
         double leftDirection;

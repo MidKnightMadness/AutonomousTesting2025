@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Components;
+package org.firstinspires.ftc.teamcode.Kinematics;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
@@ -19,6 +19,10 @@ public class Kinematics {
         public static double ARM_HEIGHT = 269.352 / 25.4;
         public static double ARM_DISTANCE_TO_EDGE = 35.16 / 25.4;
         public static double COLOR_SENSOR_THICKNESS = 0 / 25.4; // 16.8mm but flush with surface
+
+        public static double ROBOT_WIDTH = 14;
+        public static double ROBOT_LENGTH = 16;
+        public static double ROBOT_DIAGONAL = Math.hypot(ROBOT_LENGTH, ROBOT_WIDTH);
     }
 
     public static class ArmConstants {
@@ -51,7 +55,8 @@ public class Kinematics {
         static final double SERVO_MAX = TurnTable.LEFT_BOUND;
         static final double SERVO_MIN = TurnTable.RIGHT_BOUND;
 
-        static final double SERVO_RANGE = (Math.PI / 2) / (SERVO_MAX - SERVO_ZERO);
+        static final double SERVO_RANGE_DEGREES = 300;
+        static final double TURNTABLE_RADIANS = Math.toRadians(SERVO_RANGE_DEGREES);
     }
 
     public static class SlidesConstants {
@@ -105,7 +110,7 @@ public class Kinematics {
     }
 
     public static double turnTableOrientationToPosition(double orientation) {
-        double position = TurntableConstants.SERVO_ZERO + orientation / TurntableConstants.SERVO_RANGE;
+        double position = TurntableConstants.SERVO_ZERO + orientation / TurntableConstants.TURNTABLE_RADIANS;
         if (position > TurntableConstants.SERVO_MAX) position = TurntableConstants.SERVO_MAX;
         if (position <  TurntableConstants.SERVO_MIN) position = TurntableConstants.SERVO_MIN;
 
@@ -113,7 +118,7 @@ public class Kinematics {
     }
 
     public static double turnTablePositionToOrientation(double orientation) {
-        return TurntableConstants.SERVO_ZERO + orientation / TurntableConstants.SERVO_RANGE;
+        return TurntableConstants.SERVO_ZERO + orientation / TurntableConstants.TURNTABLE_RADIANS;
     }
 
     public static double wristOrientationToPosition(double orientation) {

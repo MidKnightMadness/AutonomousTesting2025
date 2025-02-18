@@ -9,7 +9,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Components.Kinematics;
+import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
@@ -29,7 +29,7 @@ public class ActionsTestOpMode extends OpMode {
     @Override
     public void init() {
         initialPose = new Pose2d(0, 0, 0);
-        drive = new MecanumDrive(hardwareMap, initialPose);
+        drive = new MecanumDrive(hardwareMap, initialPose, telemetry);
         sampleClaw = new SampleClaw(hardwareMap);
         specimenClaw = new SpecimenClaw(hardwareMap);
         wrist = new Wrist(hardwareMap);

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tuning;
+package org.firstinspires.ftc.teamcode.Localization.tuning;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -7,8 +7,6 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -16,8 +14,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.Components.Timer;
+import org.firstinspires.ftc.teamcode.Localization.DualIMU;
 import org.firstinspires.ftc.teamcode.Localization.HeadingFusion;
-import org.firstinspires.ftc.teamcode.messages.Drawing;
+import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Localization.OldThreeWheelLocalizer;
@@ -28,7 +27,7 @@ import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
 @Config
 public class LocalizationTest extends LinearOpMode {
 
-    BNO055IMU imuExpansion;
+    DualIMU dualIMU;
     Localizer firstLocalizer;
     Localizer secondLocalizer;
     Localizer twoWheel;
@@ -40,25 +39,16 @@ public class LocalizationTest extends LinearOpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         Pose2d startingPose = new Pose2d(0, 0, 0);
-        MecanumDrive drive = new MecanumDrive(hardwareMap, startingPose);
+        MecanumDrive drive = new MecanumDrive(hardwareMap, startingPose, telemetry);
         timer = new Timer();
 
         HeadingFusion headingFusion = new HeadingFusion(0.05, 5, 0.05);
 
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.RADIANS;
-        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "AdafruitIMUCalibration.json"; // see the calibration sample OpMode
-        parameters.loggingEnabled      = true;
-        parameters.loggingTag          = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        DualIMU dualIMU = DualIMU.getInstance(hardwareMap);
 
-        imuExpansion = hardwareMap.get(BNO055IMU.class, "imuExpansion");
-        imuExpansion.initialize(parameters);
-
-        firstLocalizer = new ThreeDeadWheelIMULocalizer(hardwareMap, imuExpansion, MecanumDrive.PARAMS.inPerTick, startingPose);
+        firstLocalizer = new ThreeDeadWheelIMULocalizer(hardwareMap, dualIMU.imuExpansion, MecanumDrive.PARAMS.inPerTick, startingPose);
         secondLocalizer = new OldThreeWheelLocalizer(hardwareMap, MecanumDrive.PARAMS.inPerTick, startingPose);
-        twoWheel = new ThreeDeadWheelLocalizer(hardwareMap, imuExpansion, MecanumDrive.PARAMS.inPerTick, startingPose, telemetry);
+        twoWheel = new ThreeDeadWheelLocalizer(hardwareMap, dualIMU.imuControl, dualIMU.imuExpansion, MecanumDrive.PARAMS.inPerTick, startingPose, telemetry);
 
         waitForStart();
 
@@ -94,7 +84,7 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("heading (deg)", Math.toDegrees(pose2.heading.toDouble()));
 
             telemetry.addLine("\nRaw IMU Values");
-            telemetry.addData("heading (expansion)", imuExpansion.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
+            telemetry.addData("heading (expansion)", dualIMU.imuExpansion.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle);
 
             Pose2d pose3 = twoWheel.getPose();
 

@@ -8,7 +8,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.Components.Kinematics;
+import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config

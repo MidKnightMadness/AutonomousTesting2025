@@ -8,18 +8,20 @@ import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @Config
 public class Arm {
 
-    public static double INIT_AUTO_POS = 0.07;
-    public static double SAMPLE_INTAKE = 0.74;
-    public static double BASKET_POSITION = 0.40;
+    public static double INIT_AUTO_POS = Kinematics.armOrientationToPosition(Math.toRadians(-180));
+    public static double SAMPLE_INTAKE = Kinematics.armOrientationToPosition(Math.toRadians(-31.824));
+    public static double BASKET_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(75));
+    public static double SCANNING_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(-25.19));
 
-    public static double STRAIGHT_UP_POSITION = 0.30;
-    public static double PERPENDICULAR = 0.631;
-    public static double ARM_TO_BAR = 0.44;
+    public static double STRAIGHT_UP_POSITION = Kinematics.armOrientationToPosition(90);
+    public static double PERPENDICULAR = Kinematics.armOrientationToPosition(0);
+    public static double ARM_TO_BAR = Kinematics.armOrientationToPosition(70);
 
     public static double TIME_FULL_ROTATION = 2;
 

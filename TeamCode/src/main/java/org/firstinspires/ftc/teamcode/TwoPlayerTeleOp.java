@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.SpecimenClaw;
 import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
-import org.firstinspires.ftc.teamcode.Components.Kinematics;
+import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
 import java.util.List;
@@ -71,7 +71,7 @@ public class TwoPlayerTeleOp extends OpMode {
 
         timer = new Timer();
         clawClosed = true;
-        drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0), telemetry);
 
         if (RunOptions.useBulkReads) {
             allHubs = hardwareMap.getAll(LynxModule.class);
@@ -93,7 +93,7 @@ public class TwoPlayerTeleOp extends OpMode {
 
     double drivingPower = 1;
     @Override
-    public void loop(){
+    public void loop() {
             if (RunOptions.useBulkReads) {
                 for (LynxModule module : allHubs) {
                     module.clearBulkCache();
@@ -102,7 +102,6 @@ public class TwoPlayerTeleOp extends OpMode {
 
             gamepad1Controls();
             gamepad2Controls();
-
 
             PoseVelocity2d vel = drive.updatePoseEstimate();
             Pose2d pose = drive.localizer.getPose();

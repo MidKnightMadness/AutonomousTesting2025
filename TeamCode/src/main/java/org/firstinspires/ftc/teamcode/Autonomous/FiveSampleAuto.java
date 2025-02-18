@@ -27,13 +27,12 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 //Start at the left of the 2nd tile
 @Config
 @Autonomous(name = "FiveSampleAuto")
-public class FiveSampleAuto extends OpMode {
+public class FiveSampleAuto extends FourSampleAuto {
 
     public static Pose2d scoringPose = new Pose2d(new Vector2d(8.5, 25), Math.toRadians(130));
 
     public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 19.75, 17.5),Math.toRadians(0));
     public static Pose2d secondSamplePose = new Pose2d(new Vector2d(18.75, 27.25), Math.toRadians(0));
-    public static Pose2d thirdSampleIntermediate = new Pose2d(new Vector2d(22, 26), Math.toRadians(45));
     public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(23.5, 24.75), Math.toRadians(45));
 
     public static Pose2d parkingPose = new Pose2d(new Vector2d(60, -8), Math.toRadians(90));
@@ -54,7 +53,6 @@ public class FiveSampleAuto extends OpMode {
     public static double firstSlidesUpPos = 100;
     public static double secondSlidesUpPos = 100;
 
-
     SampleClaw sampleClaw;
     Arm arm;
     VerticalSlides slides;
@@ -64,11 +62,8 @@ public class FiveSampleAuto extends OpMode {
 
     Pose2d startingPose = new Pose2d(0, 0,  Math.toRadians(90));
 
-    double armSpeedMultiplier = 1;
     Timer timer;
     double currentTime;
-    double previousTime;
-    double deltaTime;
     RevColorSensorV3 clawColorSensor;
 
 
@@ -79,7 +74,7 @@ public class FiveSampleAuto extends OpMode {
         wrist = new Wrist(hardwareMap);
         turnTable = new TurnTable(hardwareMap);
         slides = new VerticalSlides(hardwareMap);
-        mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
+        mecanumDrive = new MecanumDrive(hardwareMap, startingPose, telemetry);
 
         sampleClaw.grab();
         arm.setInitPosition();
@@ -114,7 +109,7 @@ public class FiveSampleAuto extends OpMode {
 //            }
 //        }
 
-        if(gamepad1.left_bumper){//set 1st sub sample
+        if (gamepad1.left_bumper){//set 1st sub sample
             settingSubSampleNumber = 1;
         }
 
@@ -252,133 +247,6 @@ public class FiveSampleAuto extends OpMode {
         //TODO: Create method and way to search the area with a given heading for the sample and a given amount of time allowed to search
         return null;
     }
-
-
-
-    public Action scoreInBasket(double xOffset, double yOffset) {
-        return new SequentialAction(
-                arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
-                new ParallelAction(
-                        mecanumDrive.actionBuilder().strafeToSplineHeading(new Vector2d(scoringPose.position.x + xOffset, scoringPose.position.y + yOffset), scoringPose.heading).build(),
-                        slides.liftUp(0.8),
-                        wrist.setPosition(Wrist.BASKET_POSITION),
-                        turnTable.setPositionSmooth(TurnTable.NEUTRAL_POS, 0.5)
-                ),
-                arm.setPositionSmooth(Arm.BASKET_POSITION),
-                new SleepAction(0.4),
-                sampleClaw.setPosition(SampleClaw.RELEASE_POSITION),
-                new SleepAction(0.5)
-        );
-    }
-
-    public Action manipulatorPickUp() {
-        return new SequentialAction(
-                new ParallelAction(
-//                        wrist.setPosition(Wrist.SAMPLE_LINE_POSITION_AUTO),
-                        arm.setPositionSmooth(Arm.SAMPLE_INTAKE),
-                        sampleClaw.releaseAction(0)
-                ),
-                new SleepAction(0.5),
-                sampleClaw.grabAction(0),
-                new SleepAction(0.2)
-        );
-    }
-
-    @Override
-    public void start() {
-        Actions.runBlocking(
-                scoreInBasket(0, -1)
-        );
-
-        firstLineSample();
-        secondLineSample();
-        thirdLineSample();
-
-        if(timer.updateTime() < 18 && subOneFinalized) {
-            subSampleSearch(areaOne, firstSubHeading, 7);
-        }
-        if(timer.updateTime() < 23 && subTwoFinalized) {
-            subSampleSearch(areaTwo, secondSubHeading, 7);
-        }
-        if(timer.updateTime() < 27){
-            park();
-        }
-    }
-
-    public Action resetAfterScoring() {
-        return new ParallelAction(
-                //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
-                //slides might go down faster before drives out so arm to initial position
-                arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
-                wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
-        );
-    }
-
-    private void firstLineSample() {
-        Actions.runBlocking(new SequentialAction(
-                resetAfterScoring(),
-                new ParallelAction(
-                        slides.bringDown(0.6),
-                        mecanumDrive.actionBuilder()
-                                .strafeToLinearHeading(firstSamplePose.position, firstSamplePose.heading)
-                                .build()
-                ),
-                new SleepAction(0.3),
-                manipulatorPickUp(),
-                scoreInBasket(1, -1)
-        ));
-    }
-
-    public void secondLineSample(){
-        Actions.runBlocking(new SequentialAction(
-                resetAfterScoring(),
-                new ParallelAction(
-                        slides.bringDown(0.6),
-                        mecanumDrive.actionBuilder()
-                                .strafeToLinearHeading(secondSamplePose.position, secondSamplePose.heading)
-                                .build()
-                ),
-                new SleepAction(0.3),
-                manipulatorPickUp(),
-                scoreInBasket(2, -3)
-        ));
-    }
-
-    public void thirdLineSample() {
-        Actions.runBlocking(new SequentialAction(
-                new ParallelAction(
-                        //set arm backwards to not interfere because the slides + drive sometimes slides go down faster
-                        //slides might go down faster before drives out so arm to initial position
-                        wrist.setPosition(Wrist.THIRD_SAMPLE),
-                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION)
-                ),
-                new ParallelAction(
-                        slides.bringDown(0.6),
-                        mecanumDrive.actionBuilder()
-                                .strafeToLinearHeading(thirdSamplePose.position, thirdSamplePose.heading)
-                                .waitSeconds(0.5)
-                                .build(),
-                        turnTable.setPositionSmooth(TurnTable.THIRD_SAMPLE_POS, 0.5),
-                        wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION),
-                        sampleClaw.setPosition(SampleClaw.GRAB_POSITION),
-
-                        new SequentialAction(
-                                new SleepAction(0.2),
-                                arm.setPositionSmooth(Arm.SAMPLE_INTAKE - 0.03)
-                        )
-                ),
-
-                sampleClaw.releaseAction(0),
-                new SleepAction(0.5),
-                wrist.setPosition(0.5),
-
-                manipulatorPickUp(),
-                wrist.setPosition(Wrist.BASKET_POSITION),
-
-                scoreInBasket(0, 0)
-        ));
-    }
-
 
     public void park(){
         Actions.runBlocking(new SequentialAction(
