@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 @Config
 public class VerticalSlides {
-    private static final double INTERMEDIATE_POSITION = 800;
     DcMotorEx rightMotor;
     DcMotorEx leftMotor;
 

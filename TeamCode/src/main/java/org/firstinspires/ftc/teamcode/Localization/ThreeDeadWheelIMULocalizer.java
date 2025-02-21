@@ -119,12 +119,16 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
         Twist2dDual<Time> twist = new Twist2dDual<>(
                 new Vector2dDual<>(
                         new DualNum<Time>(new double[] {
-                                (PARAMS.par0YTicks * par1PosDelta - PARAMS.par1YTicks * par0PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks),
-                                (PARAMS.par0YTicks * par1PosVel.velocity - PARAMS.par1YTicks * par0PosVel.velocity) / (PARAMS.par0YTicks - PARAMS.par1YTicks),
+//                                (PARAMS.par0YTicks * par1PosDelta - PARAMS.par1YTicks * par0PosDelta) / (PARAMS.par0YTicks - PARAMS.par1YTicks), // todo
+                                (double) (par1PosDelta + par0PosDelta) / 2,
+//                                (PARAMS.par0YTicks * par1PosVel.velocity - PARAMS.par1YTicks * par0PosVel.velocity) / (PARAMS.par0YTicks - PARAMS.par1YTicks),
+                                (double) (par1PosVel.velocity + par0PosVel.velocity) / 2
                         }).times(inPerTick),
                         new DualNum<Time>(new double[] {
-                                (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosDelta - par0PosDelta) + perpPosDelta),
-                                (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosVel.velocity - par0PosVel.velocity) + perpPosVel.velocity),
+//                                (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosDelta - par0PosDelta) + perpPosDelta),
+//                                (PARAMS.perpXTicks / (PARAMS.par0YTicks - PARAMS.par1YTicks) * (par1PosVel.velocity - par0PosVel.velocity) + perpPosVel.velocity),
+                                perpPosDelta - PARAMS.perpXTicks * headingDelta,
+                                perpPosVel.velocity - PARAMS.perpXTicks * headingVel,
                         }).times(inPerTick)
                 ),
                 new DualNum<>(new double[] {

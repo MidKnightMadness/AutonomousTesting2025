@@ -29,4 +29,10 @@ public class RGB {
 
         return this;
     }
+
+    @Override
+    public String toString() {
+        return String.format("(%f, %f, %f)", r, g, b);
+    }
+
 }

@@ -9,8 +9,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics.RobotConstants;
 
-import java.lang.reflect.Field;
-
 public class InverseKinematics {
 
 
@@ -20,7 +18,7 @@ public class InverseKinematics {
         public double wristServoPosition;
         public double slidesTicks;
         public double turntablePosition;
-        public Pose2d driveTrainPosition;
+        public Pose2d robotPose;
         public String message;
 
         public IKResult(boolean isReachable, double armServoPosition, double wristServoPosition, double turntablePosition, double slidesTicks, Pose2d driveTrainPosition) {
@@ -29,7 +27,7 @@ public class InverseKinematics {
             this.wristServoPosition = wristServoPosition;
             this.turntablePosition = turntablePosition;
             this.slidesTicks = slidesTicks;
-            this.driveTrainPosition = driveTrainPosition;
+            this.robotPose = driveTrainPosition;
         }
         public IKResult(String message) {
             this();
@@ -41,7 +39,7 @@ public class InverseKinematics {
             this.armServoPosition = 0;
             this.wristServoPosition = 0;
             this.slidesTicks = 0;
-            this.driveTrainPosition = new Pose2d(0, 0, 0);
+            this.robotPose = new Pose2d(0, 0, 0);
         }
 
     }
@@ -85,7 +83,7 @@ public class InverseKinematics {
         }
 
         // simple case: pickup with robot heading -90 deg
-        if (samplePose.position.x < FieldConstants.subXUpperBound - RobotConstants.ROBOT_WIDTH || samplePose.position.x > FieldConstants.subXLowerBound + RobotConstants.ROBOT_WIDTH) {
+        if (isBetween(samplePose.position.x, FieldConstants.subXLowerBound + RobotConstants.ROBOT_WIDTH / 2, FieldConstants.subXUpperBound - RobotConstants.ROBOT_WIDTH / 2)) {
             return new IKResult(true, Kinematics.armOrientationToPosition(pickUpArmOrientation), Kinematics.wristOrientationToPosition(pickUpWristOrientation),
                     Kinematics.turnTableOrientationToPosition(0), 0,
                     new Pose2d(samplePose.position.x, samplePose.position.y - pickUpRadius, Math.toRadians(-90)));
@@ -129,6 +127,7 @@ public class InverseKinematics {
         if (!isBetween(leftCorner.x, FieldConstants.subXLowerBound, FieldConstants.subXUpperBound) || leftCorner.y < FieldConstants.barYCoordinate) {
             return new IKResult("Sample position unreachable: left corner outside of zone");
         }
+
         if (!isBetween(rightCorner.x, FieldConstants.subXLowerBound, FieldConstants.subXUpperBound) || rightCorner.y < FieldConstants.barYCoordinate) {
             return new IKResult("Sample position unreachable: right corner outside of zone");
         }

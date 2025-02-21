@@ -26,17 +26,12 @@ public class ColorSensorTest extends OpMode {
         NormalizedRGBA color = colorSensorV3.getNormalizedColors();
         colorSensorV3.enableLed(useLed);
 
-        double dist = colorSensorV3.getDistance(DistanceUnit.INCH);
+        RGB colorRGB = new RGB(color);
 
-        double sum = color.red + color.green + color.blue;
-        telemetry.addData("r",color.red / sum);
-        telemetry.addData("g",color.green / sum);
-        telemetry.addData("b",color.blue / sum);
-        telemetry.addData("a",color.alpha);
+        telemetry.addData("color value",colorRGB);
+        telemetry.addData("Classifier",ColorClassifier.classify(colorRGB));
 
-        telemetry.addData("dist", dist);
+        telemetry.addData("dist", colorSensorV3.getDistance(DistanceUnit.INCH));
         telemetry.addData("light detected", colorSensorV3.getLightDetected());
-        telemetry.addData("raw light detected", colorSensorV3.getRawLightDetected());
-        telemetry.addData("", colorSensorV3.rawOptical());
     }
 }
