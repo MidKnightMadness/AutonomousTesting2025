@@ -100,6 +100,8 @@ public class TwoPlayerTeleOp extends OpMode {
                 }
             }
 
+            timer.updateTime();
+
             gamepad1Controls();
             gamepad2Controls();
 
@@ -333,8 +335,7 @@ public class TwoPlayerTeleOp extends OpMode {
 
         //Arm
         if (Math.abs(gamepad2.right_stick_y) > 0.05){
-            arm.leftServo.setPosition(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
-            arm.rightServo.setPosition(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
+            arm.setPositionDirect(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
         }
     }
 }

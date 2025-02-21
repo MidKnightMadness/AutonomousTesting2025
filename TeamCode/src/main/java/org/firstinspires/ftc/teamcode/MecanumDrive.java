@@ -24,8 +24,6 @@ import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -39,6 +37,7 @@ import org.firstinspires.ftc.teamcode.Localization.DualIMU;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelIMULocalizer;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
 import org.firstinspires.ftc.teamcode.Localization.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.Localization.messages.MecanumCommandMessage;
@@ -65,27 +64,27 @@ public final class MecanumDrive {
         public double trackWidthTicks = 6134.355708484638;
 
         // TODO: feedforward parameters (in tick units)
-        public double kS = 1.4899765990532745;
-        public double kV = 0.0002607849072569287;
+        public double kS = 1.257885934301533;
+        public double kV = 0.00026481855361795676;
         public double kA = 0.000005;
 
         // TODO: path profile parameters (in inches)
-        public double maxWheelVel = 40;
-        public double minProfileAccel = -30;
-        public double maxProfileAccel = 45;
+        public double maxWheelVel = 60;
+        public double minProfileAccel = -35;
+        public double maxProfileAccel = 55;
 
         // TODO: turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
         public double maxAngAccel = Math.PI;
 
         // TODO: path controller gains
-        public double axialGain = 5;
+        public double axialGain = 5.5;
         public double lateralGain = 5;
         public double headingGain = 3.5; // shared with turn
 
-        public double axialVelGain = 0;
-        public double lateralVelGain = 0;
-        public double headingVelGain = 0.0; // shared with turn
+        public double axialVelGain = 0.5;
+        public double lateralVelGain = 0.5;
+        public double headingVelGain = 0.5; // shared with turn
         public double errorTolerance = 0.5;
         public double headingToleranceDeg = 1;
         public double velocityTolerance = 1;
@@ -144,48 +143,20 @@ public final class MecanumDrive {
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
 
-
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         dualIMU = DualIMU.getInstance(hardwareMap);
 
-        localizer = new ThreeDeadWheelLocalizer(hardwareMap, dualIMU.imuControl, dualIMU.imuExpansion, PARAMS.inPerTick, pose, telemetry);
+        localizer = new ThreeDeadWheelIMULocalizer(hardwareMap, dualIMU.imuControl, PARAMS.inPerTick, pose);
 
         lazyImu = new LazyImu(hardwareMap, "imuControl", new RevHubOrientationOnRobot(
                 PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
     }
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose, Telemetry telemetry) {
-        LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
-
-        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
-
-        leftFront = hardwareMap.get(DcMotorEx.class, "FL");
-        leftBack = hardwareMap.get(DcMotorEx.class, "BL");
-        rightBack = hardwareMap.get(DcMotorEx.class, "BR");
-        rightFront = hardwareMap.get(DcMotorEx.class, "FR");
-
-        leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
+        this(hardwareMap, pose);
 
         this.telemetry = telemetry;
-
-
-        voltageSensor = hardwareMap.voltageSensor.iterator().next();
-
-        dualIMU = DualIMU.getInstance(hardwareMap);
-
-        localizer = new ThreeDeadWheelLocalizer(hardwareMap, dualIMU.imuControl, dualIMU.imuExpansion, PARAMS.inPerTick, pose, telemetry);
-
-        lazyImu = new LazyImu(hardwareMap, "imuControl", new RevHubOrientationOnRobot(
-                PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
     }
 
     public void setDrivePowers(PoseVelocity2d powers) {
@@ -524,16 +495,7 @@ public final class MecanumDrive {
     }
 
     public PoseVelocity2d updatePoseEstimate() {
-        PoseVelocity2d vel = localizer.update();
-        poseHistory.add(localizer.getPose());
-        
-        while (poseHistory.size() > 100) {
-            poseHistory.removeFirst();
-        }
-
-        estimatedPoseWriter.write(new PoseMessage(localizer.getPose()));
-        
-        return vel;
+        return localizer.update();
     }
 
     private void drawPoseHistory(Canvas c) {

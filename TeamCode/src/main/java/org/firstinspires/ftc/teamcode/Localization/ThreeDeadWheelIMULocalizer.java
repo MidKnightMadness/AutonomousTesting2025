@@ -13,7 +13,6 @@ import com.acmerobotics.roadrunner.ftc.Encoder;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -21,9 +20,8 @@ import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AngularVelocity;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
-import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 @Config
 public final class ThreeDeadWheelIMULocalizer implements Localizer {
@@ -72,37 +70,25 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
     public Pose2d getPose() {
         return pose;
     }
-
-
-    double yFirstadditionVal = 0;
-    double ySecondadditionVal = 0;
-    public double getyAdditionFirstVal(){
-        return  yFirstadditionVal;
-    }
-
-    public double getyAdditionSecondVal(){
-        return ySecondadditionVal;
-    }
-
     @Override
     public PoseVelocity2d update() {
         PositionVelocityPair par0PosVel = par0.getPositionAndVelocity();
         PositionVelocityPair par1PosVel = par1.getPositionAndVelocity();
         PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
 
-
         // FlightRecorder.write("THREE_DEAD_WHEEL_IMU_INPUTS", new ThreeDeadWheelInputsMessage(par0PosVel, par1PosVel, perpPosVel));
 
-        AngularVelocity angularVelocityRad = imu.getRobotAngularVelocity(AngleUnit.RADIANS);
+        AngularVelocity angularVelocityDegrees = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
         AngularVelocity angularVelocity = new AngularVelocity(
                 UnnormalizedAngleUnit.RADIANS,
-                angularVelocityRad.xRotationRate,
-                angularVelocityRad.yRotationRate,
-                angularVelocityRad.zRotationRate,
-                angularVelocityRad.acquisitionTime
+                (float) Math.toRadians(angularVelocityDegrees.xRotationRate),
+                (float) Math.toRadians(angularVelocityDegrees.yRotationRate),
+                (float) Math.toRadians(angularVelocityDegrees.zRotationRate),
+                angularVelocityDegrees.acquisitionTime
         );
 
-        Rotation2d heading = Rotation2d.exp(imu.getRobotYawPitchRollAngles().getYaw());
+        YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
+        Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
 
         // see https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/617
         double rawHeadingVel = angularVelocity.zRotationRate;
@@ -159,6 +145,5 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
 //                , headingDelta);
 
         return twist.velocity().value();
-
     }
 }

@@ -32,7 +32,7 @@ public class Kinematics {
         static final double ARM_DEGREES = SERVO_RANGE_DEGREES / GEAR_RATIO;
         static final double ARM_RADIANS = Math.toRadians(ARM_DEGREES);
 
-        public static double SERVO_ZERO_POSITION = 0.631; // todo set value
+        public static double SERVO_ZERO_POSITION = 0.757; // todo set value
 
         public static double SERVO_MAX = 1;
         public static double SERVO_MIN = 0;

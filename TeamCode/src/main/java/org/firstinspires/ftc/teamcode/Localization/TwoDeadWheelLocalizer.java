@@ -29,8 +29,8 @@ public final class TwoDeadWheelLocalizer implements Localizer {
 //        public double perpXTicks = 32 * (2000d / 32 / Math.PI); // x position of the perpendicular encoder (in tick units)
 //    }
     public static class Params {
-        public double parYTicks = -2800; // y position of the parallel encoder (in tick units)
-        public double perpXTicks = 850; // x position of the perpendicular encoder (in tick units)
+        public double parYTicks = -2768.62492919; // y position of the parallel encoder (in tick units)
+        public double perpXTicks = 656.514140254; // x position of the perpendicular encoder (in tick units)
     }
 
     public static Params PARAMS = new Params();
