@@ -41,6 +41,8 @@ public class FiveSampleAuto extends FourSampleAuto {
     public static Pose2d subFirstSamplePose = new Pose2d(new Vector2d(0,0), Math.toRadians(0));
     public static Pose2d subSecondSamplePose = new Pose2d(new Vector2d(0,0), Math.toRadians(0));
 
+    double subFirstSample[] = new double[] {0, 0, 0};
+    double subSecondSample[] = new double[] { 0, 0, 0};
 
     public double firstSubHeading = 0;
     public double secondSubHeading = 0;
@@ -66,7 +68,6 @@ public class FiveSampleAuto extends FourSampleAuto {
     double currentTime;
     RevColorSensorV3 clawColorSensor;
 
-
     @Override
     public void init() {
         sampleClaw = new SampleClaw(hardwareMap);
@@ -88,26 +89,11 @@ public class FiveSampleAuto extends FourSampleAuto {
         currentTime = timer.updateTime();
     }
     double settingSubSampleNumber = 1;
+    public static double gamepadInterval = 0.1;
 
-    double gamepadInterval = 0.1;
-    String mode = "Sample Pos";
-
-    Area areaOne;
-    Area areaTwo;
-
-    double xTolerence = 0;
-    double yTolerence = 0;
 
     @Override
     public void init_loop(){
-//        if(gamepad1.left_bumper){
-//            if(mode.equals("Sample Pos")){
-//                mode = "Rectangular coordinates";
-//            }
-//            else{
-//                mode = "Sample Pos";
-//            }
-//        }
 
         if (gamepad1.left_bumper){//set 1st sub sample
             settingSubSampleNumber = 1;
@@ -120,25 +106,13 @@ public class FiveSampleAuto extends FourSampleAuto {
 
         double xChange = 0;
         double yChange = 0;
-        double xToleranceChange = 0;
-        double yToleranceChange = 0;
         double headingChange = 0;
 
 
-        if(settingSubSampleNumber == 1 || settingSubSampleNumber == 2){
+        if((settingSubSampleNumber == 1 && !subOneFinalized) || (settingSubSampleNumber == 2 && !subTwoFinalized)){
 
-
-
-            if (gamepad1.dpad_up) {
-                yChange += gamepadInterval;
-            } else if (gamepad1.dpad_right) {
-                xChange += gamepadInterval;
-            } else if (gamepad1.dpad_left) {
-                xChange -= gamepadInterval;
-            } else if (gamepad1.dpad_down) {
-                yChange -= gamepadInterval;
-            }
-            //TODO: Add heading change based off of gamepad
+            xChange += gamepadInterval * gamepad1.left_stick_x * 0.5;
+            yChange += gamepadInterval * gamepad1.left_stick_y * 0.5;
 
             if(gamepad1.b){
                 headingChange += gamepadInterval;
@@ -146,107 +120,42 @@ public class FiveSampleAuto extends FourSampleAuto {
             else if(gamepad1.x){
                 headingChange -= gamepadInterval;
             }
-            if(gamepad1.left_stick_y > 0.2){
-                xToleranceChange += gamepad1.left_stick_y * gamepadInterval * timer.getDeltaTime();
-            }
-            else if(gamepad1.right_stick_y > 0.2){
-                yToleranceChange += gamepad1.right_stick_y * gamepadInterval * timer.getDeltaTime();
-            }
 
+            if(settingSubSampleNumber == 1){
+                subFirstSample = new double[] {subFirstSample[0] + xChange, subFirstSample[1] + yChange, subFirstSample[2] + headingChange};
+            }
+            else if(settingSubSampleNumber == 2){
+                subSecondSample = new double[] {subSecondSample[0] + xChange, subSecondSample[1] + yChange, subSecondSample[2] + headingChange};
+            }
 
             if(gamepad1.left_trigger > 0.5){
-                subOneFinalized = true;
+                firstSamplePose = new Pose2d(subFirstSample[0], subFirstSample[1], subFirstSample[2]);
             }
 
             if(gamepad1.right_trigger > 0.5){
-                subTwoFinalized = true;
+                secondSamplePose = new Pose2d(subSecondSample[0], subSecondSample[1], subSecondSample[2]);
             }
-
-            if(mode.equals("Sample Pos")){//Change samplePosition based on dpad values
-                changeSamplePos(xChange, yChange, headingChange, settingSubSampleNumber);
-                if(settingSubSampleNumber == 1 && subOneFinalized == false){
-                    firstSubHeading += headingChange;
-                    areaOne = new Area(subFirstSamplePose, xTolerence + xToleranceChange, yTolerence + yToleranceChange);
-                }
-                else if(settingSubSampleNumber == 2 && subTwoFinalized == false){
-                    secondSubHeading += headingChange;
-                    areaTwo = new Area(subSecondSamplePose, xTolerence + xToleranceChange, yTolerence + yToleranceChange);
-                }
-            }
-
-
 
 
         }
 
         telemetry.addLine("-------------------------------------------------");
         telemetry.addData("Currently Editing Sample Pos", settingSubSampleNumber);
-        telemetry.addData("Mode", mode);
-        telemetry.addData("SubFirstSamplePose", subFirstSamplePose.toString());
-        telemetry.addData("SubSecondSamplePose", subSecondSamplePose.toString());
+        telemetry.addData("Pose One Sample", subFirstSample.toString());
+        telemetry.addData("Pose Two Sample", subSecondSample.toString());
+        telemetry.addData("Finalized First Pose", firstSamplePose.toString());
+        telemetry.addData("Finalized Second Pose", secondSamplePose.toString());
         telemetry.addLine("-------------------------------------------------");
         telemetry.addData("XChange", xChange);
         telemetry.addData("YChange", yChange);
         telemetry.addData("HeadingChange", headingChange);
-        telemetry.addData("XTolerenceChange", xToleranceChange);
-        telemetry.addData("YTolerenceChange", yToleranceChange);
         telemetry.addLine("-------------------------------------------------");
-        telemetry.addData("Area One", areaOne.getAreaCoordinates().toString());
-        telemetry.addData("Area Two", areaTwo.getAreaCoordinates().toString());
-        telemetry.addLine("-------------------------------------------------");
-        telemetry.addData("Sub One Finalized", subOneFinalized);
-        telemetry.addData("Sub One Finalized", subTwoFinalized);
+        telemetry.addData("Pose One Finalized", subOneFinalized);
+        telemetry.addData("Pose Two Finalized", subTwoFinalized);
 
 
     }
 
-
-    public boolean changeRectangularPos(double xChange, double yChange, double headingChange, double sampleNumber, double rectCoordinateNumber) {//rectCoorNumber = FL, FR, BL, BR
-
-        Pose2d currentSubSampleNumber = null;
-
-        if(sampleNumber == 1) {
-            currentSubSampleNumber = subFirstSamplePose;
-        }
-        else if(sampleNumber == 2) {
-            currentSubSampleNumber = subSecondSamplePose;
-        }
-        else {
-            return false;
-        }
-
-
-
-
-        currentSubSampleNumber.plus(new Twist2d(new Vector2d(xChange, yChange), headingChange));
-
-        if(sampleNumber == 1) {
-            subFirstSamplePose.copy(currentSubSampleNumber.position, currentSubSampleNumber.heading);
-        }
-        else{
-            subSecondSamplePose.copy(currentSubSampleNumber.position, currentSubSampleNumber.heading);
-        }
-        return true;
-    }
-
-    public boolean changeSamplePos(double xChange, double yChange, double headingChange, double sampleNumber) {
-        if(sampleNumber != 1 || sampleNumber != 2) {
-            return false;
-        }
-
-        if(sampleNumber == 1) {
-            subFirstSamplePose.plus(new Twist2d(new Vector2d( xChange, yChange), headingChange));
-        }
-        else{
-            subSecondSamplePose.plus(new Twist2d(new Vector2d( xChange, yChange), headingChange));
-        }
-        return true;
-    }
-
-    public Action subSampleSearch(Area area, double heading, double timeSearch){
-        //TODO: Create method and way to search the area with a given heading for the sample and a given amount of time allowed to search
-        return null;
-    }
 
     public void park(){
         Actions.runBlocking(new SequentialAction(
