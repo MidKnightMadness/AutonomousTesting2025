@@ -38,7 +38,7 @@ public class SpecimenAuto extends OpMode {
 
         imu.initialize(new IMU.Parameters(orientationOnRobot));
 
-        mecanumDrive = new MecanumDrive(hardwareMap, startingPose, telemetry);
+        mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
     }
 
     @Override

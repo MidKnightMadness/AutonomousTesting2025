@@ -14,11 +14,14 @@ public class DualIMU {
 
     private static DualIMU instance;
 
+    public static  RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+
+    public static IMU.Parameters parameters = new IMU.Parameters(orientationOnRobot);
     public static DualIMU getInstance(HardwareMap hardwareMap) {
         if (instance == null) {
             instance = new DualIMU();
 
-            RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(RevHubOrientationOnRobot.LogoFacingDirection.UP, RevHubOrientationOnRobot.UsbFacingDirection.FORWARD);
+
 
             BNO055IMUNew.Parameters expansionParameters = new BNO055IMUNew.Parameters(orientationOnRobot);
             expansionParameters.calibrationDataFile = "AdafruitIMUCalibration.json";
@@ -26,7 +29,7 @@ public class DualIMU {
             instance.imuControl = hardwareMap.get(IMU.class, "imuControl");
             instance.imuExpansion = hardwareMap.get(IMU.class, "imuExpansion");
 
-            instance.imuControl.initialize(new IMU.Parameters(orientationOnRobot));
+            instance.imuControl.initialize(parameters);
             instance.imuExpansion.initialize(expansionParameters);
         }
 

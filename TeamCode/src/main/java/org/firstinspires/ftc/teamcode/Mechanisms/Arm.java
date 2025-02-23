@@ -17,7 +17,7 @@ public class Arm {
     public static double INIT_AUTO_POS = Kinematics.armOrientationToPosition(Math.toRadians(180));
     public static double SAMPLE_INTAKE = Kinematics.armOrientationToPosition(Math.toRadians(-31.824));
     public static double BASKET_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(75));
-    public static double SCANNING_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(-25.19));
+    public static double SCANNING_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(-24));
 
     public static double STRAIGHT_UP_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(90));
     public static double PERPENDICULAR = Kinematics.armOrientationToPosition(0);

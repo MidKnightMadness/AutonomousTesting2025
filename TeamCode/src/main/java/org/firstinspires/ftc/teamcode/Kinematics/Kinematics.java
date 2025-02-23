@@ -32,7 +32,7 @@ public class Kinematics {
         static final double ARM_DEGREES = SERVO_RANGE_DEGREES / GEAR_RATIO;
         static final double ARM_RADIANS = Math.toRadians(ARM_DEGREES);
 
-        public static double SERVO_ZERO_POSITION = 0.757; // todo set value
+        public static double SERVO_ZERO_POSITION = 0.79; // todo set value
 
         public static double SERVO_MAX = 1;
         public static double SERVO_MIN = 0;
@@ -45,15 +45,15 @@ public class Kinematics {
         static final double WRIST_DEGREES = SERVO_RANGE_DEGREES / GEAR_RATIO;
         static final double WRIST_RADIANS = Math.toRadians(WRIST_DEGREES);
 
-        public static double SERVO_ZERO_POSITION = 0.503; // todo set value
+        public static double SERVO_ZERO_POSITION = 0.5517; // todo set value
         public static double SERVO_MAX = 1;
-        public static double SERVO_MIN = 0.2316;
+        public static double SERVO_MIN = 0.19;
     }
 
     public static class TurntableConstants {
-        static final double SERVO_ZERO = TurnTable.NEUTRAL_POS;
-        static final double SERVO_MAX = TurnTable.LEFT_BOUND;
-        static final double SERVO_MIN = TurnTable.RIGHT_BOUND;
+        static final double SERVO_ZERO = 0.475;
+        static final double SERVO_MAX = 0.81;
+        static final double SERVO_MIN = 0.1;
 
         static final double SERVO_RANGE_DEGREES = 300;
         static final double TURNTABLE_RADIANS = Math.toRadians(SERVO_RANGE_DEGREES);
@@ -100,7 +100,6 @@ public class Kinematics {
         return (position - WristConstants.SERVO_ZERO_POSITION) * WristConstants.WRIST_RADIANS;
     }
 
-
     public static double armOrientationToPosition(double orientation) {
         double position = ArmConstants.SERVO_ZERO_POSITION - orientation / ArmConstants.ARM_RADIANS;
         if (position > 1) position = 1;
@@ -117,8 +116,8 @@ public class Kinematics {
         return position;
     }
 
-    public static double turnTablePositionToOrientation(double orientation) {
-        return TurntableConstants.SERVO_ZERO + orientation / TurntableConstants.TURNTABLE_RADIANS;
+    public static double turnTablePositionToOrientation(double position) {
+        return (position - TurntableConstants.SERVO_ZERO) * TurntableConstants.TURNTABLE_RADIANS;
     }
 
     public static double wristOrientationToPosition(double orientation) {

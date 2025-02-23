@@ -16,6 +16,8 @@ public final class ManualFeedbackTuner extends LinearOpMode {
     public static double DISTANCE = 50;
 
     public static int MODE = 1; // 0: axial, 1 : lateral, 2: heading
+    public static Vector2d tuningOffset = new Vector2d(20, 10);
+    public static double headingDifference = Math.toRadians(90);
 
     MecanumDrive drive;
     Pose2d startingPose;
@@ -50,10 +52,18 @@ public final class ManualFeedbackTuner extends LinearOpMode {
     public Action tuneAction() {
         if (MODE == 0) return axial();
         if (MODE == 1) return lateral();
+        if (MODE == 2) return turn();
 
-        return turn();
+        return combine();
     }
 
+
+    public Action combine() {
+        return drive.actionBuilder(startingPose)
+                .strafeToLinearHeading(new Vector2d(startingPose.position.x + tuningOffset.x, startingPose.position.y + tuningOffset.y), startingPose.heading.toDouble() + headingDifference)
+                .strafeToLinearHeading(startingPose.position, startingPose.heading)
+                .build();
+    }
 
     public Action axial() {
         return drive.actionBuilder(startingPose)

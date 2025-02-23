@@ -66,6 +66,8 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
         this.pose = pose;
     }
 
+    double lastHeadingDelta;
+
     @Override
     public Pose2d getPose() {
         return pose;
@@ -115,6 +117,15 @@ public final class ThreeDeadWheelIMULocalizer implements Localizer {
         int par1PosDelta = par1PosVel.position - lastPar1Pos;
         int perpPosDelta = perpPosVel.position - lastPerpPos;
         double headingDelta = heading.minus(lastHeading);
+
+        // IMU failure, reboot
+//        if (Math.abs(headingDelta) > Math.toRadians(0.5) && headingVel < 0.01) {
+//            imu.initialize(DualIMU.parameters);
+//            headingDelta = lastHeadingDelta;
+//
+//        }
+
+        lastHeadingDelta = headingDelta;
 
         Twist2dDual<Time> twist = new Twist2dDual<>(
                 new Vector2dDual<>(
