@@ -10,11 +10,11 @@ public class ColorClassifier {
     public static RGB yellowLowerBound = new RGB(0.3, 0.4, 0);
     public static RGB yellowUpperBound = new RGB(1, 1, 0.3);
 
-    public static RGB redLowerBound = new RGB(0.5, 0, 0);
+    public static RGB redLowerBound = new RGB(0.4, 0, 0);
     public static RGB redUpperBound = new RGB(1, 0.4, 0.4);
 
-    public static RGB blueLowerBound = new RGB(0, 0, 0.5);;
-    public static RGB blueUpperBound = new RGB(0.3, 0.3, 1);;
+    public static RGB blueLowerBound = new RGB(0, 0, 0.4);;
+    public static RGB blueUpperBound = new RGB(0.4, 0.4, 1);;
 
     public static double pickUpThreshold = 2;
 

@@ -32,7 +32,7 @@ public class ActionsTestOpMode extends OpMode {
     @Override
     public void init() {
         initialPose = new Pose2d(0, 0, 0);
-        mecanumDrive = new MecanumDrive(hardwareMap, initialPose, telemetry);
+        mecanumDrive = new MecanumDrive(hardwareMap, initialPose);
         sampleClaw = new SampleClaw(hardwareMap);
         specimenClaw = new SpecimenClaw(hardwareMap);
         wrist = new Wrist(hardwareMap);

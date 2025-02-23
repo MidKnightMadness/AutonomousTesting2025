@@ -135,11 +135,12 @@ public class InverseKinematics {
         Vector2d robotPos = armPos.plus(new Vector2d(-Math.cos(robotHeading), -Math.sin(robotHeading)).times(RobotConstants.ROBOT_LENGTH / 2));
 
         return new IKResult(true, Kinematics.armOrientationToPosition(pickUpArmOrientation), Kinematics.wristOrientationToPosition(pickUpWristOrientation),
-                Kinematics.wristOrientationToPosition(Math.toRadians(samplePose.heading.toDouble() - robotHeading)), 0,
+                Kinematics.turnTableOrientationToPosition(samplePose.heading.toDouble() - (robotHeading - 2 * Math.PI)), 0,
                 new Pose2d(robotPos, robotHeading));
     }
 
+
     static boolean isBetween(double val, double lower, double upper) {
-        return val < lower && val > upper;
+        return val > lower && val < upper;
     }
 }

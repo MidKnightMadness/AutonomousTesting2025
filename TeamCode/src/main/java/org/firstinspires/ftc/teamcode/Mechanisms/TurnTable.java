@@ -10,16 +10,17 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Components.Timer;
+import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 
 @Config
 public class TurnTable {
     //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions
 
     Timer timer;
-    public static double RIGHT_BOUND = 0.086;
-    public static double LEFT_BOUND = 0.81;
-    public static double THIRD_SAMPLE_POS = 0.28;
-    public static double NEUTRAL_POS = 0.475;
+    public static double RIGHT_BOUND = Kinematics.turnTableOrientationToPosition(Math.toRadians(-90));;
+    public static double LEFT_BOUND = Kinematics.turnTableOrientationToPosition(Math.toRadians(90));
+    public static double THIRD_SAMPLE_POS = Kinematics.turnTableOrientationToPosition(Math.toRadians(-45));;
+    public static double NEUTRAL_POS = Kinematics.turnTableOrientationToPosition(0);;
 
     public Servo servo;
 

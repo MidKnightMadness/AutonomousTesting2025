@@ -26,18 +26,22 @@ import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Localization.DualIMU;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelIMULocalizer;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelOTOSLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
 import org.firstinspires.ftc.teamcode.Localization.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.Localization.messages.MecanumCommandMessage;
@@ -51,11 +55,6 @@ import java.util.List;
 @Config
 public final class MecanumDrive {
     public static class Params {
-        // IMU orientation
-        public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
-                RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
 
         // drive model parameters
         public double tickPerRev = 2000;
@@ -69,22 +68,22 @@ public final class MecanumDrive {
         public double kA = 0.000005;
 
         // TODO: path profile parameters (in inches)
-        public double maxWheelVel = 60;
-        public double minProfileAccel = -35;
-        public double maxProfileAccel = 55;
+        public double maxWheelVel = 50;
+        public double minProfileAccel = -30;
+        public double maxProfileAccel = 50;
 
         // TODO: turn profile parameters (in radians)
-        public double maxAngVel = Math.PI; // shared with path
-        public double maxAngAccel = Math.PI;
+        public double maxAngVel = Math.PI * 1.5;
+        public double maxAngAccel = Math.PI * 1.5;
 
         // TODO: path controller gains
-        public double axialGain = 5.5;
-        public double lateralGain = 5;
-        public double headingGain = 3.5; // shared with turn
+        public double axialGain = 7;
+        public double lateralGain = 7;
+        public double headingGain = 7;
 
-        public double axialVelGain = 0.5;
-        public double lateralVelGain = 0.5;
-        public double headingVelGain = 0.5; // shared with turn
+        public double axialVelGain = 1;
+        public double lateralVelGain = 1;
+        public double headingVelGain = 1;
         public double errorTolerance = 0.5;
         public double headingToleranceDeg = 1;
         public double velocityTolerance = 1;
@@ -97,11 +96,13 @@ public final class MecanumDrive {
 
     public final TurnConstraints defaultTurnConstraints = new TurnConstraints(
             PARAMS.maxAngVel, -PARAMS.maxAngAccel, PARAMS.maxAngAccel);
+
     public final VelConstraint defaultVelConstraint =
             new MinVelConstraint(Arrays.asList(
                     kinematics.new WheelVelConstraint(PARAMS.maxWheelVel),
                     new AngularVelConstraint(PARAMS.maxAngVel)
             ));
+
     public final AccelConstraint defaultAccelConstraint =
             new ProfileAccelConstraint(PARAMS.minProfileAccel, PARAMS.maxProfileAccel);
 
@@ -109,26 +110,23 @@ public final class MecanumDrive {
 
     public final VoltageSensor voltageSensor;
 
-
     public final Localizer localizer;
     private final LinkedList<Pose2d> poseHistory = new LinkedList<>();
-
     private final DownsampledWriter estimatedPoseWriter = new DownsampledWriter("ESTIMATED_POSE", 50_000_000);
     private final DownsampledWriter targetPoseWriter = new DownsampledWriter("TARGET_POSE", 50_000_000);
     private final DownsampledWriter driveCommandWriter = new DownsampledWriter("DRIVE_COMMAND", 50_000_000);
     private final DownsampledWriter mecanumCommandWriter = new DownsampledWriter("MECANUM_COMMAND", 50_000_000);
 
-    DualIMU dualIMU;
-    public final LazyImu lazyImu;
-    Telemetry telemetry;
+    public SparkFunOTOS otos;
 
+    Telemetry telemetry;
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         LynxFirmware.throwIfModulesAreOutdated(hardwareMap);
 
-//        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
-//            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-//        }
+        for (LynxModule module : hardwareMap.getAll(LynxModule.class)) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
 
         leftFront = hardwareMap.get(DcMotorEx.class, "FL");
         leftBack = hardwareMap.get(DcMotorEx.class, "BL");
@@ -145,26 +143,27 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        dualIMU = DualIMU.getInstance(hardwareMap);
+        otos = hardwareMap.get(SparkFunOTOS.class, "otos");
+        otos.calibrateImu();
+        otos.setAngularUnit(AngleUnit.RADIANS);
+        otos.resetTracking();
 
-        localizer = new ThreeDeadWheelIMULocalizer(hardwareMap, dualIMU.imuControl, PARAMS.inPerTick, pose);
-
-        lazyImu = new LazyImu(hardwareMap, "imuControl", new RevHubOrientationOnRobot(
-                PARAMS.logoFacingDirection, PARAMS.usbFacingDirection));
+        // default localizer
+        localizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, otos, PARAMS.inPerTick, pose);
     }
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose, Telemetry telemetry) {
         this(hardwareMap, pose);
-
         this.telemetry = telemetry;
     }
 
+    public LazyImu lazyImu;
+
     public void setDrivePowers(PoseVelocity2d powers) {
-        // flip xy
         //TODO: check if change from trackwidth set to 1 did anything or revert if needed
         PoseVelocity2d correctedPowers = new PoseVelocity2d(new Vector2d(powers.linearVel.y, powers.linearVel.x), powers.angVel);
 
-        MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
+        MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(kinematics.trackWidth).inverse(
                 PoseVelocity2dDual.constant(correctedPowers, 1));
 
         //Method: MecanumKinematics.inverse(), Takes: gamepad vals/PoseVelocity2dDual, returns WheelVelocities

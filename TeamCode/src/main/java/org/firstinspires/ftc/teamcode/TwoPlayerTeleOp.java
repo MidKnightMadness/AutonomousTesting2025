@@ -43,7 +43,7 @@ public class TwoPlayerTeleOp extends OpMode {
     Wrist wrist;
     TurnTable turnTable;
 
-    boolean isInActionCommand = false;
+    boolean isInSlideAction = false;
 
     Action activeAction;
 
@@ -71,7 +71,7 @@ public class TwoPlayerTeleOp extends OpMode {
 
         timer = new Timer();
         clawClosed = true;
-        drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0), telemetry);
+        drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
         if (RunOptions.useBulkReads) {
             allHubs = hardwareMap.getAll(LynxModule.class);
@@ -105,12 +105,12 @@ public class TwoPlayerTeleOp extends OpMode {
             gamepad1Controls();
             gamepad2Controls();
 
-            PoseVelocity2d vel = drive.updatePoseEstimate();
-            Pose2d pose = drive.localizer.getPose();
-
             telemetry.addData("Update Rate (Hz)", 1 / timer.getDeltaTime());
 
             if (RunOptions.enableTelemetry) {
+                PoseVelocity2d vel = drive.updatePoseEstimate();
+                Pose2d pose = drive.localizer.getPose();
+
                 Kinematics.updatePosition(slides, arm, wrist, turnTable);
                 Pose2d endEffectorPose = Kinematics.endEffectorPosition;
 
@@ -141,12 +141,12 @@ public class TwoPlayerTeleOp extends OpMode {
     }
 
     public void runSlideControls() {
-        if (isInActionCommand) {
-            isInActionCommand = activeAction.run(packet);
+        if (isInSlideAction) {
+            isInSlideAction = activeAction.run(packet);
 
             // stop running
             if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
-                isInActionCommand = false;
+                isInSlideAction = false;
             }
 
             telemetry.addLine("Running automation");
@@ -207,11 +207,11 @@ public class TwoPlayerTeleOp extends OpMode {
 
         if (gamepad1.a) {
             activeAction = slidesDown();
-            isInActionCommand = true;
+            isInSlideAction = true;
         }
         else if (gamepad1.b) {
             activeAction = slidesUp();
-            isInActionCommand = true;
+            isInSlideAction = true;
         }
     }
 

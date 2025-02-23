@@ -13,6 +13,7 @@ import com.acmerobotics.roadrunner.ftc.Encoder;
 import com.acmerobotics.roadrunner.ftc.OverflowEncoder;
 import com.acmerobotics.roadrunner.ftc.PositionVelocityPair;
 import com.acmerobotics.roadrunner.ftc.RawEncoder;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -23,7 +24,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.UnnormalizedAngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 @Config
-public final class TwoDeadWheelLocalizer implements Localizer {
+public final class TwoDeadWheelOTOSLocalizer implements Localizer {
 
     public static class Params {
         public double parYTicks = -2768.62492919; // y position of the parallel encoder (in tick units)
@@ -33,7 +34,7 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     public static Params PARAMS = new Params();
 
     public final Encoder par, perp;
-    public final IMU imu;
+    public final SparkFunOTOS otos;
 
     private int lastParPos, lastPerpPos;
     private Rotation2d lastHeading;
@@ -44,16 +45,14 @@ public final class TwoDeadWheelLocalizer implements Localizer {
     private boolean initialized;
     private Pose2d pose;
 
-    public TwoDeadWheelLocalizer(HardwareMap hardwareMap, IMU imu, double inPerTick, Pose2d pose) {
+    public TwoDeadWheelOTOSLocalizer(HardwareMap hardwareMap, SparkFunOTOS otos, double inPerTick, Pose2d pose) {
         par = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "Left Encoder")));
         perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "Front Encoder")));
         par.setDirection(DcMotorEx.Direction.REVERSE);
 
-        this.imu = imu;
-
+        this.otos = otos;
+        otos.setAngularScalar(0.99628174);
         this.inPerTick = inPerTick;
-
-        // FlightRecorder.write("TWO_DEAD_WHEEL_PARAMS", PARAMS);
 
         this.pose = pose;
     }
@@ -68,7 +67,6 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         return pose;
     }
 
-
     public static double normalizeAngle(double angle) {
         return mod((angle + Math.PI), 2 * Math.PI) - Math.PI;
     }
@@ -82,28 +80,13 @@ public final class TwoDeadWheelLocalizer implements Localizer {
         PositionVelocityPair parPosVel = par.getPositionAndVelocity();
         PositionVelocityPair perpPosVel = perp.getPositionAndVelocity();
 
-        YawPitchRollAngles angles = imu.getRobotYawPitchRollAngles();
-
-//        // make IMU go from 0 to 2PI
-//        YawPitchRollAngles correctedAngles = new YawPitchRollAngles(AngleUnit.RADIANS, mod(angles.getYaw(), 2 * Math.PI), angles.getPitch(), angles.getRoll(), angles.getAcquisitionTime());
-
-        // Use degrees here to work around https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/1070
-        AngularVelocity angularVelocityDegrees = imu.getRobotAngularVelocity(AngleUnit.DEGREES);
-        AngularVelocity angularVelocity = new AngularVelocity(
-                UnnormalizedAngleUnit.RADIANS,
-                (float) Math.toRadians(angularVelocityDegrees.xRotationRate),
-                (float) Math.toRadians(angularVelocityDegrees.yRotationRate),
-                (float) Math.toRadians(angularVelocityDegrees.zRotationRate),
-                angularVelocityDegrees.acquisitionTime
-        );
-
         // FlightRecorder.write("TWO_DEAD_WHEEL_INPUTS", new TwoDeadWheelInputsMessage(parPosVel, perpPosVel, angles, angularVelocity));
 
-        Rotation2d heading = Rotation2d.exp(angles.getYaw(AngleUnit.RADIANS));
+        Rotation2d heading = Rotation2d.exp(otos.getPosition().h);
 
 
         // see https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/617
-        double rawHeadingVel = angularVelocity.zRotationRate;
+        double rawHeadingVel = otos.getVelocity().h;
         if (Math.abs(rawHeadingVel - lastRawHeadingVel) > Math.PI) {
             headingVelOffset -= Math.signum(rawHeadingVel) * 2 * Math.PI;
         }
