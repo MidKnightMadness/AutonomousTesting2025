@@ -12,12 +12,19 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.Color.ColorClassifier;
+import org.firstinspires.ftc.teamcode.Color.RGB;
+import org.firstinspires.ftc.teamcode.Color.SampleColors;
 import org.firstinspires.ftc.teamcode.Components.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Kinematics.InverseKinematics;
 import org.firstinspires.ftc.teamcode.Kinematics.InverseKinematics.IKResult;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
 import org.firstinspires.ftc.teamcode.Components.Timer;
+import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
+import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +66,8 @@ public class FiveSampleAuto extends FourSampleAuto {
     ButtonToggle leftBump;
     ButtonToggle rightBump;
 
+    SampleColors allianceColor = SampleColors.BLUE;
+
     // sample 27.5” x 42.75”
 
     public static double coordinateInputSpeed = 1;
@@ -68,14 +77,14 @@ public class FiveSampleAuto extends FourSampleAuto {
     public void init() {
         super.init();
         samplePositions = new ArrayList<>();
-        samplePositions.add(new SamplePose(0, 0, Math.toRadians(-90)));
+        samplePositions.add(new SamplePose(0, 3, Math.toRadians(-90)));
         clawColorSensor = hardwareMap.get(RevColorSensorV3.class, "Claw Color Sensor");
         timer = new Timer();
     }
 
-    int index = 0;
+    int inputIndex = 0;
 
-    Vector2d sampleOffset = new Vector2d(55, -32);
+    Vector2d sampleOffset = new Vector2d(64.5, -32);
     List<IKResult> results = new ArrayList<>();
 
     @SuppressLint("DefaultLocale")
@@ -86,33 +95,38 @@ public class FiveSampleAuto extends FourSampleAuto {
         leftBump = new ButtonToggle();
         rightBump = new ButtonToggle();
 
+        if (gamepad1.left_bumper) allianceColor = SampleColors.BLUE;
+        if (gamepad1.right_bumper) allianceColor = SampleColors.RED;
+
+        telemetry.addData("Current Alliance Color: ", allianceColor);
+
         if (gamepad1.x) mecanumDrive.otos.calibrateImu();
         if (gamepad1.y) mecanumDrive.otos.resetTracking();
 
         telemetry.addData("OTOS heading", mecanumDrive.otos.getPosition().h);
 
         if (leftBump.update(gamepad1.left_bumper)) {
-            index++;
+            inputIndex++;
             try { Thread.sleep(200); } catch (InterruptedException e) { }
         }
 
         if (rightBump.update(gamepad1.right_bumper)) {
-            if (index > 0) index--;
+            if (inputIndex > 0) inputIndex--;
             try { Thread.sleep(200); } catch (InterruptedException e) { }
         }
 
-        if (index > samplePositions.size() - 1) {
+        if (inputIndex > samplePositions.size() - 1) {
             samplePositions.add(new SamplePose());
         }
 
-        SamplePose activeSample = samplePositions.get(index);
+        SamplePose activeSample = samplePositions.get(inputIndex);
 
         activeSample.x += -gamepad1.left_stick_y * timer.getDeltaTime() * coordinateInputSpeed;
         activeSample.y += -gamepad1.left_stick_x * timer.getDeltaTime() * coordinateInputSpeed;
         activeSample.heading += -gamepad1.right_stick_y * timer.getDeltaTime() * headingInputSpeed;
 
-        samplePositions.set(index, new SamplePose(activeSample.x, activeSample.y, activeSample.heading));
-        telemetry.addData("Active sample", index + 1);
+        samplePositions.set(inputIndex, new SamplePose(activeSample.x, activeSample.y, activeSample.heading));
+        telemetry.addData("Active sample", inputIndex + 1);
         telemetry.addLine();
 
         for (int i = 0; i < samplePositions.size(); i++) {
@@ -146,33 +160,92 @@ public class FiveSampleAuto extends FourSampleAuto {
         }
     }
 
+    int currentIndex = 0;
+    
     public void subPickup() {
-        IKResult firstSample = results.get(0);
+        IKResult ikResult = results.get(currentIndex);
 
         Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
                         resetAfterScoring(),
                         slides.bringDown(1),
                         mecanumDrive.actionBuilder()
-                                .splineTo(submersibleIntermediatePose.position, submersibleIntermediatePose.heading)
-                                .splineTo(firstSample.robotPose.position, firstSample.robotPose.heading)
+                                .strafeToLinearHeading(submersibleIntermediatePose.position, submersibleIntermediatePose.heading)
+                                .strafeToLinearHeading(ikResult.robotPose.position, ikResult.robotPose.heading)
                                 .build(),
                         new SequentialAction(
                                 new SleepAction(0.5),
                                 arm.setPositionSmooth(Arm.SCANNING_POSITION),
-                                turnTable.setPosition(firstSample.turntablePosition)
+                                turnTable.setPosition(ikResult.turntablePosition)
                         )
-                ),
-                manipulatorPickUp(),
-                mecanumDrive.actionBuilder(firstSample.robotPose)
-                        .splineTo(submersibleIntermediatePose.position, submersibleIntermediatePose.heading)
-                        .build()
+                )
         ));
+
+        boolean pickedUp = pickUpAndCheck();
+
+        if (pickedUp) {
+            Actions.runBlocking(new SequentialAction(
+                    mecanumDrive.actionBuilder()
+                            .splineTo(submersibleIntermediatePose.position, submersibleIntermediatePose.heading)
+                            .build(),
+                    new SequentialAction(
+                            new ParallelAction(
+                                    arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
+                                    mecanumDrive.actionBuilder(submersibleIntermediatePose).strafeToSplineHeading(new Vector2d(scoringPose.position.x, scoringPose.position.y), scoringPose.heading).build(),
+                                    slides.liftUp(1),
+                                    wrist.setPosition(Wrist.BASKET_POSITION),
+                                    turnTable.setPositionSmooth(TurnTable.NEUTRAL_POS, 0.5)
+                            ),
+                            arm.setPositionSmooth(Arm.BASKET_POSITION),
+                            sampleClaw.releaseAction(0.2)
+                    )
+            ));
+            parkFromBasket();
+        }
+        else {
+            sampleClaw.release();
+            subZonePark();
+        }
+    }
+
+    public boolean pickUpAndCheck() {
+        Actions.runBlocking(
+                new SequentialAction(
+                    new ParallelAction(
+                            arm.setPositionSmooth(Arm.SAMPLE_INTAKE),
+                            sampleClaw.releaseAction(0.5)
+                    ),
+                    new SleepAction(0.5),
+                    sampleClaw.grabAction(0.5),
+                    arm.setPositionSmooth(Arm.PERPENDICULAR),
+                    new SleepAction(0.5)
+                )
+        );
+
+        if (clawColorSensor.getDistance(DistanceUnit.INCH) < ColorClassifier.pickUpThreshold) telemetry.addLine("Pickup: distance too far");
+        if (checkColor()) telemetry.addLine("Pickup: color wrong");
+        return clawColorSensor.getDistance(DistanceUnit.INCH) < ColorClassifier.pickUpThreshold && checkColor();
+    }
+
+    public boolean checkColor() {
+        int count = 0;
+
+        while (count < 5) {
+            SampleColors color = ColorClassifier.classify(new RGB(clawColorSensor.getNormalizedColors()));
+            if (color == SampleColors.YELLOW || color == allianceColor) {
+                return true;
+            }
+            count++;
+        }
+
+        return false;
     }
 
     @Override
     public void start() {
         getPickupResults();
+        telemetry.setAutoClear(false);
+        timer.restart();
 
         Actions.runBlocking(
                 scoreInBasket(0, 0)
@@ -182,8 +255,31 @@ public class FiveSampleAuto extends FourSampleAuto {
         secondLineSample();
         thirdLineSample();
 
+        sampleClaw.release();
+
         subPickup();
     }
+
+    public void subZonePark() {
+        Actions.runBlocking(new SequentialAction(
+                arm.setPositionSmooth(Arm.PERPENDICULAR),
+                new ParallelAction(
+                        mecanumDrive.actionBuilder()
+                                .strafeToLinearHeading(submersibleIntermediatePose.position, submersibleIntermediatePose.heading)
+                                .strafeToLinearHeading(parkingPose.position, parkingPose.heading)
+                                .build(),
+                        new SequentialAction(
+                                new SleepAction(1),
+                                arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION)
+                        )
+                ),
+                arm.setPositionSmooth(Arm.ARM_TO_BAR)
+        ));
+
+        arm.leftServo.getController().pwmDisable();
+        arm.rightServo.getController().pwmDisable();
+    }
+
 
     @Override
     public void loop() { }

@@ -4,10 +4,10 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
 import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
 import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
@@ -26,12 +26,12 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 @Autonomous(name = "FourSampleAuto")
 public class FourSampleAuto extends OpMode {
     public static Pose2d scoringPose = new Pose2d(new Vector2d(10.5, 22), Math.toRadians(130));
-    public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 19.75, 17),0);
-    public static Pose2d secondSamplePose = new Pose2d(new Vector2d(19.75, 27), 0);
+    public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 19, 16.5),0);
+    public static Pose2d secondSamplePose = new Pose2d(new Vector2d(19, 26.5), 0);
     public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(24.5, 24.5), Math.toRadians(45));
     public static double thirdSampleIntermediateOffset = 3;
     public static Pose2d submersibleIntermediatePose = new Pose2d(55, 17, Math.toRadians(-90));
-    public static Pose2d parkingPose = new Pose2d(new Vector2d(60, -8), Math.toRadians(-90));
+    public static Pose2d parkingPose = new Pose2d(new Vector2d(55, 0), Math.toRadians(-90));
 
     SampleClaw sampleClaw;
     Arm arm;
@@ -83,6 +83,7 @@ public class FourSampleAuto extends OpMode {
         firstLineSample();
         secondLineSample();
         thirdLineSample();
+        parkFromBasket();
     }
 
 
@@ -106,7 +107,7 @@ public class FourSampleAuto extends OpMode {
                         arm.setPositionSmooth(Arm.SAMPLE_INTAKE),
                         sampleClaw.releaseAction(0)
                 ),
-                new SleepAction(0.1),
+                new SleepAction(0.2),
                 sampleClaw.grabAction(0.2)
         );
     }
@@ -191,6 +192,24 @@ public class FourSampleAuto extends OpMode {
                 scoreInBasket(0, 0)
         ));
     }
+
+    public void parkFromBasket() {
+        Actions.runBlocking(new SequentialAction(
+                new ParallelAction(
+                        resetAfterScoring(),
+                        slides.bringDown(1),
+                        mecanumDrive.actionBuilder()
+                                .strafeToLinearHeading(submersibleIntermediatePose.position, submersibleIntermediatePose.heading)
+                                .strafeToLinearHeading(parkingPose.position, parkingPose.heading)
+                                .build()
+                ),
+                arm.setPositionSmooth(Kinematics.armOrientationToPosition(Math.toRadians(80)))
+        ));
+
+        arm.leftServo.getController().pwmDisable();
+        arm.rightServo.getController().pwmDisable();
+    }
+
 
     @Override
     public void loop() { }

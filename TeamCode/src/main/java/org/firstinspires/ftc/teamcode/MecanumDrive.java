@@ -25,22 +25,16 @@ import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.Localization.DualIMU;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
-import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelIMULocalizer;
-import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
-import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelOTOSLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
 import org.firstinspires.ftc.teamcode.Localization.messages.DriveCommandMessage;
@@ -73,13 +67,13 @@ public final class MecanumDrive {
         public double maxProfileAccel = 50;
 
         // TODO: turn profile parameters (in radians)
-        public double maxAngVel = Math.PI * 1.5;
-        public double maxAngAccel = Math.PI * 1.5;
+        public double maxAngVel = Math.PI * 1.4;
+        public double maxAngAccel = Math.PI * 1.4;
 
         // TODO: path controller gains
         public double axialGain = 7;
         public double lateralGain = 7;
-        public double headingGain = 7;
+        public double headingGain = 8;
 
         public double axialVelGain = 1;
         public double lateralVelGain = 1;
@@ -163,7 +157,7 @@ public final class MecanumDrive {
         //TODO: check if change from trackwidth set to 1 did anything or revert if needed
         PoseVelocity2d correctedPowers = new PoseVelocity2d(new Vector2d(powers.linearVel.y, powers.linearVel.x), powers.angVel);
 
-        MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(kinematics.trackWidth).inverse(
+        MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
                 PoseVelocity2dDual.constant(correctedPowers, 1));
 
         //Method: MecanumKinematics.inverse(), Takes: gamepad vals/PoseVelocity2dDual, returns WheelVelocities

@@ -45,9 +45,9 @@ public class Kinematics {
         static final double WRIST_DEGREES = SERVO_RANGE_DEGREES / GEAR_RATIO;
         static final double WRIST_RADIANS = Math.toRadians(WRIST_DEGREES);
 
-        public static double SERVO_ZERO_POSITION = 0.5517; // todo set value
-        public static double SERVO_MAX = 1;
-        public static double SERVO_MIN = 0.19;
+        public static double SERVO_ZERO_POSITION = 0.45; // todo set value
+        public static double SERVO_MAX = 0.95;
+        public static double SERVO_MIN = 0.14;
     }
 
     public static class TurntableConstants {

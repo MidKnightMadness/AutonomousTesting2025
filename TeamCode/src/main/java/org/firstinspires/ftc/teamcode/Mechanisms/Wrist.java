@@ -17,7 +17,7 @@ public class Wrist {
     public static double SAMPLE_PICKUP_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184)); // sample pickup in autonomous
     public static double THIRD_SAMPLE = Kinematics.wristOrientationToPosition(Math.toRadians(-65)); // sample pickup in autonomous
     public static double BASKET_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184));; // sample dropoff in basket(top basket) at certain arm position
-    public static double INIT_POSITION = 0.37;
+    public static double INIT_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-80));
     public static double STRAIGHT_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(0));
 
     public static double SPECIMEN_INTAKE_POSITION = 0.63; //specimen position

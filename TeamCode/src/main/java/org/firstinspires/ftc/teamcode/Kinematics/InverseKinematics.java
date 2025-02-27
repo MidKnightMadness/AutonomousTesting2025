@@ -85,8 +85,8 @@ public class InverseKinematics {
         // simple case: pickup with robot heading -90 deg
         if (isBetween(samplePose.position.x, FieldConstants.subXLowerBound + RobotConstants.ROBOT_WIDTH / 2, FieldConstants.subXUpperBound - RobotConstants.ROBOT_WIDTH / 2)) {
             return new IKResult(true, Kinematics.armOrientationToPosition(pickUpArmOrientation), Kinematics.wristOrientationToPosition(pickUpWristOrientation),
-                    Kinematics.turnTableOrientationToPosition(0), 0,
-                    new Pose2d(samplePose.position.x, samplePose.position.y - pickUpRadius, Math.toRadians(-90)));
+                    Kinematics.turnTableOrientationToPosition(samplePose.heading.toDouble() + Math.toRadians(90)), 0,
+                    new Pose2d(samplePose.position.x, samplePose.position.y + pickUpRadius + RobotConstants.ROBOT_LENGTH / 2, Math.toRadians(-90)));
         }
 
         // variable robot heading

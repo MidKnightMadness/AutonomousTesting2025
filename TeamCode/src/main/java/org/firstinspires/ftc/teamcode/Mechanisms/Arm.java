@@ -14,16 +14,16 @@ import org.firstinspires.ftc.teamcode.Components.Timer;
 @Config
 public class Arm {
 
-    public static double INIT_AUTO_POS = Kinematics.armOrientationToPosition(Math.toRadians(180));
+    public static double INIT_AUTO_POS = Kinematics.armOrientationToPosition(Math.toRadians(200));
     public static double SAMPLE_INTAKE = Kinematics.armOrientationToPosition(Math.toRadians(-31.824));
     public static double BASKET_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(75));
-    public static double SCANNING_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(-24));
+    public static double SCANNING_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(-23));
 
     public static double STRAIGHT_UP_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(90));
     public static double PERPENDICULAR = Kinematics.armOrientationToPosition(0);
     public static double ARM_TO_BAR = Kinematics.armOrientationToPosition(Math.toRadians(80));
 
-    public static double TIME_FULL_ROTATION = 2;
+    public static double TIME_FULL_ROTATION = 1.5;
 
     public Servo leftServo;
     public Servo rightServo;

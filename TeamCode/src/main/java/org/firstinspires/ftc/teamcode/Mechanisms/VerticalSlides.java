@@ -18,7 +18,7 @@ public class VerticalSlides {
     public static double BASKET_SCORING_POSITION = 2150;
     public static double DOWN_POSITION = 10;
 
-    public static double SPECIMEN_INTAKE = 650;
+    public static double SPECIMEN_INTAKE = 700;
     public static double SPECIMEN_OUTTAKE = 2200;
 
     public VerticalSlides(HardwareMap hardwareMap) {

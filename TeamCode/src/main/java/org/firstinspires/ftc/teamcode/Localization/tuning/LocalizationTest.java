@@ -48,13 +48,11 @@ public class LocalizationTest extends LinearOpMode {
 
         timer = new Timer();
 
-        DualIMU dualIMU = DualIMU.getInstance(hardwareMap);
+        // DualIMU dualIMU = DualIMU.getInstance(hardwareMap);
 
         otosLocalizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, drive.otos, MecanumDrive.PARAMS.inPerTick, startingPose);
         threeWheel = new ThreeDeadWheelLocalizer(hardwareMap, MecanumDrive.PARAMS.inPerTick, startingPose);
-        twoWheel = new TwoDeadWheelLocalizer(hardwareMap, dualIMU.imuControl, MecanumDrive.PARAMS.inPerTick, startingPose);
-
-        con = hardwareMap.get(IMU.class, "imuControl");
+        // twoWheel = new TwoDeadWheelLocalizer(hardwareMap, dualIMU.imuControl, MecanumDrive.PARAMS.inPerTick, startingPose);
 
         if (RunOptions.useBulkReads) {
             allHubs = hardwareMap.getAll(LynxModule.class);
@@ -82,7 +80,6 @@ public class LocalizationTest extends LinearOpMode {
             threeWheel.update();
 
             if (this.gamepad1.y) {
-                dualIMU.imuControl.resetYaw();
                 drive.otos.calibrateImu();
                 drive.otos.resetTracking();
             }
