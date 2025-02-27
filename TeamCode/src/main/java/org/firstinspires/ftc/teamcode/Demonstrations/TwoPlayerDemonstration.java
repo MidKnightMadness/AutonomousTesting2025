@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Demonstrations;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -14,6 +14,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
 import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
 import org.firstinspires.ftc.teamcode.Mechanisms.SpecimenClaw;
@@ -22,6 +23,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
+import org.firstinspires.ftc.teamcode.RunOptions;
 
 import java.util.List;
 
@@ -316,9 +318,29 @@ public class TwoPlayerDemonstration extends OpMode {
             return;
         }
 
+        if (gamepad2.y) {
+            armAction = arm.setPositionSmooth(Arm.BASKET_POSITION);
+            inArmAction = true;
+        }
+        else if (gamepad2.a) {
+            armAction = arm.setPositionSmooth(Arm.SAMPLE_INTAKE);
+            inArmAction = true;
+        }
+        else if(gamepad2.x){
+            armAction = arm.setPositionSmooth(Arm.INIT_AUTO_POS);
+            inArmAction = true;
+        }
+        else if(gamepad2.b){
+            armAction = arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION);
+            inArmAction = true;
+        }
+
+
         //Arm
-        if (Math.abs(gamepad2.right_stick_y) > 0.05){
-            arm.setPositionDirect(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
+        if(!inArmAction) {
+            if (Math.abs(gamepad2.right_stick_y) > 0.05) {
+                arm.setPositionDirect(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
+            }
         }
     }
 }
