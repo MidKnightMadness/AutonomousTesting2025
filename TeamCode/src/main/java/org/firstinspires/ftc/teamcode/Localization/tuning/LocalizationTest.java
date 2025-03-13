@@ -7,15 +7,12 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.lynx.LynxModule;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.teamcode.Components.Timer;
-import org.firstinspires.ftc.teamcode.Localization.DualIMU;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
-import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelOTOSLocalizer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;

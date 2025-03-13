@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.Localization;
+package org.firstinspires.ftc.teamcode.Localization.InternalIMU;
 
+@Deprecated
 public class HeadingFusion {
     private double integratedError = 0.0;
     private final double correctionGain;

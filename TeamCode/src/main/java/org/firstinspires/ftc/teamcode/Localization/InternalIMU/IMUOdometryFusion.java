@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Localization;
+package org.firstinspires.ftc.teamcode.Localization.InternalIMU;
 
 @Deprecated
 public class IMUOdometryFusion {
