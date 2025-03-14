@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Color;
+package org.firstinspires.ftc.teamcode.ColorSensor;
 
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 

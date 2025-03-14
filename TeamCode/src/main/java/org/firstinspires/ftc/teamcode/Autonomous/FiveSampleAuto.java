@@ -13,16 +13,16 @@ import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Color.ColorClassifier;
-import org.firstinspires.ftc.teamcode.Color.RGB;
-import org.firstinspires.ftc.teamcode.Color.SampleColors;
+import org.firstinspires.ftc.teamcode.ColorSensor.ColorClassifier;
+import org.firstinspires.ftc.teamcode.ColorSensor.ColorSensorWrapper;
+import org.firstinspires.ftc.teamcode.ColorSensor.RGB;
+import org.firstinspires.ftc.teamcode.ColorSensor.SampleColors;
 import org.firstinspires.ftc.teamcode.Components.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Kinematics.InverseKinematics;
 import org.firstinspires.ftc.teamcode.Kinematics.InverseKinematics.IKResult;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
 import org.firstinspires.ftc.teamcode.Components.Timer;
-import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
 import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 
@@ -38,7 +38,6 @@ public class FiveSampleAuto extends FourSampleAuto {
     List<SamplePose> samplePositions;
 
     Timer timer;
-    RevColorSensorV3 clawColorSensor;
 
     public static class SamplePose {
         public double x;
@@ -73,12 +72,13 @@ public class FiveSampleAuto extends FourSampleAuto {
     public static double coordinateInputSpeed = 1;
     public static double headingInputSpeed = 0.1;
 
+    ColorSensorWrapper colorSensorWrapper;
     @Override
     public void init() {
         super.init();
         samplePositions = new ArrayList<>();
         samplePositions.add(new SamplePose(0, 3, Math.toRadians(-90)));
-        clawColorSensor = hardwareMap.get(RevColorSensorV3.class, "Claw Color Sensor");
+        colorSensorWrapper = new ColorSensorWrapper(hardwareMap, allianceColor);
         timer = new Timer();
     }
 
@@ -222,23 +222,7 @@ public class FiveSampleAuto extends FourSampleAuto {
                 )
         );
 
-        if (clawColorSensor.getDistance(DistanceUnit.INCH) < ColorClassifier.pickUpThreshold) telemetry.addLine("Pickup: distance too far");
-        if (checkColor()) telemetry.addLine("Pickup: color wrong");
-        return clawColorSensor.getDistance(DistanceUnit.INCH) < ColorClassifier.pickUpThreshold && checkColor();
-    }
-
-    public boolean checkColor() {
-        int count = 0;
-
-        while (count < 5) {
-            SampleColors color = ColorClassifier.classify(new RGB(clawColorSensor.getNormalizedColors()));
-            if (color == SampleColors.YELLOW || color == allianceColor) {
-                return true;
-            }
-            count++;
-        }
-
-        return false;
+        return colorSensorWrapper.isSamplePickedUp(5);
     }
 
     @Override

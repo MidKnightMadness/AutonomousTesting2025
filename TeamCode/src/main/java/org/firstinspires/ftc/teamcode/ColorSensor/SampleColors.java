@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Color;
+package org.firstinspires.ftc.teamcode.ColorSensor;
 
 
 public enum SampleColors{
