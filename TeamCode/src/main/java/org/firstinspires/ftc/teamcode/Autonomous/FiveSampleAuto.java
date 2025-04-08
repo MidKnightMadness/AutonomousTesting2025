@@ -84,7 +84,7 @@ public class FiveSampleAuto extends FourSampleAuto {
 
     int inputIndex = 0;
 
-    Vector2d sampleOffset = new Vector2d(64.5, -32);
+    public static Vector2d sampleOffset = new Vector2d(64.5, -32);
     List<IKResult> results = new ArrayList<>();
 
     @SuppressLint("DefaultLocale")
@@ -184,14 +184,17 @@ public class FiveSampleAuto extends FourSampleAuto {
         boolean pickedUp = pickUpAndCheck();
 
         if (pickedUp) {
-            Actions.runBlocking(new SequentialAction(
+            Actions.runBlocking(new ParallelAction(
                     mecanumDrive.actionBuilder()
-                            .splineTo(submersibleIntermediatePose.position, submersibleIntermediatePose.heading)
+                            .strafeToSplineHeading(submersibleIntermediatePose.position, scoringPose.heading)
+                            .strafeToSplineHeading(new Vector2d(scoringPose.position.x, scoringPose.position.y), scoringPose.heading)
                             .build(),
+
                     new SequentialAction(
+                            // change the below to run when the position passes the intermediate position instead of a hardcoded wait time
+                            new SleepAction(1),
                             new ParallelAction(
                                     arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
-                                    mecanumDrive.actionBuilder(submersibleIntermediatePose).strafeToSplineHeading(new Vector2d(scoringPose.position.x, scoringPose.position.y), scoringPose.heading).build(),
                                     slides.liftUp(1),
                                     wrist.setPosition(Wrist.BASKET_POSITION),
                                     turnTable.setPositionSmooth(TurnTable.NEUTRAL_POS, 0.5)
@@ -245,6 +248,7 @@ public class FiveSampleAuto extends FourSampleAuto {
     }
 
     public void subZonePark() {
+        mecanumDrive.actionBuilder().build();
         Actions.runBlocking(new SequentialAction(
                 arm.setPositionSmooth(Arm.PERPENDICULAR),
                 new ParallelAction(

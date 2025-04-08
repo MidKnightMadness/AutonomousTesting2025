@@ -5,6 +5,7 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -12,14 +13,21 @@ import org.firstinspires.ftc.teamcode.Localization.Localizer;
 
 public class PinpointOdometryLocalizer implements Localizer {
 
-    GoBildaPinpointDriver odo;
+    public GoBildaPinpointDriver odo;
 
     Pose2d pose;
 
-    public PinpointOdometryLocalizer(HardwareMap hardwareMap) {
+    public PinpointOdometryLocalizer(HardwareMap hardwareMap, Telemetry telemetry) {
         odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
         odo.setOffsets(138.874, 33); // using left odometry pod
         // odo.setOffsets(-139.1662678093, 33);  // using right odometry pod
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.addData("X offset", odo.getXOffset());
+        telemetry.addData("Y offset", odo.getYOffset());
+        telemetry.addData("Device Version Number:", odo.getDeviceVersion());
+        telemetry.addData("Device Scalar", odo.getYawScalar());
+        telemetry.update();
 
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
@@ -41,6 +49,8 @@ public class PinpointOdometryLocalizer implements Localizer {
 
     @Override
     public PoseVelocity2d update() {
+        odo.update();
+
         Pose2D vel = odo.getVelocity();
         Pose2D pos = odo.getPosition();
 

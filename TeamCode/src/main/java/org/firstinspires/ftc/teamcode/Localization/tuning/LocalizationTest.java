@@ -11,7 +11,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Components.Timer;
+import org.firstinspires.ftc.teamcode.Localization.GoBildaPinpoint.PinpointOdometryLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelOTOSLocalizer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -24,16 +26,10 @@ import java.util.List;
 @Config
 public class LocalizationTest extends LinearOpMode {
 
-    Localizer threeWheel;
-    Localizer twoWheel;
+//    Localizer otosLocalizer;
+    PinpointOdometryLocalizer pinpointLocalizer;
 
-    Localizer otosLocalizer;
     Timer timer;
-
-    List<LynxModule> allHubs;
-
-
-    IMU con;
     @Override
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -43,21 +39,10 @@ public class LocalizationTest extends LinearOpMode {
         drive.otos.calibrateImu();
         drive.otos.resetTracking();
 
+        pinpointLocalizer = new PinpointOdometryLocalizer(hardwareMap, telemetry);
         timer = new Timer();
 
-        // DualIMU dualIMU = DualIMU.getInstance(hardwareMap);
-
-        otosLocalizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, drive.otos, MecanumDrive.PARAMS.inPerTick, startingPose);
-        threeWheel = new ThreeDeadWheelLocalizer(hardwareMap, MecanumDrive.PARAMS.inPerTick, startingPose);
-        // twoWheel = new TwoDeadWheelLocalizer(hardwareMap, dualIMU.imuControl, MecanumDrive.PARAMS.inPerTick, startingPose);
-
-        if (RunOptions.useBulkReads) {
-            allHubs = hardwareMap.getAll(LynxModule.class);
-
-            for (LynxModule module : allHubs) {
-                module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-            }
-        }
+//        otosLocalizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, drive.otos, MecanumDrive.PARAMS.inPerTick, startingPose);
 
         waitForStart();
 
@@ -73,8 +58,7 @@ public class LocalizationTest extends LinearOpMode {
             ));
 
             drive.updatePoseEstimate();
-            twoWheel.update();
-            threeWheel.update();
+            pinpointLocalizer.update();
 
             if (this.gamepad1.y) {
                 drive.otos.calibrateImu();
@@ -90,22 +74,20 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("y", pose.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
 
-
-            Pose2d pose2 = threeWheel.getPose();
-            telemetry.addLine("\nThree wheel Localizer");
+            Pose2d pose2 = pinpointLocalizer.getPose();
+            telemetry.addLine("\nDrive Localizer (Pinpoint)");
             telemetry.addData("x", pose2.position.x);
             telemetry.addData("y", pose2.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(pose2.heading.toDouble()));
 
 
-            Pose2d pose3 = twoWheel.getPose();
-            telemetry.addLine("\nTwo wheel Localizer");
-            telemetry.addData("x", pose3.position.x);
-            telemetry.addData("y", pose3.position.y);
-            telemetry.addData("heading (deg)", Math.toDegrees(pose3.heading.toDouble()));
+            telemetry.addLine("\nDrive Localizer (Pinpoint2)");
+            telemetry.addData("x", pinpointLocalizer.odo.getPosition().getX(DistanceUnit.INCH));
+            telemetry.addData("y", pinpointLocalizer.odo.getPosX());
+            telemetry.addData("heading (deg)", pinpointLocalizer.odo.getHeading());
+
 
             telemetry.addLine("\nRaw IMU Values");
-            telemetry.addData("heading (control)", con.getRobotYawPitchRollAngles().getYaw());
             telemetry.addData("heading (OTOS)", Math.toDegrees(drive.otos.getPosition().h));
 
             telemetry.update();

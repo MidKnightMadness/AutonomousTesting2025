@@ -62,9 +62,12 @@ public final class MecanumDrive {
         public double kA = 0.000005;
 
         // TODO: path profile parameters (in inches)
-        public double maxWheelVel = 50;
-        public double minProfileAccel = -30;
-        public double maxProfileAccel = 50;
+//        public double maxWheelVel = 50;
+//        public double minProfileAccel = -30;
+//        public double maxProfileAccel = 50;
+        public double maxWheelVel = 20;
+        public double minProfileAccel = -10;
+        public double maxProfileAccel = 20;
 
         // TODO: turn profile parameters (in radians)
         public double maxAngVel = Math.PI * 1.4;
@@ -142,7 +145,6 @@ public final class MecanumDrive {
         otos.setAngularUnit(AngleUnit.RADIANS);
         otos.resetTracking();
 
-        // default localizer
         localizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, otos, PARAMS.inPerTick, pose);
     }
 
@@ -527,6 +529,7 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilder() {
+        updatePoseEstimate();
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryAction::new,
@@ -559,6 +562,7 @@ public final class MecanumDrive {
     }
 
     public TrajectoryActionBuilder actionBuilderNoCorrection() {
+        updatePoseEstimate();
         return new TrajectoryActionBuilder(
                 TurnAction::new,
                 FollowTrajectoryNoCorrection::new,
@@ -573,4 +577,25 @@ public final class MecanumDrive {
                 defaultVelConstraint, defaultAccelConstraint
         );
     }
+
+    public class WaitUntilPositionAction implements Action {
+        private final MecanumDrive drive;
+        private final Vector2d threshold;
+        private final double tolerance;
+
+        public WaitUntilPositionAction(MecanumDrive drive, Vector2d threshold, double tolerance) {
+            this.drive = drive;
+            this.threshold = threshold;
+            this.tolerance = tolerance;
+        }
+
+        @Override
+        public boolean run(TelemetryPacket packet) {
+            Vector2d currentPos = drive.localizer.getPose().position;
+
+            // Check if the distance from the threshold is within a tolerance
+            return Math.hypot(threshold.x - currentPos.x, threshold.y - currentPos.y) < tolerance;
+        }
+    }
+
 }

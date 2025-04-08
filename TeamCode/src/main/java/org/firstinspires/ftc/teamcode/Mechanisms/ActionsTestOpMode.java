@@ -53,12 +53,6 @@ public class ActionsTestOpMode extends OpMode {
     @Override
     public void start() {
         mecanumDrive.localizer.setPose(FourSampleAuto.startingPose);
-        Actions.runBlocking(
-                new ParallelAction(
-                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
-                        mecanumDrive.actionBuilder().strafeToLinearHeading(FourSampleAuto.scoringPose.position, FourSampleAuto.scoringPose.heading).build()
-                )
-        );
     }
 
 
@@ -66,7 +60,6 @@ public class ActionsTestOpMode extends OpMode {
     Pose2d sampleCoordinate = new Pose2d(10, 10, 0);
 
     double endEffectorOrientation = Math.toRadians(-90);
-
 
     Action pickUpSample(Pose2d samplePose) {
         return new SequentialAction();
@@ -99,9 +92,5 @@ public class ActionsTestOpMode extends OpMode {
 //        telemetry.addData("End effector rotation", Math.toDegrees(endEffectorPose.heading.toDouble()));
 //
 //        telemetry.update();
-    }
-
-    public double calculateWristPosition(double armPos, double targetEndEffectorOrientation) {
-        return Kinematics.wristOrientationToPosition(targetEndEffectorOrientation - Kinematics.armPositionToOrientation(armPos));
     }
 }

@@ -4,12 +4,16 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 
+import org.firstinspires.ftc.teamcode.Autonomous.FiveSampleAuto;
+
 public final class Drawing {
     private Drawing() {}
 
 
     public static void drawRobot(Canvas c, Pose2d t) {
         final double ROBOT_RADIUS = 9;
+
+//        t = new Pose2d(t.position.x -FiveSampleAuto.sampleOffset.x, t.position.y - FiveSampleAuto.sampleOffset.y, t.heading.toDouble());
 
         c.setStrokeWidth(1);
         c.strokeCircle(t.position.x, t.position.y, ROBOT_RADIUS);
