@@ -17,17 +17,10 @@ public class PinpointOdometryLocalizer implements Localizer {
 
     Pose2d pose;
 
-    public PinpointOdometryLocalizer(HardwareMap hardwareMap, Telemetry telemetry) {
+    public PinpointOdometryLocalizer(HardwareMap hardwareMap, Pose2d startingPose) {
         odo = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
         odo.setOffsets(138.874, 33); // using left odometry pod
         // odo.setOffsets(-139.1662678093, 33);  // using right odometry pod
-
-        telemetry.addData("Status", "Initialized");
-        telemetry.addData("X offset", odo.getXOffset());
-        telemetry.addData("Y offset", odo.getYOffset());
-        telemetry.addData("Device Version Number:", odo.getDeviceVersion());
-        telemetry.addData("Device Scalar", odo.getYawScalar());
-        telemetry.update();
 
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
@@ -35,6 +28,8 @@ public class PinpointOdometryLocalizer implements Localizer {
 
         odo.recalibrateIMU();
         odo.resetPosAndIMU();
+        setPose(startingPose);
+
     }
 
     @Override

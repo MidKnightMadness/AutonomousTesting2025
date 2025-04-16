@@ -60,21 +60,12 @@ public class FourSampleAuto extends OpMode {
 
     @Override
     public void init_loop() {
-        if (gamepad1.x) {
-            mecanumDrive.otos.calibrateImu();
-        }
-
-        if (gamepad1.y) {
-            mecanumDrive.otos.resetTracking();
-        }
-        telemetry.addData("OTOS heading", mecanumDrive.otos.getPosition().h);
 
         telemetry.update();
     }
 
     @Override
     public void start() {
-        mecanumDrive.otos.resetTracking();
 
         Actions.runBlocking(
                 scoreInBasket(0, 0)

@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.Localization.GoBildaPinpoint.PinpointOdometryLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelOTOSLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
@@ -114,7 +115,7 @@ public final class MecanumDrive {
     private final DownsampledWriter driveCommandWriter = new DownsampledWriter("DRIVE_COMMAND", 50_000_000);
     private final DownsampledWriter mecanumCommandWriter = new DownsampledWriter("MECANUM_COMMAND", 50_000_000);
 
-    public SparkFunOTOS otos;
+//    public SparkFunOTOS otos;
 
     Telemetry telemetry;
 
@@ -140,12 +141,13 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        otos = hardwareMap.get(SparkFunOTOS.class, "otos");
-        otos.calibrateImu();
-        otos.setAngularUnit(AngleUnit.RADIANS);
-        otos.resetTracking();
+//        otos = hardwareMap.get(SparkFunOTOS.class, "otos");
+//        otos.calibrateImu();
+//        otos.setAngularUnit(AngleUnit.RADIANS);
+//        otos.resetTracking();
 
-        localizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, otos, PARAMS.inPerTick, pose);
+//        localizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, otos, PARAMS.inPerTick, pose);
+        localizer = new PinpointOdometryLocalizer(hardwareMap, pose);
     }
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose, Telemetry telemetry) {
@@ -156,7 +158,6 @@ public final class MecanumDrive {
     public LazyImu lazyImu;
 
     public void setDrivePowers(PoseVelocity2d powers) {
-        //TODO: check if change from trackwidth set to 1 did anything or revert if needed
         PoseVelocity2d correctedPowers = new PoseVelocity2d(new Vector2d(powers.linearVel.y, powers.linearVel.x), powers.angVel);
 
         MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(

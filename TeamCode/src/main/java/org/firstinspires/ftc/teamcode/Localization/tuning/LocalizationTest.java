@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Localization.tuning;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.Localization.GoBildaPinpoint.PinpointOdometryLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelOTOSLocalizer;
+import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.RunOptions;
@@ -34,15 +36,11 @@ public class LocalizationTest extends LinearOpMode {
     public void runOpMode() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        Pose2d startingPose = new Pose2d(0, 0, 0);
+        Pose2d startingPose = new Pose2d(0, 0, 90);
         MecanumDrive drive = new MecanumDrive(hardwareMap, startingPose, telemetry);
-        drive.otos.calibrateImu();
-        drive.otos.resetTracking();
 
-        pinpointLocalizer = new PinpointOdometryLocalizer(hardwareMap, telemetry);
+        pinpointLocalizer = new PinpointOdometryLocalizer(hardwareMap, startingPose);
         timer = new Timer();
-
-//        otosLocalizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, drive.otos, MecanumDrive.PARAMS.inPerTick, startingPose);
 
         waitForStart();
 
@@ -60,11 +58,6 @@ public class LocalizationTest extends LinearOpMode {
             drive.updatePoseEstimate();
             pinpointLocalizer.update();
 
-            if (this.gamepad1.y) {
-                drive.otos.calibrateImu();
-                drive.otos.resetTracking();
-            }
-
             telemetry.addData("Update rate (Hz)", 1 / timer.getDeltaTime());
             telemetry.addLine();
 
@@ -81,16 +74,13 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("heading (deg)", Math.toDegrees(pose2.heading.toDouble()));
 
 
-            telemetry.addLine("\nDrive Localizer (Pinpoint2)");
-            telemetry.addData("x", pinpointLocalizer.odo.getPosition().getX(DistanceUnit.INCH));
-            telemetry.addData("y", pinpointLocalizer.odo.getPosX());
-            telemetry.addData("heading (deg)", pinpointLocalizer.odo.getHeading());
-
-
             telemetry.addLine("\nRaw IMU Values");
-            telemetry.addData("heading (OTOS)", Math.toDegrees(drive.otos.getPosition().h));
-
             telemetry.update();
+
+            TelemetryPacket packet = new TelemetryPacket();
+            packet.fieldOverlay().setStroke("#3F51B5");
+            Drawing.drawRobot(packet.fieldOverlay(), pose);
+            FtcDashboard.getInstance().sendTelemetryPacket(packet);
         }
     }
 }
