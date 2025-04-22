@@ -100,11 +100,6 @@ public class FiveSampleAuto extends FourSampleAuto {
 
         telemetry.addData("Current Alliance Color: ", allianceColor);
 
-        if (gamepad1.x) mecanumDrive.otos.calibrateImu();
-        if (gamepad1.y) mecanumDrive.otos.resetTracking();
-
-        telemetry.addData("OTOS heading", mecanumDrive.otos.getPosition().h);
-
         if (leftBump.update(gamepad1.left_bumper)) {
             inputIndex++;
             try { Thread.sleep(200); } catch (InterruptedException e) { }
