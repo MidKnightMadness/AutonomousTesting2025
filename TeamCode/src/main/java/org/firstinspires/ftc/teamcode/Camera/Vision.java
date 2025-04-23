@@ -65,20 +65,20 @@ public class Vision {
         timer = new Timer();//for update rate
 
         //Get corners of the zone that we want to apply the transformation to(corners of the 4 samples
-//        pixelPoints[0] = new Point(0, 0);//top right
-//        pixelPoints[1] = new Point(0, 0);//top left
-//        pixelPoints[2] = new Point(0, 0);//bottom right
-//        pixelPoints[3] = new Point(0, 0);//bottom left
-//
+        pixelPoints[0] = new Point(1071.0, 114.5);//top right
+        pixelPoints[1] = new Point(264.5, 104.5);//top left
+        pixelPoints[2] = new Point(1185.5, 565.0);//bottom right
+        pixelPoints[3] = new Point(142.2, 564.5);//bottom left
+
 //        //CM
-//        worldPoints[0] = new Point(0 * 2.54 + WINDOW_HORIZONTAL_OFFSET,0 * 2.54 + WINDOW_VERTICAL_OFFSET);//top right
-//        worldPoints[1] = new Point(0 * 2.54 + WINDOW_HORIZONTAL_OFFSET,0 * 2.54 + WINDOW_VERTICAL_OFFSET);//top left
-//        worldPoints[2] = new Point(0 * 2.54 + WINDOW_HORIZONTAL_OFFSET,0 * 2.54 + WINDOW_VERTICAL_OFFSET); //bottom right
-//        worldPoints[3] = new Point(0 * 2.54 + WINDOW_HORIZONTAL_OFFSET,0 * 2.54 + WINDOW_VERTICAL_OFFSET);//bottom left
-//
-//        pixelMat = new MatOfPoint2f(pixelPoints);
-//        worldMat = new MatOfPoint2f(worldPoints);
-//        transformMatrix = Imgproc.getPerspectiveTransform(pixelMat, worldMat);
+        worldPoints[0] = new Point(6 * 2.54 + WINDOW_HORIZONTAL_OFFSET,18 * 2.54 + WINDOW_VERTICAL_OFFSET);//top right
+        worldPoints[1] = new Point(-6 * 2.54 + WINDOW_HORIZONTAL_OFFSET,18 * 2.54 + WINDOW_VERTICAL_OFFSET);//top left
+        worldPoints[2] = new Point(6 * 2.54 + WINDOW_HORIZONTAL_OFFSET,10 * 2.54 + WINDOW_VERTICAL_OFFSET); //bottom right
+        worldPoints[3] = new Point(-6 * 2.54 + WINDOW_HORIZONTAL_OFFSET,10 * 2.54 + WINDOW_VERTICAL_OFFSET);//bottom left
+
+        pixelMat = new MatOfPoint2f(pixelPoints);
+        worldMat = new MatOfPoint2f(worldPoints);
+        transformMatrix = Imgproc.getPerspectiveTransform(pixelMat, worldMat);
 
         samples = new ArrayList<>();
         this.telemetry = telemetry;
@@ -143,15 +143,15 @@ public class Vision {
             SampleColors sampleColor = SampleColors.NONE;
             String type = result.getClassName();
 //
-//            if(type.equals("blue sample")){
-//                sampleColor = SampleColors.BLUE;
-//            }
-//            else if(type.equals("red sample")){
-//                sampleColor = SampleColors.RED;
-//            }
-//            else{
-//                sampleColor = SampleColors.YELLOW;
-//            }
+            if(type.equals("blue sample")){
+                sampleColor = SampleColors.BLUE;
+            }
+            else if(type.equals("red sample")){
+                sampleColor = SampleColors.RED;
+            }
+            else{
+                sampleColor = SampleColors.YELLOW;
+            }
 
             //Trig implementation
             double xAngle = result.getTargetXDegrees();
@@ -164,34 +164,35 @@ public class Vision {
 //            double area = result.getTargetArea();
 
             //Corners coordinates of sample-> to calculate sample rotation
-//            List<List<Double>> corners = result.getTargetCorners();
-//            telemetry.addData("Corner World Coordinates", corners.toString());
-//            String rotation = getSampleRotation(corners);
-//            telemetry.addData("Sample Closer To:", rotation);
-//            Sample.Rotation rot;
-//            if(rotation.equals(Sample.Rotation.Horizontal)){
-//                rot = Sample.Rotation.Horizontal;
-//            }
-//            else{
-//                rot = Sample.Rotation.Vertical;
-//            }
+            List<List<Double>> corners = result.getTargetCorners();
+            telemetry.addData("Corner World Coordinates", corners.toString());
+            String rotation = getSampleRotation(corners);
+            telemetry.addData("Sample Closer To:", rotation);
+            Sample.Rotation rot;
+            if(rotation.equals(Sample.Rotation.Horizontal)){
+                rot = Sample.Rotation.Horizontal;
+            }
+            else{
+                rot = Sample.Rotation.Vertical;
+            }
             //Center of sample -> transform to world coordinates
             double x = result.getTargetXPixels();
             double y = result.getTargetYPixels();
 //
-//            Mat pointMat = new Mat(1, 1, CvType.CV_64FC2);//Make a point map with 1 row 1 col, 64 bit/double 2 channels(x, y)
-//            pointMat.put(0, 0, new double[]{x,y});//add the point
-//            Mat resultMat = new Mat();
-//            Core.perspectiveTransform(pointMat, resultMat, transformMatrix);//applied transformation
-//            double[] sampleFieldCoord = resultMat.get(0,0);
+            Mat pointMat = new Mat(1, 1, CvType.CV_64FC2);//Make a point map with 1 row 1 col, 64 bit/double 2 channels(x, y)
+            pointMat.put(0, 0, new double[]{x,y});//add the point
+            Mat resultMat = new Mat();
+            Core.perspectiveTransform(pointMat, resultMat, transformMatrix);//applied transformation
+            double[] sampleFieldCoord = resultMat.get(0,0);
+            sampleFieldCoord = new double[]{sampleFieldCoord[0]/2.54, sampleFieldCoord[1]/2.54};
 
-//            Sample sample = new Sample(sampleColor, sampleFieldCoord[0], sampleFieldCoord[1], rot, confidence);
-//
+            Sample sample = new Sample(sampleColor, sampleFieldCoord[0] / 2.54, sampleFieldCoord[1] / 2.54, rot, confidence);
+
 //            //TODO: Check if is reachable using IK before adding to samples
 //
 //            //Autonomous: have the entire space but want to sort by weights closest to the center
 //
-//            samples.add(sample);
+            samples.add(sample);
 
             //create sample and add it to array list
 
@@ -200,7 +201,7 @@ public class Vision {
             telemetry.addData("Update Rate(Hz)", 1/deltaTime);
 
             telemetry.addLine("PixelCoord: { " + x + ", " + y + "} ");
-//            telemetry.addLine("FieldCoord(Relative to Cam): { " + sampleFieldCoord[0] + ", " + sampleFieldCoord[1] + "} ");
+            telemetry.addLine("FieldCoord(Relative to Cam): { " + sampleFieldCoord[0] + ", " + sampleFieldCoord[1] + "} ");
             telemetry.addData("Color", sampleType);
 //            telemetry.addData("Hor Distance", horizontalDistance);
 //            telemetry.addData("Vert Distance", verticalDistance);
@@ -211,8 +212,8 @@ public class Vision {
 //            telemetry.addData("CameraArea", area);
 
             //Free up memory
-//            pointMat.release();
-//            resultMat.release();
+            pointMat.release();
+            resultMat.release();
         }
 
     }

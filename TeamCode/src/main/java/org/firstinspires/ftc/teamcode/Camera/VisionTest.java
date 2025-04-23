@@ -22,8 +22,8 @@ public class VisionTest extends OpMode {
         if (gamepad1.a) {
             vision.update();
 //            //Get closest sample of fov
-//            Sample sampleDetected = vision.getClosestSample(SampleColors.YELLOW, BUFFER_TIME);
-//            telemetry.addLine(sampleDetected.toString());
+            Sample sampleDetected = vision.getClosestSample(SampleColors.YELLOW, BUFFER_TIME);
+            telemetry.addLine(sampleDetected.toString());
         }
 
     }
