@@ -1,12 +1,16 @@
-package org.firstinspires.ftc.teamcode.Test;
+package org.firstinspires.ftc.teamcode.Camera;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Camera.Vision;
+import org.firstinspires.ftc.teamcode.ColorSensor.SampleColors;
+import org.firstinspires.ftc.teamcode.Components.Sample;
 
-@TeleOp(name = "visionTest", group = "Test")
+@Config
+@TeleOp(name = "VisionTest")
 public class VisionTest extends OpMode {
+    public static double BUFFER_TIME = 0.5;//Seconds
     Vision vision;
     @Override
     public void init() {
@@ -15,8 +19,11 @@ public class VisionTest extends OpMode {
 
     @Override
     public void loop() {
-        if(gamepad1.a){
+        if (gamepad1.a) {
             vision.update();
+//            //Get closest sample of fov
+            Sample sampleDetected = vision.getClosestSample(SampleColors.YELLOW, BUFFER_TIME);
+            telemetry.addLine(sampleDetected.toString());
         }
 
     }
