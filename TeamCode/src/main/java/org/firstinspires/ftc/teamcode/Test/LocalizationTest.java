@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.Localization.tuning;
+package org.firstinspires.ftc.teamcode.Test;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -7,24 +7,15 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.IMU;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.Localization.GoBildaPinpoint.PinpointOdometryLocalizer;
-import org.firstinspires.ftc.teamcode.Localization.Localizer;
-import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelOTOSLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
-import org.firstinspires.ftc.teamcode.RunOptions;
 
-import java.util.List;
-
-@TeleOp(name="LocalizationTest")
+@TeleOp(name="LocalizationTest", group="Test")
 @Config
 public class LocalizationTest extends LinearOpMode {
 

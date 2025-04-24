@@ -8,8 +8,8 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelIMULocalizer;
-import org.firstinspires.ftc.teamcode.Localization.TwoDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.Localization.InternalIMU.ThreeDeadWheelIMULocalizer;
+import org.firstinspires.ftc.teamcode.Localization.InternalIMU.TwoDeadWheelLocalizer;
 
 @Config
 public final class ManualFeedbackTuner extends LinearOpMode {

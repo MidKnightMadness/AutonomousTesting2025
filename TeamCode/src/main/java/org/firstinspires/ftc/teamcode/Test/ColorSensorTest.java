@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ColorSensor;
+package org.firstinspires.ftc.teamcode.Test;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -7,15 +7,17 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.ColorSensor.ColorClassifier;
+import org.firstinspires.ftc.teamcode.ColorSensor.RGB;
 
-@TeleOp
+@TeleOp(group="Test")
 public class ColorSensorTest extends OpMode {
     RevColorSensorV3 colorSensorV3;
 
 
     @Override
     public void init() {
-        colorSensorV3 = hardwareMap.get(RevColorSensorV3.class, "Claw Color Sensor");
+        colorSensorV3 = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
     }
 
     @Override
