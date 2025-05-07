@@ -1,10 +1,11 @@
-package org.firstinspires.ftc.teamcode.Camera;
+package org.firstinspires.ftc.teamcode.Test;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.Camera.Vision;
 import org.firstinspires.ftc.teamcode.ColorSensor.SampleColors;
 import org.firstinspires.ftc.teamcode.Components.Sample;
 
@@ -32,7 +33,9 @@ public class StationaryVisionTest extends OpMode {
 
             telemetry.addData("Closest Sample Color:", sampleDetected.getColor());
             telemetry.addData("Closest Sample Confidence", sampleDetected.getConfidence());
-            telemetry.addData("Closest Sample Coordinates", sampleDetected.getFieldXRelativeToCam(), sampleDetected.getFieldYRelativeToCam(), sampleDetected.getSampleRotation().toString());
+            telemetry.addData("Closest Sample X", sampleDetected.getRelativeX());
+            telemetry.addData("Closest Sample Y", sampleDetected.getRelativeY());
+            telemetry.addData("Closest Sample Rot", sampleDetected.getSampleRotation());
         }
 
     }
