@@ -1,51 +1,77 @@
 package org.firstinspires.ftc.teamcode.Components;
 
 import org.firstinspires.ftc.teamcode.ColorSensor.SampleColors;
+import org.firstinspires.ftc.teamcode.Kinematics.InverseKinematics;
+
 
 public class Sample {
     private SampleColors color;
-    private double fieldX; //Center
-    private double fieldY; //Center
-    private Rotation sampleRotation; //closer to Vertical or horizontal
+    private double relativeX; //Center
+    private double relativeY; //Center
+
+    private double worldX;
+    private double worldY;
     private double confidence;
+    private Sample.Rotation relativesSampleRotation;
+    private InverseKinematics.IKResult IKR;
     public enum Rotation{
         Vertical,
         Horizontal,
         None
     }
 
-    public Sample(SampleColors color, double fieldX, double fieldY, Rotation sampleRotation, double confidence){
+    public Sample(SampleColors color, double[] relativeCoordinates, double[] worldCoordinates, Sample.Rotation relativesSampleRotation, double confidence, InverseKinematics.IKResult ikResult){
         this.color = color;
-        this.fieldX = fieldX;
-        this.fieldY = fieldY;
-        this.sampleRotation = sampleRotation;
+        this.relativeX = relativeCoordinates[0];
+        this.relativeY = relativeCoordinates[1];
+        this.worldX = worldCoordinates[0];
+        this.worldY = worldCoordinates[1];
         this.confidence = confidence;
+        this.relativesSampleRotation = relativesSampleRotation;
+        this.IKR = ikResult;
     }
 
     public Sample(){
         this.color = SampleColors.NONE;
-        this.fieldX = 0;
-        this.fieldY = 0;
-        this.sampleRotation = Rotation.None;
+        this.relativeX = 0;
+        this.relativeY = 0;
+        this.worldX = 0;
+        this.worldY = 0;
         this.confidence = 0;
+        this.relativesSampleRotation = Rotation.Vertical;
+        this.IKR = new InverseKinematics.IKResult();
     }
 
     public SampleColors getColor(){
         return color;
     }
 
-    public double getFieldXRelativeToCam(){
-        return fieldX;
+    public double getRelativeX(){
+        return relativeX;
     }
-    public double getFieldYRelativeToCam(){
-        return fieldY;
+    public double getRelativeY(){
+        return relativeY;
+    }
+
+    public double getWorldX(){
+        return worldX;
+    }
+    public double getWorldY(){
+        return worldY;
     }
 
     public double getConfidence(){
         return confidence;
     }
 
+    public Sample.Rotation getSampleRotation(){
+        return relativesSampleRotation;
+    }
+
+    public InverseKinematics.IKResult getIKRResult(){
+        return IKR;
+    }
     public String toString(){
-        return "Sample: { " + color + ", Field Coordinates(Relative to Cam): [ " + fieldX + ", " + fieldY + "], Rotation: " + sampleRotation + ", Confidence " + confidence + "}";
+        return "Sample: { " + color + ", Field Coordinates(Relative to Robot Center): [ " + relativeX + ", " + relativeY + "], Rotation: " + relativesSampleRotation + ", Confidence " + confidence + "}";
     }
 }

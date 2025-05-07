@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Camera;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.DetectorResult;
@@ -13,12 +14,15 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.ColorSensor.SampleColors;
 import org.firstinspires.ftc.teamcode.Components.Sample;
 import org.firstinspires.ftc.teamcode.Components.Timer;
+import org.firstinspires.ftc.teamcode.Kinematics.InverseKinematics;
+import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
+import org.openftc.easyopencv.OpenCvCamera;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,14 +44,30 @@ public class Vision {
     FtcDashboard dashboard;
 
 
+    //initially 4 points -> 6 points test
     Point[] pixelPoints = new Point[4];//untransformed(pixel coordinates)
     Point[] worldPoints = new Point[4];//transformed(undistorts camera warp)
     MatOfPoint2f pixelMat;
-    MatOfPoint2f worldMat;
+    MatOfPoint2f worldMat;//Mat values calibrated to (0,0) being from the center of the front of the robot chassis
+    //Positive x pixels/inch -> right, Positive y pixels/inch -> down
     Mat transformMatrix;
 
-    public static double WINDOW_HORIZONTAL_OFFSET = 0; //CM
+    public static double WINDOW_HORIZONTAL_OFFSET = 1; //CM
     public static double WINDOW_VERTICAL_OFFSET = 0; //CM
+    public static double WINDOW_SQUISH_OFFSET = 3;//CM
+
+    public static double ROBOT_RADIUS = 10;// INCH from robot center in front of chassis to the center
+    public static double VISION_MID = 17;//Encourages sample being closer to vision mid when sorting
+    public static double X_WEIGHT = 0.5;//Penalizes sorting if sample is on the left, encourages sample on the right after being close to mid
+
+    public static double Y_WEIGHT = 2;
+    public static double SUB_CENTER_X = 72;//INCH
+    public static double SUB_CENTER_Y = -20;//INCH
+    public static double subCenterXOffset = 0;//INCH
+    public static double subCenterYOffset = 0;//INCH
+    public double robotX;
+    public double robotY;
+    //ROBOT X and Y values(from localization
 
     ArrayList<Sample> samples = new ArrayList<>();
 
@@ -65,16 +85,20 @@ public class Vision {
         timer = new Timer();//for update rate
 
         //Get corners of the zone that we want to apply the transformation to(corners of the 4 samples
-        pixelPoints[0] = new Point(1071.0, 114.5);//top right
-        pixelPoints[1] = new Point(264.5, 104.5);//top left
-        pixelPoints[2] = new Point(1185.5, 565.0);//bottom right
-        pixelPoints[3] = new Point(142.2, 564.5);//bottom left
+        pixelPoints[0] = new Point(1047.0, 99.0);//top right
+        pixelPoints[1] = new Point(214.0, 86.0);//top left
+        pixelPoints[2] = new Point(1175.5, 530.5);//bottom right
+        pixelPoints[3] = new Point(60.5, 533.5);//bottom left
+//        pixelPoints[4] = new Point(366.5, 342.0);//center left
+//        pixelPoints[5] = new Point(805.5, 354.5);//center right
 
 //        //CM
-        worldPoints[0] = new Point(6 * 2.54 + WINDOW_HORIZONTAL_OFFSET,18 * 2.54 + WINDOW_VERTICAL_OFFSET);//top right
-        worldPoints[1] = new Point(-6 * 2.54 + WINDOW_HORIZONTAL_OFFSET,18 * 2.54 + WINDOW_VERTICAL_OFFSET);//top left
-        worldPoints[2] = new Point(6 * 2.54 + WINDOW_HORIZONTAL_OFFSET,10 * 2.54 + WINDOW_VERTICAL_OFFSET); //bottom right
-        worldPoints[3] = new Point(-6 * 2.54 + WINDOW_HORIZONTAL_OFFSET,10 * 2.54 + WINDOW_VERTICAL_OFFSET);//bottom left
+        worldPoints[0] = new Point( -1* 2.54 + WINDOW_HORIZONTAL_OFFSET, 18 * 2.54 + WINDOW_VERTICAL_OFFSET - WINDOW_SQUISH_OFFSET);//top right
+        worldPoints[1] = new Point( -16* 2.54 + WINDOW_HORIZONTAL_OFFSET, 18 * 2.54 + WINDOW_VERTICAL_OFFSET - WINDOW_SQUISH_OFFSET);//top left
+        worldPoints[2] = new Point(-1 * 2.54 + WINDOW_HORIZONTAL_OFFSET, 8 * 2.54 + WINDOW_VERTICAL_OFFSET); //bottom right
+        worldPoints[3] = new Point(-16 * 2.54 + WINDOW_HORIZONTAL_OFFSET,8 * 2.54 + WINDOW_VERTICAL_OFFSET);//bottom left
+//        worldPoints[4] = new Point(-3 * 2.54 + WINDOW_HORIZONTAL_OFFSET, 14 * 2.54 + WINDOW_VERTICAL_OFFSET);//center left
+//        worldPoints[5] = new Point(3 * 2.54 + WINDOW_HORIZONTAL_OFFSET, 14 * 2.54 + WINDOW_VERTICAL_OFFSET);//center right
 
         pixelMat = new MatOfPoint2f(pixelPoints);
         worldMat = new MatOfPoint2f(worldPoints);
@@ -103,7 +127,7 @@ public class Vision {
             pointMat.release();
             resultMat.release();
         }
-
+        
         //calculate the width and height of the bounding box
         double width = Math.hypot(robotCoordinates[1][0] - robotCoordinates[0][0], robotCoordinates[1][1] - robotCoordinates[0][1]);
         double height = Math.hypot(robotCoordinates[3][0] - robotCoordinates[0][0], robotCoordinates[3][1] - robotCoordinates[0][1]);
@@ -123,7 +147,8 @@ public class Vision {
 
     }
 
-    public void update(){
+    public void update(double robotX, double robotY, double robotTheta){//robot theta = theta value assuming 0 = x axis and counterclockwise
+
         limelight.captureSnapshot("Time:" + gameTimer.updateTime());
         //reupdate samples list
         samples = new ArrayList<>();
@@ -169,11 +194,14 @@ public class Vision {
             String rotation = getSampleRotation(corners);
             telemetry.addData("Sample Closer To:", rotation);
             Sample.Rotation rot;
+            double sampleRotationValue = 0;
             if(rotation.equals(Sample.Rotation.Horizontal)){
                 rot = Sample.Rotation.Horizontal;
+                sampleRotationValue = 90;
             }
             else{
                 rot = Sample.Rotation.Vertical;
+                sampleRotationValue = 0;
             }
             //Center of sample -> transform to world coordinates
             double x = result.getTargetXPixels();
@@ -183,26 +211,50 @@ public class Vision {
             pointMat.put(0, 0, new double[]{x,y});//add the point
             Mat resultMat = new Mat();
             Core.perspectiveTransform(pointMat, resultMat, transformMatrix);//applied transformation
-            double[] sampleFieldCoord = resultMat.get(0,0);
-            sampleFieldCoord = new double[]{sampleFieldCoord[0]/2.54, sampleFieldCoord[1]/2.54};
+            double[] sampleRelCoord = resultMat.get(0,0);
 
-            Sample sample = new Sample(sampleColor, sampleFieldCoord[0] / 2.54, sampleFieldCoord[1] / 2.54, rot, confidence);
+            sampleRelCoord = new double[]{sampleRelCoord[0]/2.54, sampleRelCoord[1]/2.54};
 
-//            //TODO: Check if is reachable using IK before adding to samples
+            double[] sampleWorldCoord = new double[2];
+
+            //All units here are inches
+            //Account for radius in relative coord
+            sampleRelCoord[0] = sampleRelCoord[0] + ROBOT_RADIUS * Math.cos(robotTheta);
+            sampleRelCoord[1] = sampleRelCoord[1] + ROBOT_RADIUS * Math.sin(robotTheta);
 //
+//            double xFromSubCenter = sampleWorldCoord[0] - (SUB_CENTER_X + subCenterXOffset);
+//            double yFromSubCenter = sampleWorldCoord[1] - (SUB_CENTER_Y + subCenterYOffset);
+
+            sampleWorldCoord[0] = robotX + Math.cos(robotTheta) * sampleRelCoord[0] - Math.sin(robotTheta) * sampleRelCoord[1];
+            sampleWorldCoord[1] = robotY + Math.sin(robotTheta) * sampleRelCoord[0] + Math.cos(robotTheta) * sampleRelCoord[1];
+            //TODO: Plug in sample coordinates and robot coordinates into NEW IKR to produce minimalistic IKR as possible
+//            InverseKinematics.IKResult IKRResult = InverseKinematics.solve(new Pose2d(sampleRelCoord[0], sampleRelCoord[1], sampleRotationValue));
+//
+//            telemetry.addData("Is Position Reachable", IKRResult.isReachable);
+//
+//            //Only the far bounds/side bounds should not be reachable
+//            if (IKRResult.isReachable) {
+//                telemetry.addData("Robot position", IKRResult.robotPose.position);
+//                telemetry.addData("Robot heading", Math.toDegrees(IKRResult.robotPose.heading.toDouble()));
+//                Sample sample = new Sample(sampleColor, sampleRelCoord, sampleWorldCoord, rot, confidence, IKRResult);
+//                samples.add(sample);
+//
+//            }
+//            else{
+//                telemetry.addData("Message", IKRResult.message);
+//            }
+
+
 //            //Autonomous: have the entire space but want to sort by weights closest to the center
-//
-            samples.add(sample);
-
-            //create sample and add it to array list
 
             telemetry.addLine("----------------------------");
             telemetry.addLine("Sample " + sampleCount);
             telemetry.addData("Update Rate(Hz)", 1/deltaTime);
 
             telemetry.addLine("PixelCoord: { " + x + ", " + y + "} ");
-            telemetry.addLine("FieldCoord(Relative to Cam): { " + sampleFieldCoord[0] + ", " + sampleFieldCoord[1] + "} ");
-            telemetry.addData("Color", sampleType);
+            telemetry.addLine("RelativeCoord(Relative to Center of Robot): { " + sampleRelCoord[0] + ", " + sampleRelCoord[1] + "} ");
+            telemetry.addLine("WorldCoord: { " + sampleWorldCoord[0] + ", " + sampleWorldCoord[1] + "} ");
+            telemetry.addData("Color", sampleType.toString());
 //            telemetry.addData("Hor Distance", horizontalDistance);
 //            telemetry.addData("Vert Distance", verticalDistance);
 
@@ -211,10 +263,30 @@ public class Vision {
             telemetry.addData("CameraYAngle", yAngle);
 //            telemetry.addData("CameraArea", area);
 
+            //sort samples array
+
             //Free up memory
             pointMat.release();
             resultMat.release();
         }
+
+        //SORTING SAMPLES
+        //prioritizes samples close to the center and to the right, lower the value the more higher priority
+        samples.sort((s1, s2)->{
+            if((Math.abs(s1.getRelativeY() - VISION_MID) * Y_WEIGHT - s1.getRelativeX() * X_WEIGHT) <
+                    (Math.abs(s2.getRelativeY() - VISION_MID) * Y_WEIGHT - s2.getRelativeX() * X_WEIGHT)){
+                return -1;
+            }
+            else if((Math.abs(s1.getRelativeY() - VISION_MID) * Y_WEIGHT - s1.getRelativeX() * X_WEIGHT) >
+                    (Math.abs(s2.getRelativeY() - VISION_MID) * Y_WEIGHT - s2.getRelativeX() * X_WEIGHT)){
+                return 1;
+            }
+            else{
+                return Double.compare(s2.getRelativeX(), s1.getRelativeX());
+            }
+        }
+        );
+        telemetry.addData("Samples List:", samples.toString());
 
     }
 
