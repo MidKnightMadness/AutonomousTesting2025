@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.DetectorResult;
+import com.qualcomm.hardware.limelightvision.LLStatus;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -75,7 +76,7 @@ public class Vision {
     public static double SIDE_RATIO = 7/3;
     public Vision(HardwareMap hardwareMap, Telemetry telemetry, boolean detectorTrue){
         this.detectorTrue = detectorTrue;
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight = hardwareMap.get(Limelight3A.class, "Limelight");
         if(detectorTrue){
             limelight.pipelineSwitch(3);//detector pipeline
         }
@@ -149,7 +150,16 @@ public class Vision {
 
     public void update(double robotX, double robotY, double robotTheta){//robot theta = theta value assuming 0 = x axis and counterclockwise
 
+        LLStatus status = limelight.getStatus();
         limelight.captureSnapshot("Time:" + gameTimer.updateTime());
+        telemetry.addData("Name", "%s",
+                status.getName());
+        telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
+                status.getTemp(), status.getCpu(),(int)status.getFps());
+        telemetry.addData("Pipeline", "Index: %d, Type: %s",
+                status.getPipelineIndex(), status.getPipelineType());
+
+
         //reupdate samples list
         samples = new ArrayList<>();
         timer.updateTime();

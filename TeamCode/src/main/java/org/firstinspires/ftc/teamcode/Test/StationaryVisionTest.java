@@ -36,6 +36,7 @@ public class StationaryVisionTest extends OpMode {
             telemetry.addData("Closest Sample X", sampleDetected.getRelativeX());
             telemetry.addData("Closest Sample Y", sampleDetected.getRelativeY());
             telemetry.addData("Closest Sample Rot", sampleDetected.getSampleRotation());
+
         }
 
     }

@@ -32,8 +32,8 @@ public class Arm {
     Timer timer;
 
     public Arm(HardwareMap hardwareMap) {
-        leftServo = hardwareMap.get(Servo.class, "Arm Left");
-        rightServo = hardwareMap.get(Servo.class, "Arm Right");
+        leftServo = hardwareMap.get(Servo.class, "Left Arm");
+        rightServo = hardwareMap.get(Servo.class, "Right Arm");
         timer = new Timer();
     }
 

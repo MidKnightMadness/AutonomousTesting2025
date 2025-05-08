@@ -16,9 +16,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
-import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.SpecimenClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.SampleClaw;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.SpecimenClaw;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
@@ -89,7 +89,7 @@ public class TwoPlayerDemonstration extends OpMode {
         turnTable.servo.setPosition(TurnTable.NEUTRAL_POS);
         arm.leftServo.setPosition(Arm.STRAIGHT_UP_POSITION);
         arm.rightServo.setPosition(Arm.STRAIGHT_UP_POSITION);
-        wrist.servo.setPosition(Wrist.BASKET_POSITION);
+        wrist.leftServo.setPosition(Wrist.BASKET_POSITION);
         timer.updateTime();
     }
 
@@ -129,7 +129,7 @@ public class TwoPlayerDemonstration extends OpMode {
             telemetry.addLine("-----------Servo Positions -----------");
             telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
             telemetry.addData("Arm Right Pos", arm.rightServo.getPosition());
-            telemetry.addData("Wrist Pos", wrist.servo.getPosition());
+            telemetry.addData("Wrist Pos", wrist.leftServo.getPosition());
             telemetry.addData("Sample Claw Pos", sampleClaw.servo.getPosition());
             telemetry.addData("Specimen Claw Pos", specimenClaw.servo.getPosition());
             telemetry.addData("Turntable Wrist Pos", turnTable.servo.getPosition());
@@ -207,14 +207,14 @@ public class TwoPlayerDemonstration extends OpMode {
             turnTable.servo.setPosition(turnTable.servo.getPosition() + turnTableDirection * gamepad1.right_trigger * timer.getDeltaTime() * 1);
         }
 
-        if (gamepad1.a) {
-            activeAction = slidesDown();
-            isInSlideAction = true;
-        }
-        else if (gamepad1.b) {
-            activeAction = slidesUp();
-            isInSlideAction = true;
-        }
+//        if (gamepad1.a) {
+//            activeAction = slidesDown();
+//            isInSlideAction = true;
+//        }
+//        else if (gamepad1.b) {
+//            activeAction = slidesUp();
+//            isInSlideAction = true;
+//        }
     }
 
     public Action scoreInBasket() {
@@ -303,12 +303,12 @@ public class TwoPlayerDemonstration extends OpMode {
 
     public void runWristControls() {
         if (gamepad2.left_bumper) {
-            wrist.servo.setPosition(Wrist.BASKET_POSITION);
+            wrist.leftServo.setPosition(Wrist.BASKET_POSITION);
             return;
         }
 
         if(Math.abs(gamepad2.left_stick_y) > 0.05){
-            wrist.servo.setPosition(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
+            wrist.leftServo.setPosition(wrist.leftServo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
         }
     }
 

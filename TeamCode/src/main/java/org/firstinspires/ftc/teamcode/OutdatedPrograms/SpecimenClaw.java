@@ -1,17 +1,18 @@
-package org.firstinspires.ftc.teamcode.Mechanisms;
+package org.firstinspires.ftc.teamcode.OutdatedPrograms;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
-@Config
+@Disabled
+@Deprecated
 public class SpecimenClaw {
     final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
     public static double RELEASE_POSITION = 0.55;

@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
-import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.SampleClaw;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -33,28 +33,22 @@ public class FourSampleAuto extends OpMode {
     public static Pose2d submersibleIntermediatePose = new Pose2d(55, 17, Math.toRadians(-90));
     public static Pose2d parkingPose = new Pose2d(new Vector2d(55, 0), Math.toRadians(-90));
 
-    SampleClaw sampleClaw;
     Arm arm;
     VerticalSlides slides;
     Wrist wrist;
-    TurnTable turnTable;
     MecanumDrive mecanumDrive;
 
     public static Pose2d startingPose = new Pose2d(0, 0,  Math.toRadians(90));
 
     @Override
     public void init() {
-        sampleClaw = new SampleClaw(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
-        turnTable = new TurnTable(hardwareMap);
         slides = new VerticalSlides(hardwareMap);
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
 
-        sampleClaw.grab();
         arm.setInitPosition();
         wrist.setInitPosition();
-        turnTable.setInitPosition();
         slides.resetEncoders();
     }
 
@@ -84,22 +78,18 @@ public class FourSampleAuto extends OpMode {
                         arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
                         mecanumDrive.actionBuilder().strafeToSplineHeading(new Vector2d(scoringPose.position.x + xOffset, scoringPose.position.y + yOffset), scoringPose.heading).build(),
                         slides.liftUp(1),
-                        wrist.setPosition(Wrist.BASKET_POSITION),
-                        turnTable.setPositionSmooth(TurnTable.NEUTRAL_POS, 0.5)
+                        wrist.setPosition(Wrist.BASKET_POSITION)
                 ),
-                arm.setPositionSmooth(Arm.BASKET_POSITION),
-                sampleClaw.releaseAction(0.2)
+                arm.setPositionSmooth(Arm.BASKET_POSITION)
         );
     }
 
     public Action manipulatorPickUp() {
         return new SequentialAction(
                 new ParallelAction(
-                        arm.setPositionSmooth(Arm.SAMPLE_INTAKE),
-                        sampleClaw.releaseAction(0)
+                        arm.setPositionSmooth(Arm.SAMPLE_INTAKE)
                 ),
-                new SleepAction(0.2),
-                sampleClaw.grabAction(0.2)
+                new SleepAction(0.2)
         );
     }
 
@@ -155,14 +145,11 @@ public class FourSampleAuto extends OpMode {
                 resetAfterScoring(),
                 new ParallelAction(
                         goToPickUpPosition(intermediatePose),
-                        turnTable.setPositionSmooth(TurnTable.THIRD_SAMPLE_POS, 0.5),
-                        wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION),
-                        sampleClaw.setPosition(SampleClaw.GRAB_POSITION)
+                        wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
                 ),
 
                 // open before picking up
                 new ParallelAction(
-                        sampleClaw.releaseAction(0.2),
                         mecanumDrive.actionBuilder(intermediatePose)
                                 .strafeToLinearHeading(thirdSamplePose.position, thirdSamplePose.heading)
                                 .build()

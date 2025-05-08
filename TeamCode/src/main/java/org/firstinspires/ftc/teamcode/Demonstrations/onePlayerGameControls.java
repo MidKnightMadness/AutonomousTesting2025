@@ -16,9 +16,9 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
-import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.SpecimenClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.SampleClaw;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.SpecimenClaw;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;

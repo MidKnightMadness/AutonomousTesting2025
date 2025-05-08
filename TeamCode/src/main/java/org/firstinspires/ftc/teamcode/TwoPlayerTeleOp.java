@@ -15,9 +15,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
-import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.SpecimenClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.Mechanisms.PivotingSlides;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.SpecimenClaw;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
@@ -36,9 +36,9 @@ public class TwoPlayerTeleOp extends OpMode {
     public static double rotationFactor = 0.5;
 
     VerticalSlides slides;
-    SampleClaw sampleClaw;
-    SpecimenClaw specimenClaw;
 
+    SpecimenClaw specimenClaw;
+    PivotingSlides pivotingSlides;
     Arm arm;
     Wrist wrist;
     TurnTable turnTable;
@@ -63,7 +63,7 @@ public class TwoPlayerTeleOp extends OpMode {
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         slides = new VerticalSlides(hardwareMap);
-        sampleClaw = new SampleClaw(hardwareMap);
+        pivotingSlides = new PivotingSlides(hardwareMap);
         arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
         specimenClaw = new SpecimenClaw(hardwareMap);
@@ -92,6 +92,7 @@ public class TwoPlayerTeleOp extends OpMode {
         arm.leftServo.setPosition(Arm.STRAIGHT_UP_POSITION);
         arm.rightServo.setPosition(Arm.STRAIGHT_UP_POSITION);
         wrist.servo.setPosition(Wrist.BASKET_POSITION);
+        pivotingSlides.getLeftServo().setPosition(PivotingSlides.RETRACT_SERVO_POSITION);
         timer.updateTime();
     }
 
@@ -135,7 +136,6 @@ public class TwoPlayerTeleOp extends OpMode {
                 telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
                 telemetry.addData("Arm Right Pos", arm.rightServo.getPosition());
                 telemetry.addData("Wrist Pos", wrist.servo.getPosition());
-                telemetry.addData("Sample Claw Pos", sampleClaw.servo.getPosition());
                 telemetry.addData("Specimen Claw Pos", specimenClaw.servo.getPosition());
                 telemetry.addData("Turntable Wrist Pos", turnTable.servo.getPosition());
 
@@ -273,28 +273,42 @@ public class TwoPlayerTeleOp extends OpMode {
     }
 
 
-    String activeClaw = "Sample Claw";
+    String activeEndEffector = "Sample Claw";
     boolean inArmAction;
 
+    public static double extensionLength = 0;
+    public static double pivotingSlidesSpeed = 1;
     public void gamepad2Controls(){
-        //Change Claws
+        //Change End Effectors
         if(gamepad2.dpad_right) {
-           activeClaw = "Specimen Claw";
+           activeEndEffector = "Specimen Claw";
         }
         if(gamepad2.dpad_left) {
-            activeClaw = "Sample Claw";
+            activeEndEffector = "Spintake";
         }
 
         //Claw
-        if(activeClaw.equals("Sample Claw")) {
-            if (gamepad2.right_bumper) {
-                sampleClaw.release();
-            } else if (gamepad2.right_trigger > 0.5) {
-                sampleClaw.grab();;
-            }
+//        if(activeClaw.equals("Sample Claw")) {
+//            if (gamepad2.right_bumper) {
+//                sampleClaw.release();
+//            } else if (gamepad2.right_trigger > 0.5) {
+//                sampleClaw.grab();;
+//            }
+//        }
+        timer.updateTime();
+        double deltaTime = timer.getDeltaTime();
+
+        extensionLength += gamepad1.dpad_up ? deltaTime * pivotingSlidesSpeed : 0;
+        extensionLength -= gamepad1.dpad_down ? deltaTime * pivotingSlidesSpeed : 0;
+
+        if(gamepad2.right_trigger > 0.5){
+            pivotingSlides.setExtensionLength(extensionLength);
+        }
+        if(gamepad2.right_bumper){
+            pivotingSlides.setExtensionLength(0);
         }
 
-        else{
+        if(activeEndEffector.equals("Specimen Claw")) {
             if (gamepad2.right_bumper) {
                 specimenClaw.release();
             } else if (gamepad2.right_trigger > 0.5) {
@@ -345,5 +359,7 @@ public class TwoPlayerTeleOp extends OpMode {
             arm.setPositionDirect(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
         }
     }
+
+
 }
 

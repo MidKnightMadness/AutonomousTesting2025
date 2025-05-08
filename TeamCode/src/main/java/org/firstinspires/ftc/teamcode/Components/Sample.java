@@ -71,7 +71,5 @@ public class Sample {
     public InverseKinematics.IKResult getIKRResult(){
         return IKR;
     }
-    public String toString(){
-        return "Sample: { " + color + ", Field Coordinates(Relative to Robot Center): [ " + relativeX + ", " + relativeY + "], Rotation: " + relativesSampleRotation + ", Confidence " + confidence + "}";
-    }
+
 }

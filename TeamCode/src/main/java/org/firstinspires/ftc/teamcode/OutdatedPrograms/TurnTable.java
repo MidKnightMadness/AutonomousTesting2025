@@ -1,18 +1,18 @@
-package org.firstinspires.ftc.teamcode.Mechanisms;
+package org.firstinspires.ftc.teamcode.OutdatedPrograms;
 
 import androidx.annotation.NonNull;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 
-@Config
+@Disabled
+@Deprecated
 public class TurnTable {
     //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions
 
