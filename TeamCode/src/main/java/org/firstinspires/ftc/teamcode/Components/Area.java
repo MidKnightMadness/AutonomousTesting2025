@@ -6,6 +6,7 @@ import com.acmerobotics.roadrunner.Vector2d;
 
 
 //Class to define sample in sub zone
+@Deprecated
 public class Area {
     Pose2d samplePos;
     Vector2d[] areaCoordinates;//TL, TR, BL, BR
@@ -14,7 +15,7 @@ public class Area {
 
     //Define an area by samplePos and a tolerance
     public Area(Pose2d samplePos, double xTolerance, double yTolerance){
-        this.samplePos = samplePos;
+        this.samplePos = new Pose2d(samplePos.component1(), samplePos.component2());
 
         turnTableHeading = samplePos.heading;
     }

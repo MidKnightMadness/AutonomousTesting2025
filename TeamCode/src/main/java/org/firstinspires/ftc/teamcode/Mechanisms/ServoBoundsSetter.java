@@ -19,10 +19,8 @@ public class ServoBoundsSetter extends OpMode {
     Servo rightPivotingSlides;
     Servo leftWrist;
     Servo rightWrist;
-    Servo turnTable;
     Servo leftSpintake;
     Servo rightSpintake;
-    Servo specimenClaw;
     Timer timer;
 
     @Override
@@ -30,20 +28,18 @@ public class ServoBoundsSetter extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
 
-//        leftArm = hardwareMap.get(Servo.class, "Arm Left");
-//        rightArm = hardwareMap.get(Servo.class, "Arm Right");
-        leftPivotingSlides = hardwareMap.get(Servo.class, "PivotingSlides Left");
-        rightPivotingSlides = hardwareMap.get(Servo.class, "PivotingSlides Right");
-//        leftWrist = hardwareMap.get(Servo.class, "Wrist Left");
-//        rightWrist = hardwareMap.get(Servo.class, "Wrist Right");
-//        turnTable = hardwareMap.get(Servo.class, "Turn Table");
-//        leftSpintake = hardwareMap.get(Servo.class, "Spintake Left");
-//        rightSpintake = hardwareMap.get(Servo.class, "Spintake Right");
-//        specimenClaw = hardwareMap.get(Servo.class, "Specimen Claw");
+        leftArm = hardwareMap.get(Servo.class, "Left Arm");
+        rightArm = hardwareMap.get(Servo.class, "Right Arm");
+        leftPivotingSlides = hardwareMap.get(Servo.class, "Left Pivoting Slides");
+        rightPivotingSlides = hardwareMap.get(Servo.class, "Right Pivoting Slides");
+        leftWrist = hardwareMap.get(Servo.class, "Left Wrist");
+        rightWrist = hardwareMap.get(Servo.class, "Right Wrist");
+        leftSpintake = hardwareMap.get(Servo.class, "Left Spintake");
+        rightSpintake = hardwareMap.get(Servo.class, "Right Spintake");
 
-
-//        rightSpintake.setDirection(Servo.Direction.REVERSE);
+        leftSpintake.setDirection(Servo.Direction.REVERSE);
         leftPivotingSlides.setDirection(Servo.Direction.REVERSE);
+        leftWrist.setDirection(Servo.Direction.REVERSE);
         timer = new Timer();
     }
 
@@ -65,13 +61,11 @@ public class ServoBoundsSetter extends OpMode {
         telemetry.addLine("Dpad Right - Right Wrist");
 
 
-        telemetry.addLine("Left Bumper - Turn Table");
-        telemetry.addLine("Left Trigger - Specimen Claw");
-        telemetry.addLine("Right Bumper - Dual Spintake");
+        telemetry.addLine("Left Bumper - Dual Spintake");
+        telemetry.addLine("Left Trigger - Left Spintake");
+        telemetry.addLine("Right Bumper - Right Spintake");
         telemetry.addLine("Right Trigger - Left Pivoting Slides");
-        telemetry.addLine("Gamepad 2.A - Dual Pivoting Slides");
-        telemetry.addLine("Back - Left Spintake");
-        telemetry.addLine("Start - Right Spintake");
+        telemetry.addLine("Back - Dual Pivoting Slides");
 
         telemetry.addLine("Dpad up - Increase");
         telemetry.addLine("Dpad down - Decrease");
@@ -90,7 +84,7 @@ public class ServoBoundsSetter extends OpMode {
         if(gamepad1.b){
             activeServo = "Right Pivoting Slides";
         }
-        if(gamepad2.a){
+        if(gamepad2.back){
             activeServo = "Dual Pivoting Slides";
         }
 
@@ -103,25 +97,19 @@ public class ServoBoundsSetter extends OpMode {
 
 
         if(gamepad1.left_bumper){
-            activeServo = "Turn Table";
+            activeServo = "Dual Spintake";
         }
         if(gamepad1.left_trigger > 0.5){
-            activeServo = "Specimen Claw";
+            activeServo = "Left Spintake";
         }
+
         if(gamepad1.right_bumper){
-            activeServo = "Dual Spintake";
+            activeServo = " Right Spintake";
         }
         if(gamepad1.right_trigger > 0.5){
             activeServo = "Left Pivoting Slides";
         }
 
-        if(gamepad1.back){
-            activeServo = "Left Spintake";
-
-        }
-        else if(gamepad1.start){
-            activeServo = "Right Spintake";
-        }
 
         //Set values to servo posiiton
         if(activeServo.equals("Left Arm")){
@@ -153,12 +141,6 @@ public class ServoBoundsSetter extends OpMode {
         }
         else if(activeServo.equals("Right Wrist")){
             rightWrist.setPosition(servoPosition);
-        }
-        else if(activeServo.equals("Turn Table")){
-            turnTable.setPosition(servoPosition);
-        }
-        else if(activeServo.equals("Specimen Claw")){
-            specimenClaw.setPosition(servoPosition);
         }
         else if(activeServo.equals("Dual Spintake")){
             leftSpintake.setPosition(servoPosition);

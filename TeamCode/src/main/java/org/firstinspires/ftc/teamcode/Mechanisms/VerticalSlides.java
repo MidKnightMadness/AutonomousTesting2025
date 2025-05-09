@@ -20,10 +20,12 @@ public class VerticalSlides {
 
     public static double SPECIMEN_INTAKE = 700;
     public static double SPECIMEN_OUTTAKE = 2200;
+    //HANG:
+
 
     public VerticalSlides(HardwareMap hardwareMap) {
-        rightMotor = hardwareMap.get(DcMotorEx.class, "Right Vertical Slides");
-        leftMotor = hardwareMap.get(DcMotorEx.class, "Left Vertical Slides");
+        rightMotor = hardwareMap.get(DcMotorEx.class, "Right Slide");
+        leftMotor = hardwareMap.get(DcMotorEx.class, "Left Slide");
 
         leftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

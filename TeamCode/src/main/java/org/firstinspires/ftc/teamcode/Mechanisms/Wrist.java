@@ -14,7 +14,8 @@ import org.firstinspires.ftc.teamcode.Components.Timer;
 @Config
 public class Wrist {
     Timer timer;
-    public static double SAMPLE_PICKUP_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184)); // sample pickup in autonomous
+    public static double SAMPLE_PICKUP_POSITION = 0.4696; // sample pickup in autonomous
+//    Kinematics.wristOrientationToPosition(Math.toRadians(-58.184));
     public static double THIRD_SAMPLE = Kinematics.wristOrientationToPosition(Math.toRadians(-65)); // sample pickup in autonomous
     public static double BASKET_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-58.184));; // sample dropoff in basket(top basket) at certain arm position
     public static double INIT_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-80));
@@ -23,10 +24,15 @@ public class Wrist {
     public static double SPECIMEN_INTAKE_POSITION = 0.63; //specimen position
     public static double SPECIMEN_OUTAKE_POSITION = 0;
 
-    public Servo servo;
+    public Servo leftServo;
+    public Servo rightServo;
 
     public Wrist(HardwareMap hardwareMap) {
-        servo = hardwareMap.get(Servo.class, "Wrist");
+        //Using two wrists but only powering one
+        leftServo = hardwareMap.get(Servo.class, "Left Wrist");
+        rightServo = hardwareMap.get(Servo.class, "Right Wrist");
+        leftServo.setDirection(Servo.Direction.REVERSE);
+
         timer = new Timer();
     }
 
@@ -39,11 +45,13 @@ public class Wrist {
     }
 
     public void setInitPosition() {
-        servo.setPosition(INIT_POSITION);
+        leftServo.setPosition(INIT_POSITION);
+//        rightServo.setPosition(INIT_POSITION);
     }
 
     public void setPositionDirect(double position) {
-        servo.setPosition(position);
+        leftServo.setPosition(position);
+//        rightServo.setPosition(position);
     }
 
     public class SetPosition implements Action {
@@ -68,7 +76,7 @@ public class Wrist {
         public boolean run(@NonNull TelemetryPacket packet) {
             if (!initialized) {
                 startTime = timer.updateTime();
-                startPosition = servo.getPosition();
+                startPosition = leftServo.getPosition();
                 initialized = true;
             }
 
@@ -77,10 +85,12 @@ public class Wrist {
                 double percentOfMovement = Math.min(1, timeSinceStart / movementTime);
                 double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
 
-                servo.setPosition(intermediatePoint);
+                leftServo.setPosition(intermediatePoint);
+//                rightServo.setPosition(intermediatePoint);
                 return timeSinceStart < movementTime;
             } else {
-                servo.setPosition(targetPosition);
+                leftServo.setPosition(targetPosition);
+//                rightServo.setPosition(targetPosition);
                 return false;
             }
         }

@@ -9,13 +9,10 @@ import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.ColorSensor.ColorClassifier;
 import org.firstinspires.ftc.teamcode.ColorSensor.ColorSensorWrapper;
-import org.firstinspires.ftc.teamcode.ColorSensor.RGB;
 import org.firstinspires.ftc.teamcode.ColorSensor.SampleColors;
 import org.firstinspires.ftc.teamcode.Components.ButtonToggle;
 import org.firstinspires.ftc.teamcode.Kinematics.InverseKinematics;
@@ -23,7 +20,7 @@ import org.firstinspires.ftc.teamcode.Kinematics.InverseKinematics.IKResult;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
 import org.firstinspires.ftc.teamcode.Components.Timer;
-import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 
 import java.util.ArrayList;
@@ -71,10 +68,13 @@ public class FiveSampleAuto extends FourSampleAuto {
 
     public static double coordinateInputSpeed = 1;
     public static double headingInputSpeed = 0.1;
+    Limelight3A limelight;
+
 
     ColorSensorWrapper colorSensorWrapper;
     @Override
     public void init() {
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
         super.init();
         samplePositions = new ArrayList<>();
         samplePositions.add(new SamplePose(0, 3, Math.toRadians(-90)));
@@ -240,6 +240,7 @@ public class FiveSampleAuto extends FourSampleAuto {
         sampleClaw.release();
 
         subPickup();
+
     }
 
     public void subZonePark() {
