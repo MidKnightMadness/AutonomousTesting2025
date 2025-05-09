@@ -32,7 +32,7 @@ public class PivotingSlidesTest extends OpMode {
         if (gamepad1.a) pivotingSlides.setExtensionLength(extensionLength);
         if (gamepad1.b) pivotingSlides.setExtensionLength(0);
 
-        telemetry.addData("Extension length", pivotingSlides.getExtensionLength());
+        telemetry.addData("Extension length", extensionLength);
         telemetry.update();
     }
 }

@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
-@Config()
+@Config
 public class SampleClaw {
     public static double RELEASE_POSITION = 0.557;
     public static double GRAB_POSITION = 0.773;
