@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Camera;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.LLResultTypes.DetectorResult;
@@ -62,6 +63,8 @@ public class Vision {
     public static double X_WEIGHT = 0.5;//Penalizes sorting if sample is on the left, encourages sample on the right after being close to mid
 
     public static double Y_WEIGHT = 2;
+
+    public static double CONFIDENCE_THRESHOLD = 50;
     public static double SUB_CENTER_X = 72;//INCH
     public static double SUB_CENTER_Y = -20;//INCH
     public static double subCenterXOffset = 0;//INCH
@@ -76,7 +79,7 @@ public class Vision {
     public static double SIDE_RATIO = 7/3;
     public Vision(HardwareMap hardwareMap, Telemetry telemetry, boolean detectorTrue){
         this.detectorTrue = detectorTrue;
-        limelight = hardwareMap.get(Limelight3A.class, "Limelight");
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
         if(detectorTrue){
             limelight.pipelineSwitch(3);//detector pipeline
         }
@@ -148,7 +151,8 @@ public class Vision {
 
     }
 
-    public void update(double robotX, double robotY, double robotTheta){//robot theta = theta value assuming 0 = x axis and counterclockwise
+    //pass in the current localization pose of the robot
+    public void update(Pose2d robotPose){//robot theta = theta value assuming 0 = x axis and counterclockwise
 
         LLStatus status = limelight.getStatus();
         limelight.captureSnapshot("Time:" + gameTimer.updateTime());
@@ -171,6 +175,11 @@ public class Vision {
         double sampleCount = 0;
 
         for(DetectorResult result : detectorResults){
+            //ignore samples that are below our confidence threshold(lighting)
+            if(result.getConfidence() < CONFIDENCE_THRESHOLD){
+                continue;
+            }
+
             sampleCount++;
             String sampleType = result.getClassName();
             double confidence = result.getConfidence();
@@ -203,40 +212,25 @@ public class Vision {
             telemetry.addData("Corner World Coordinates", corners.toString());
             String rotation = getSampleRotation(corners);
             telemetry.addData("Sample Closer To:", rotation);
-            Sample.Rotation rot;
-            double sampleRotationValue = 0;
-            if(rotation.equals(Sample.Rotation.Horizontal)){
-                rot = Sample.Rotation.Horizontal;
-                sampleRotationValue = 90;
-            }
-            else{
-                rot = Sample.Rotation.Vertical;
-                sampleRotationValue = 0;
-            }
+
+
             //Center of sample -> transform to world coordinates
-            double x = result.getTargetXPixels();
-            double y = result.getTargetYPixels();
+            double pixelX = result.getTargetXPixels();
+            double pixelY = result.getTargetYPixels();
 //
             Mat pointMat = new Mat(1, 1, CvType.CV_64FC2);//Make a point map with 1 row 1 col, 64 bit/double 2 channels(x, y)
-            pointMat.put(0, 0, new double[]{x,y});//add the point
+            pointMat.put(0, 0, new double[]{pixelX,pixelY});//add the point
             Mat resultMat = new Mat();
             Core.perspectiveTransform(pointMat, resultMat, transformMatrix);//applied transformation
             double[] sampleRelCoord = resultMat.get(0,0);
 
             sampleRelCoord = new double[]{sampleRelCoord[0]/2.54, sampleRelCoord[1]/2.54};
 
-            double[] sampleWorldCoord = new double[2];
+            //All units here are inches, plug in degrees in radians
+            sampleRelCoord = VisionCoordTransformation.transformSampleCoordFromRobotCenter(sampleRelCoord, ROBOT_RADIUS);
 
-            //All units here are inches
-            //Account for radius in relative coord
-            sampleRelCoord[0] = sampleRelCoord[0] + ROBOT_RADIUS * Math.cos(robotTheta);
-            sampleRelCoord[1] = sampleRelCoord[1] + ROBOT_RADIUS * Math.sin(robotTheta);
-//
-//            double xFromSubCenter = sampleWorldCoord[0] - (SUB_CENTER_X + subCenterXOffset);
-//            double yFromSubCenter = sampleWorldCoord[1] - (SUB_CENTER_Y + subCenterYOffset);
+            double[] sampleWorldCoord = VisionCoordTransformation.transformRelativeCoordToWorld(sampleRelCoord, robotPose);
 
-            sampleWorldCoord[0] = robotX + Math.cos(robotTheta) * sampleRelCoord[0] - Math.sin(robotTheta) * sampleRelCoord[1];
-            sampleWorldCoord[1] = robotY + Math.sin(robotTheta) * sampleRelCoord[0] + Math.cos(robotTheta) * sampleRelCoord[1];
             //TODO: Plug in sample coordinates and robot coordinates into NEW IKR to produce minimalistic IKR as possible
 //            InverseKinematics.IKResult IKRResult = InverseKinematics.solve(new Pose2d(sampleRelCoord[0], sampleRelCoord[1], sampleRotationValue));
 //
@@ -261,7 +255,7 @@ public class Vision {
             telemetry.addLine("Sample " + sampleCount);
             telemetry.addData("Update Rate(Hz)", 1/deltaTime);
 
-            telemetry.addLine("PixelCoord: { " + x + ", " + y + "} ");
+            telemetry.addLine("PixelCoord: { " + pixelX + ", " + pixelY + "} ");
             telemetry.addLine("RelativeCoord(Relative to Center of Robot): { " + sampleRelCoord[0] + ", " + sampleRelCoord[1] + "} ");
             telemetry.addLine("WorldCoord: { " + sampleWorldCoord[0] + ", " + sampleWorldCoord[1] + "} ");
             telemetry.addData("Color", sampleType.toString());
@@ -282,26 +276,31 @@ public class Vision {
 
         //SORTING SAMPLES
         //prioritizes samples close to the center and to the right, lower the value the more higher priority
-        samples.sort((s1, s2)->{
-            if((Math.abs(s1.getRelativeY() - VISION_MID) * Y_WEIGHT - s1.getRelativeX() * X_WEIGHT) <
-                    (Math.abs(s2.getRelativeY() - VISION_MID) * Y_WEIGHT - s2.getRelativeX() * X_WEIGHT)){
-                return -1;
-            }
-            else if((Math.abs(s1.getRelativeY() - VISION_MID) * Y_WEIGHT - s1.getRelativeX() * X_WEIGHT) >
-                    (Math.abs(s2.getRelativeY() - VISION_MID) * Y_WEIGHT - s2.getRelativeX() * X_WEIGHT)){
-                return 1;
-            }
-            else{
-                return Double.compare(s2.getRelativeX(), s1.getRelativeX());
-            }
+        if(!samples.isEmpty()){
+            samples.sort((s1, s2)->{
+                if((Math.abs(s1.getRelativeY() - VISION_MID) * Y_WEIGHT - s1.getRelativeX() * X_WEIGHT) <
+                        (Math.abs(s2.getRelativeY() - VISION_MID) * Y_WEIGHT - s2.getRelativeX() * X_WEIGHT)){
+                    return -1;
+                }
+                else if((Math.abs(s1.getRelativeY() - VISION_MID) * Y_WEIGHT - s1.getRelativeX() * X_WEIGHT) >
+                        (Math.abs(s2.getRelativeY() - VISION_MID) * Y_WEIGHT - s2.getRelativeX() * X_WEIGHT)){
+                    return 1;
+                }
+                else{
+                    return Double.compare(s1.getRelativeX(), s2.getRelativeX());
+                }
+            });
         }
-        );
+
         telemetry.addData("Samples List:", samples.toString());
 
     }
 
     //Get Closest Sample of a given color to Center of camera's fov
     public Sample getClosestSample(SampleColors sampleColors, double bufferTime){//bufferTime in seconds
+        if(sampleList.isEmpty()){
+            return null;
+        }
         double startTime = gameTimer.updateTime();
         while(timer.updateTime() < startTime + bufferTime) {
             limelight.captureSnapshot("Time:" + gameTimer.updateTime());
@@ -311,10 +310,33 @@ public class Vision {
                 }
             }
         }
-        return null; //return null if can't find
+        return null;
     }
 
 
+
+
+    public ArrayList<Sample> getSortedSamples(){
+        return samples;
+    }
+
+    public ArrayList<Sample> getSortedSamplesOfColor(SampleColors sampleColors, double bufferTime){
+        ArrayList<Sample> sampleListOfColor = new ArrayList<>();
+
+        if(sampleList.isEmpty()){
+            return null;
+        }
+        double starTime = gameTimer.updateTime();
+        while(timer.updateTime() < starTime + bufferTime){
+            limelight.captureSnapshot("Time:" + gameTimer.updateTime());
+            for(Sample sample: samples){
+                if(sample.getColor() == sampleColors){
+                    sampleListOfColor.add(sample);
+                }
+            }
+        }
+        return sampleListOfColor;
+    }
     public void clearScreenshots(){
         limelight.deleteSnapshots();
         telemetry.addLine("Cleared all screenshots");
