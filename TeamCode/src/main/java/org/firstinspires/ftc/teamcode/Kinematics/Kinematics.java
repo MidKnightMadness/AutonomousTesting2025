@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.Kinematics;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Pose2d;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.OldArm;
 import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
@@ -85,7 +85,7 @@ public class Kinematics {
     }
 
 
-    public static Pose2d updatePosition(VerticalSlides slides, Arm arm, Wrist wrist, TurnTable turntable) {
+    public static Pose2d updatePosition(VerticalSlides slides, OldArm arm, Wrist wrist, TurnTable turntable) {
         return updatePosition((slides.getLeftMotor().getCurrentPosition() + slides.getRightMotor().getCurrentPosition()) / 2d,
                                 arm.leftServo.getPosition(),
                                 wrist.leftServo.getPosition(),

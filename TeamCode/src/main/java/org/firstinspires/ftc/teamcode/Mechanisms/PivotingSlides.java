@@ -21,6 +21,9 @@ public class PivotingSlides {
     public static double COUPLER_LENGTH = 23;
     public static double OFFSET = 20;
 
+
+    public static double currentExtensionLength = 0;
+
     // degree 6 polynomial approximation for function of extension length from servo angle
     public static double[] powerSeriesCoefficients = new double[] {
             98.43355, -2.73596, 0.016785, -0.000000134805, 0.0000000605797, -0.000000000790336
@@ -28,8 +31,6 @@ public class PivotingSlides {
 
     Servo leftServo;
     Servo rightServo;
-
-    private double currentExtensionLength = 0;
 
     public PivotingSlides(HardwareMap hardwareMap) {
         leftServo = hardwareMap.get(Servo.class, "leftSlideServo");

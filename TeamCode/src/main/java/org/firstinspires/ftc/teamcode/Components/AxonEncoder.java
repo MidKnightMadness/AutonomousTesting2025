@@ -9,29 +9,28 @@ public class AxonEncoder {
 
     private double previousVoltage = -1;
     private double totalRotations = 0.0;
-
-    public double degreeOffset;
+    public double zeroVoltage = 0.0;
 
     public AnalogInput analogInput;
-
     Direction direction;
 
-    public AxonEncoder(HardwareMap hardwareMap, String analogDeviceName, double degreeOffset) {
+    public AxonEncoder(HardwareMap hardwareMap, String analogDeviceName) {
         analogInput = hardwareMap.get(AnalogInput.class, analogDeviceName);
-        this.degreeOffset = degreeOffset;
         direction = Direction.FORWARD;
+
+        home();
     }
 
-    public void setOffset(double offset) {
-        this.degreeOffset = offset;
+    public void home() {
+        zeroVoltage = analogInput.getVoltage();
+        previousVoltage = zeroVoltage;
+        totalRotations = 0.0;
     }
-
 
     public void update() {
         double currentVoltage = analogInput.getVoltage();
 
         if (previousVoltage < 0) {
-            // First reading initialization
             previousVoltage = currentVoltage;
             return;
         }
@@ -40,10 +39,8 @@ public class AxonEncoder {
 
         // Detect wraparound
         if (voltageDifference > MAX_VOLTAGE / 2) {
-            // Wrapped from high to low voltage (e.g., 3.2V to 0.1V)
             totalRotations -= 1.0;
         } else if (voltageDifference < -MAX_VOLTAGE / 2) {
-            // Wrapped from low to high voltage (e.g., 0.1V to 3.2V)
             totalRotations += 1.0;
         }
 
@@ -51,9 +48,9 @@ public class AxonEncoder {
     }
 
     public double getAbsolutePositionRadians() {
-        double fractionalRotation = previousVoltage / MAX_VOLTAGE;
+        double fractionalRotation = (previousVoltage - zeroVoltage + MAX_VOLTAGE) % MAX_VOLTAGE / MAX_VOLTAGE;
         double sign = direction == Direction.FORWARD ? 1: -1;
-        return sign * (totalRotations + fractionalRotation) * 2 * Math.PI + Math.toRadians(degreeOffset);
+        return sign * (totalRotations + fractionalRotation) * 2 * Math.PI;
     }
 
     public void setDirection(Direction direction) {
@@ -64,12 +61,10 @@ public class AxonEncoder {
         return Math.toDegrees(getAbsolutePositionRadians());
     }
 
-    /**
-     * Resets the tracker to zero position.
-     */
     public void reset() {
         previousVoltage = -1;
         totalRotations = 0.0;
+        zeroVoltage = 0.0;
     }
 
     public double getVoltage() {

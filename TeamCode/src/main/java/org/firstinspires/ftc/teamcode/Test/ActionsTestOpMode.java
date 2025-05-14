@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.Test;
 
-import android.annotation.SuppressLint;
-
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
@@ -12,16 +10,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Autonomous.FourSampleAuto;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.OldArm;
 import org.firstinspires.ftc.teamcode.Mechanisms.PivotingSlides;
-import org.firstinspires.ftc.teamcode.Mechanisms.SampleClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.SpecimenClaw;
-import org.firstinspires.ftc.teamcode.Mechanisms.TurnTable;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
-import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 
 
 @TeleOp(group="Test")
@@ -31,14 +24,11 @@ public class ActionsTestOpMode extends OpMode {
     Servo leftSpintake;
     Servo rightSpintake;
 
-    SampleClaw sampleClaw;
-    TurnTable turnTable;
     VerticalSlides slides;
     MecanumDrive mecanumDrive;
     Pose2d initialPose;
 //    Wrist wrist;
-    Arm arm;
-    SpecimenClaw specimenClaw;
+    OldArm arm;
     PivotingSlides pivotingSlides;
     Timer timer;
     @Override
@@ -48,12 +38,12 @@ public class ActionsTestOpMode extends OpMode {
 //        sampleClaw = new SampleClaw(hardwareMap);
 //        specimenClaw = new SpecimenClaw(hardwareMap);
 //        wrist = new Wrist(hardwareMap);
-        arm = new Arm(hardwareMap);
+        arm = new OldArm(hardwareMap);
 //        turnTable = new TurnTable(hardwareMap);
         timer = new Timer();
 
 //        slides = new VerticalSlides(hardwareMap);
-        arm.setPositionDirect(Arm.STRAIGHT_UP_POSITION);
+        arm.setPositionDirect(OldArm.STRAIGHT_UP_POSITION);
         pivotingSlides = new PivotingSlides(hardwareMap);
 //        wrist.setInitPosition();
 //        sampleClaw.release();
@@ -110,10 +100,10 @@ public class ActionsTestOpMode extends OpMode {
             arm.setPositionDirect(armPos);
         }
         else if(gamepad1.x){
-            Actions.runBlocking(arm.setPositionSmooth(Arm.SCANNING_POSITION));
+            Actions.runBlocking(arm.setPositionSmooth(OldArm.SCANNING_POSITION));
         }
         else if(gamepad1.y){
-            Actions.runBlocking(arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION));
+            Actions.runBlocking(arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION));
         }
 
         if(gamepad1.dpad_left){
@@ -140,8 +130,6 @@ public class ActionsTestOpMode extends OpMode {
         }
 
 
-
-
 //        wrist.setPositionDirect(wristPos);
 //
 
@@ -150,9 +138,6 @@ public class ActionsTestOpMode extends OpMode {
 
         if (gamepad1.a) pivotingSlides.setExtensionLength(extensionLength);
         if (gamepad1.b) pivotingSlides.setExtensionLength(0);
-
-
-
 
         telemetry.addData("ArmPos", armPos);
         telemetry.addData("Extension Length", extensionLength);

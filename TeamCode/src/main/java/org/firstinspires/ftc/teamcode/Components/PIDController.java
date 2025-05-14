@@ -13,8 +13,7 @@ public class PIDController {
         this.integral = 0.0;
     }
 
-    public double update(double setpoint, double measuredValue, double deltaTime) {
-        double error = setpoint - measuredValue;
+    public double update(double error, double deltaTime) {
         integral += error * deltaTime;
         double derivative = (error - previousError) / deltaTime;
         previousError = error;

@@ -8,4 +8,6 @@ public class RunOptions {
     public static int loopsPerTelemetryUpdate = 1;
     public static boolean useFlightRecorder = false;
     public static boolean useBulkReads = true;
+
+    public static boolean isDevelopment = true;
 }

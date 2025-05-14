@@ -5,7 +5,7 @@ import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.OldArm;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics.RobotConstants;
 
@@ -44,7 +44,7 @@ public class InverseKinematics {
 
     }
 
-    public Action setArmOrientationWithEndEffectorAngle(Arm arm, Wrist wrist, double armOrientation, double endEffectorOrientation) {
+    public Action setArmOrientationWithEndEffectorAngle(OldArm arm, Wrist wrist, double armOrientation, double endEffectorOrientation) {
         return new ParallelAction(
                 arm.setPositionSmooth(Kinematics.armOrientationToPosition(armOrientation)),
                 wrist.setPosition(Kinematics.wristOrientationToPosition(endEffectorOrientation - armOrientation))

@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode.Demonstrations;
+package org.firstinspires.ftc.teamcode.OutdatedPrograms.Demonstrations;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
@@ -16,7 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.OldArm;
 import org.firstinspires.ftc.teamcode.OutdatedPrograms.SampleClaw;
 import org.firstinspires.ftc.teamcode.OutdatedPrograms.SpecimenClaw;
 import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
@@ -28,9 +27,9 @@ import org.firstinspires.ftc.teamcode.RunOptions;
 
 import java.util.List;
 
-@TeleOp(name="one player = demonstration", group="A")
+@TeleOp(name="Two Player - Demonstration", group="A")
 @Disabled
-public class onePlayerGameControls extends OpMode {
+public class TwoPlayerDemonstration extends OpMode {
     public static double STRAFE_ROTATION_FACTOR = 0.1; // add rotation while strafing to counteract uneven rotation
 
     public static Vector2d basketTrajectoryIntermediate = new Vector2d(0, 20);
@@ -42,12 +41,11 @@ public class onePlayerGameControls extends OpMode {
     SampleClaw sampleClaw;
     SpecimenClaw specimenClaw;
 
-    Arm arm;
+    OldArm arm;
     Wrist wrist;
     TurnTable turnTable;
 
     boolean isInSlideAction = false;
-
 
     Action activeAction;
 
@@ -68,14 +66,13 @@ public class onePlayerGameControls extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         slides = new VerticalSlides(hardwareMap);
         sampleClaw = new SampleClaw(hardwareMap);
-        arm = new Arm(hardwareMap);
+        arm = new OldArm(hardwareMap);
         wrist = new Wrist(hardwareMap);
         specimenClaw = new SpecimenClaw(hardwareMap);
         turnTable = new TurnTable(hardwareMap);
 
         timer = new Timer();
         clawClosed = true;
-
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
         if (RunOptions.useBulkReads) {
@@ -90,9 +87,9 @@ public class onePlayerGameControls extends OpMode {
     @Override
     public void start() {
         turnTable.servo.setPosition(TurnTable.NEUTRAL_POS);
-        arm.leftServo.setPosition(Arm.STRAIGHT_UP_POSITION);
-        arm.rightServo.setPosition(Arm.STRAIGHT_UP_POSITION);
-        wrist.servo.setPosition(Wrist.BASKET_POSITION);
+        arm.leftServo.setPosition(OldArm.STRAIGHT_UP_POSITION);
+        arm.rightServo.setPosition(OldArm.STRAIGHT_UP_POSITION);
+        wrist.leftServo.setPosition(Wrist.BASKET_POSITION);
         timer.updateTime();
     }
 
@@ -107,9 +104,8 @@ public class onePlayerGameControls extends OpMode {
 
         timer.updateTime();
 
-
-            onePlayerGame();
-
+        gamepad1Controls();
+        gamepad2Controls();
 
         telemetry.addData("Update Rate (Hz)", 1 / timer.getDeltaTime());
 
@@ -133,7 +129,7 @@ public class onePlayerGameControls extends OpMode {
             telemetry.addLine("-----------Servo Positions -----------");
             telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
             telemetry.addData("Arm Right Pos", arm.rightServo.getPosition());
-            telemetry.addData("Wrist Pos", wrist.servo.getPosition());
+            telemetry.addData("Wrist Pos", wrist.leftServo.getPosition());
             telemetry.addData("Sample Claw Pos", sampleClaw.servo.getPosition());
             telemetry.addData("Specimen Claw Pos", specimenClaw.servo.getPosition());
             telemetry.addData("Turntable Wrist Pos", turnTable.servo.getPosition());
@@ -151,7 +147,7 @@ public class onePlayerGameControls extends OpMode {
             isInSlideAction = activeAction.run(packet);
 
             // stop running
-            if (gamepad1.dpad_up) {
+            if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
                 isInSlideAction = false;
             }
 
@@ -183,7 +179,6 @@ public class onePlayerGameControls extends OpMode {
 
     }
 
-
     public void gamepad1Controls(){
 
         if (gamepad1.x) {
@@ -212,14 +207,14 @@ public class onePlayerGameControls extends OpMode {
             turnTable.servo.setPosition(turnTable.servo.getPosition() + turnTableDirection * gamepad1.right_trigger * timer.getDeltaTime() * 1);
         }
 
-        if (gamepad1.a) {
-            activeAction = slidesDown();
-            isInSlideAction = true;
-        }
-        else if (gamepad1.b) {
-            activeAction = slidesUp();
-            isInSlideAction = true;
-        }
+//        if (gamepad1.a) {
+//            activeAction = slidesDown();
+//            isInSlideAction = true;
+//        }
+//        else if (gamepad1.b) {
+//            activeAction = slidesUp();
+//            isInSlideAction = true;
+//        }
     }
 
     public Action scoreInBasket() {
@@ -233,7 +228,7 @@ public class onePlayerGameControls extends OpMode {
                 ),
 
                 new ParallelAction(
-                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 1),
+                        arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION, 1),
                         drive.actionBuilderNoCorrection(new Pose2d(basketTrajectoryIntermediate, Math.toRadians(-225))).strafeToLinearHeading(basketTrajectoryPosition, Math.toRadians(-225)).build(),
                         wrist.setPosition(Wrist.BASKET_POSITION),
                         slides.liftUp(0.8)
@@ -246,13 +241,13 @@ public class onePlayerGameControls extends OpMode {
 
         return new SequentialAction(
                 new ParallelAction(
-                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 1),
+                        arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION, 1),
                         drive.actionBuilderNoCorrection().strafeToLinearHeading(basketTrajectoryIntermediate, Math.toRadians(-225)).build(),
                         slides.bringDown(0.6),
                         turnTable.setPosition(TurnTable.NEUTRAL_POS),
                         wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
                 ),
-                arm.setPositionSmooth(Arm.SAMPLE_INTAKE, 0.5),
+                arm.setPositionSmooth(OldArm.SAMPLE_INTAKE, 0.5),
                 new ParallelAction(
                         drive.actionBuilderNoCorrection().strafeToLinearHeading(basketTrajectoryPosition, Math.toRadians(-90)).build()
                 )
@@ -276,100 +271,75 @@ public class onePlayerGameControls extends OpMode {
     String activeClaw = "Sample Claw";
     boolean inArmAction;
 
-
-    public void onePlayerGame(){
-        boolean aToggle = true;
-        if (gamepad1.x) {
-            drivingPower = 0.5;
-        }
-        else {
-            drivingPower = 1;
-        }
-
-        drive.setDrivePowers(new PoseVelocity2d(
-                new Vector2d(
-                        -gamepad1.left_stick_x * drivingPower,
-                        -gamepad1.left_stick_y * drivingPower
-                ),
-
-                (-gamepad1.right_stick_x * rotationFactor + gamepad1.left_stick_x * STRAFE_ROTATION_FACTOR) * drivingPower
-        ));
-
-        runSlideControls();
-
-
-        double turnTableDirection = 1;
-        if (gamepad1.right_bumper && !gamepad1.dpad_down) {
-            turnTableDirection = -1;
-        }
-
-        if(gamepad1.right_trigger > 0.05 && !gamepad1.dpad_down){
-            turnTable.servo.setPosition(turnTable.servo.getPosition() + turnTableDirection * gamepad1.right_trigger * timer.getDeltaTime() * 1);
-        }
-
-        //efef
-        if(gamepad1.dpad_right) {
+    public void gamepad2Controls(){
+        //Change Claws
+        if(gamepad2.dpad_right) {
             activeClaw = "Specimen Claw";
         }
-        if(gamepad1.dpad_left) {
+        if(gamepad2.dpad_left) {
             activeClaw = "Sample Claw";
         }
 
         //Claw
         if(activeClaw.equals("Sample Claw")) {
-            if (gamepad1.dpad_down && gamepad1.right_bumper) {
+            if (gamepad2.right_bumper) {
                 sampleClaw.release();
-            } else if (gamepad1.dpad_down &&gamepad1.right_trigger > 0.5) {
-                sampleClaw.grab();
+            } else if (gamepad2.right_trigger > 0.5) {
+                sampleClaw.grab();;
             }
         }
 
         else{
-            if (gamepad1.dpad_down &&gamepad1.right_bumper) {
+            if (gamepad2.right_bumper) {
                 specimenClaw.release();
-            } else if (gamepad1.dpad_down &&gamepad1.right_trigger > 0.5) {
+            } else if (gamepad2.right_trigger > 0.5) {
                 specimenClaw.grab();
             }
         }
-        if (gamepad1.right_stick_button){
-            aToggle = !aToggle;
 
-        }
-        runArmandWrist(aToggle);
-
+        runWristControls();
+        runArmControls();
     }
 
-    public void runArmandWrist(boolean thisToggle){
-        if (thisToggle){
-            if (inArmAction) {
-                inArmAction = armAction.run(packet);
-                return;
-            }
-
-
-            if (gamepad1.y) {
-                armAction = arm.setPositionSmooth(Arm.SAMPLE_INTAKE);
-                inArmAction = true;
-            }
-
-            else if(gamepad1.a){
-                armAction = arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION);
-                inArmAction = true;
-            }
-
-
-            //Arm
-            if(!inArmAction) {
-                if (Math.abs(gamepad1.right_stick_y) > 0.05 && gamepad1.b) {
-                    arm.setPositionDirect(arm.leftServo.getPosition() - gamepad1.right_stick_y * timer.getDeltaTime() * 0.5);
-                }
-            }
+    public void runWristControls() {
+        if (gamepad2.left_bumper) {
+            wrist.leftServo.setPosition(Wrist.BASKET_POSITION);
+            return;
         }
-        else{
+
+        if(Math.abs(gamepad2.left_stick_y) > 0.05){
+            wrist.leftServo.setPosition(wrist.leftServo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
+        }
+    }
+
+    public void runArmControls() {
+        if (inArmAction) {
+            inArmAction = armAction.run(packet);
+            return;
+        }
+
+        if (gamepad2.y) {
+            armAction = arm.setPositionSmooth(OldArm.BASKET_POSITION);
+            inArmAction = true;
+        }
+        else if (gamepad2.a) {
+            armAction = arm.setPositionSmooth(OldArm.SAMPLE_INTAKE);
+            inArmAction = true;
+        }
+        else if(gamepad2.x){
+            armAction = arm.setPositionSmooth(OldArm.INIT_AUTO_POS);
+            inArmAction = true;
+        }
+        else if(gamepad2.b){
+            armAction = arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION);
+            inArmAction = true;
+        }
 
 
-            if(Math.abs(gamepad1.right_stick_y )> 0.05 && gamepad1.b){
-                wrist.servo.setPosition(wrist.servo.getPosition() + gamepad1.left_stick_y * timer.getDeltaTime() * 0.5);
+        //Arm
+        if(!inArmAction) {
+            if (Math.abs(gamepad2.right_stick_y) > 0.05) {
+                arm.setPositionDirect(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
             }
         }
     }

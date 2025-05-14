@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 
-@Disabled
 @Deprecated
 public class TurnTable {
     //Wrist should be all throughout driver controlled in teleop except couple buttons for specimen and sample preset positions

@@ -8,9 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
-import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
-import org.firstinspires.ftc.teamcode.OutdatedPrograms.SampleClaw;
-import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.OldArm;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
@@ -33,7 +31,7 @@ public class FourSampleAuto extends OpMode {
     public static Pose2d submersibleIntermediatePose = new Pose2d(55, 17, Math.toRadians(-90));
     public static Pose2d parkingPose = new Pose2d(new Vector2d(55, 0), Math.toRadians(-90));
 
-    Arm arm;
+    OldArm arm;
     VerticalSlides slides;
     Wrist wrist;
     MecanumDrive mecanumDrive;
@@ -42,7 +40,7 @@ public class FourSampleAuto extends OpMode {
 
     @Override
     public void init() {
-        arm = new Arm(hardwareMap);
+        arm = new OldArm(hardwareMap);
         wrist = new Wrist(hardwareMap);
         slides = new VerticalSlides(hardwareMap);
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
@@ -75,19 +73,19 @@ public class FourSampleAuto extends OpMode {
     public Action scoreInBasket(double xOffset, double yOffset) {
         return new SequentialAction(
                 new ParallelAction(
-                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
+                        arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION),
                         mecanumDrive.actionBuilder().strafeToSplineHeading(new Vector2d(scoringPose.position.x + xOffset, scoringPose.position.y + yOffset), scoringPose.heading).build(),
                         slides.liftUp(1),
                         wrist.setPosition(Wrist.BASKET_POSITION)
                 ),
-                arm.setPositionSmooth(Arm.BASKET_POSITION)
+                arm.setPositionSmooth(OldArm.BASKET_POSITION)
         );
     }
 
     public Action manipulatorPickUp() {
         return new SequentialAction(
                 new ParallelAction(
-                        arm.setPositionSmooth(Arm.SAMPLE_INTAKE)
+                        arm.setPositionSmooth(OldArm.SAMPLE_INTAKE)
                 ),
                 new SleepAction(0.2)
         );
@@ -101,14 +99,14 @@ public class FourSampleAuto extends OpMode {
                         .build(),
                 new SequentialAction(
                         new SleepAction(0.2),
-                        arm.setPositionSmooth(Arm.SCANNING_POSITION)
+                        arm.setPositionSmooth(OldArm.SCANNING_POSITION)
                 )
         );
     }
 
     public Action resetAfterScoring() {
         return new ParallelAction(
-                arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
+                arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION),
                 wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
         );
     }
@@ -129,7 +127,7 @@ public class FourSampleAuto extends OpMode {
                 manipulatorPickUp(),
 
                 new ParallelAction(
-                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION),
+                        arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION),
                         new SequentialAction(
                                 new SleepAction(0.5),
                                 scoreInBasket(0, 0)
@@ -162,7 +160,7 @@ public class FourSampleAuto extends OpMode {
                         mecanumDrive.actionBuilder(thirdSamplePose)
                                 .strafeToLinearHeading(intermediatePose.position, intermediatePose.heading)
                                 .build(),
-                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION)
+                        arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION)
                 ),
 
                 wrist.setPosition(Wrist.BASKET_POSITION),

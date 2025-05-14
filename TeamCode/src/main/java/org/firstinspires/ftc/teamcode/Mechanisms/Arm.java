@@ -1,118 +1,136 @@
 package org.firstinspires.ftc.teamcode.Mechanisms;
 
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.Action;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.Components.AxonEncoder;
+import org.firstinspires.ftc.teamcode.Components.PIDController;
+import org.firstinspires.ftc.teamcode.Components.PolynomialApproximator;
 import org.firstinspires.ftc.teamcode.Components.Timer;
+import org.firstinspires.ftc.teamcode.Components.Util;
 
 @Config
 public class Arm {
 
-    public static double INIT_AUTO_POS = Kinematics.armOrientationToPosition(Math.toRadians(200));
-    public static double SAMPLE_INTAKE = Kinematics.armOrientationToPosition(Math.toRadians(-31.824));
-    public static double BASKET_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(75));
-    public static double SCANNING_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(-23));
+    public final CRServo leftServo;
+    public final CRServo rightServo;
 
-    public static double STRAIGHT_UP_POSITION = Kinematics.armOrientationToPosition(Math.toRadians(90));
-    public static double PERPENDICULAR = Kinematics.armOrientationToPosition(0);
-    public static double ARM_TO_BAR = Kinematics.armOrientationToPosition(Math.toRadians(80));
+    public final AxonEncoder leftEncoder;
+    public final AxonEncoder rightEncoder;
 
-    public static double TIME_FULL_ROTATION = 1.5;
+    public static double kP;
+    public static double kI;
+    public static double kD;
 
-    public Servo leftServo;
-    public Servo rightServo;
+    private final Timer timer;
 
-    double lastSetPosition = Arm.INIT_AUTO_POS;
-    Timer timer;
+    private double minOutput;
+    private double maxOutput;
 
-    public Arm(HardwareMap hardwareMap) {
-        leftServo = hardwareMap.get(Servo.class, "Left Arm");
-        rightServo = hardwareMap.get(Servo.class, "Right Arm");
-        timer = new Timer();
+    public static double deadband = 1;
+
+    public PIDController leftController;
+    public PIDController rightController;
+    public PIDController armPID;
+
+    public static double p;
+    public static double i;
+    public static double d;
+
+    Telemetry telemetry;
+
+
+    private final double[] cgExtensionCoefficients = new double[] { 209.90601, 0.484398 };
+    PolynomialApproximator cgExtension = new PolynomialApproximator(cgExtensionCoefficients, 0, PivotingSlides.MAX_EXTENSION_LENGTH);
+
+    public Arm(HardwareMap hardwareMap, Telemetry telemetry) {
+
+        this.leftServo = hardwareMap.get(CRServo.class, "Left Arm");
+        this.rightServo = hardwareMap.get(CRServo.class, "Right Arm");
+
+        this.leftEncoder = new AxonEncoder(hardwareMap, "Arm Left Encoder");
+        this.rightEncoder = new AxonEncoder(hardwareMap, "Arm Right Encoder");
+        leftEncoder.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightEncoder.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        leftController = new PIDController(p, i, d);
+        rightController = new PIDController(p, i, d);
+        armPID = new PIDController(kP, kI, kD);
+
+        this.timer = new Timer();
+        this.telemetry = telemetry;
     }
 
-    public Action setPositionSmooth(double position, double movementTime) {
-        lastSetPosition = position;
-        return new SetPosition(position, movementTime);
+    public void setIndividualPositions(double left, double right) {
+        timer.updateTime();
+
+        leftEncoder.update();
+        rightEncoder.update();
+
+        leftController.setCoefficients(p, i, d);
+        rightController.setCoefficients(p, i, d);
+
+        double leftError = left - leftEncoder.getAbsolutePositionDegrees();
+        double rightError = right - rightEncoder.getAbsolutePositionDegrees();
+
+        double leftPow = leftController.update(normalizeDegrees(leftError), timer.getDeltaTime());
+        double rightPow = rightController.update(normalizeDegrees(rightError), timer.getDeltaTime());
+
+        telemetry.addData("LPower", leftPow);
+        telemetry.addData("RPower", rightPow);
+
+        leftServo.setPower(leftPow);
+        rightServo.setPower(rightPow);
     }
 
-    public Action setPositionSmooth(double position){
-        double lastPos = lastSetPosition;
-        lastSetPosition = position;
-
-        return new SetPosition(position, Math.abs(position - lastPos) * TIME_FULL_ROTATION);
+    double normalizeDegrees(double angle) {
+        return ((angle + 180) % 360) - 180;
     }
 
-    public Action setPosition(double position){
-        lastSetPosition = position;
-        return new SetPosition(position);
-    }
 
-    public void setPositionDirect(double position) {
-        lastSetPosition = position;
-        leftServo.setPosition(position);
-        rightServo.setPosition(position);
-    }
+    public void update(double targetAngleDegrees) {
+        timer.updateTime();
 
-    public void setInitPosition() {
-        lastSetPosition = Arm.INIT_AUTO_POS;
-        leftServo.setPosition(Arm.INIT_AUTO_POS);
-        rightServo.setPosition(Arm.INIT_AUTO_POS);
-    }
+        leftEncoder.update();
+        rightEncoder.update();
 
-    public class SetPosition implements Action {
-        private final double targetPosition;
-        private final double movementTime;
+        double armOrientation = (leftEncoder.getAbsolutePositionDegrees() + rightEncoder.getAbsolutePositionDegrees()) / 2;
+        telemetry.addData("Current angle", armOrientation);
+        double error = normalizeDegrees(targetAngleDegrees - armOrientation);
 
-        double startTime;
-        boolean initialized = false;
-        double startPosition;
+        telemetry.addData("Error", error);
+        double output = armPID.update(error, timer.getDeltaTime());
 
-        public SetPosition(double position) {
-            this.targetPosition = position;
-            this.movementTime = 0;
+        if (Math.abs(error) < deadband) {
+            output = 0.0;
         }
 
-        public SetPosition(double targetPosition, double movementTime) {
-            this.targetPosition = targetPosition;
-            this.movementTime = movementTime;
-        }
+        output = Math.max(minOutput, Math.min(maxOutput, output));
 
-        @Override
-        public boolean run(@NonNull TelemetryPacket packet) {
-            if (!initialized) {
-                startTime = timer.updateTime();
-                startPosition = leftServo.getPosition();
-                initialized = true;
-            }
+        //        leftServo.setPower(output);
+        //        rightServo.setPower(output);
+    }
 
-            if (movementTime != 0) {
-                double timeSinceStart = timer.updateTime() - startTime;
-                double percentOfMovement = (Math.min(1, timeSinceStart / movementTime));  // square root curve movement
-                double intermediatePoint = (targetPosition - startPosition) * percentOfMovement + startPosition;
+    public double calculateGravityTorque() {
+        double extensionLength = Util.clamp(PivotingSlides.currentExtensionLength, 0, PivotingSlides.MAX_EXTENSION_LENGTH);
 
-                leftServo.setPosition(intermediatePoint);
-                rightServo.setPosition(intermediatePoint);
 
-                if (timeSinceStart > movementTime) {
-                    leftServo.setPosition(targetPosition);
-                    rightServo.setPosition(targetPosition);
-                    return false;
-                }
+        return 0;
+    }
 
-                return timeSinceStart <= movementTime;
-            } else {
-                leftServo.setPosition(targetPosition);
-                rightServo.setPosition(targetPosition);
+    public void stop() {
+        leftServo.setPower(0.0);
+    }
 
-                return false;
-            }
-        }
+    public void resetEncoder() {
+        leftEncoder.reset();
+    }
+
+    public double getCurrentAngleDegrees() {
+        return leftEncoder.getAbsolutePositionDegrees();
     }
 }
+

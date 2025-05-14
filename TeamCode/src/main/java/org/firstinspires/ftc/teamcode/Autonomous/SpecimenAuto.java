@@ -9,7 +9,7 @@ import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.OutdatedPrograms.OldArm;
 import org.firstinspires.ftc.teamcode.OutdatedPrograms.SampleClaw;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
@@ -25,7 +25,7 @@ public class SpecimenAuto extends OpMode {
     public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(24.5, 24.5), Math.toRadians(45));
 
     SampleClaw sampleClaw;
-    Arm arm;
+    OldArm arm;
     VerticalSlides slides;
     Wrist wrist;
 
@@ -36,7 +36,7 @@ public class SpecimenAuto extends OpMode {
     @Override
     public void init() {
         sampleClaw = new SampleClaw(hardwareMap);
-        arm = new Arm(hardwareMap);
+        arm = new OldArm(hardwareMap);
         wrist = new Wrist(hardwareMap);
         slides = new VerticalSlides(hardwareMap);
 

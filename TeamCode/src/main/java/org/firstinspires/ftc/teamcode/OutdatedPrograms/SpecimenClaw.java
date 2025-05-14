@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
-@Disabled
+
 @Deprecated
 public class SpecimenClaw {
     final Vector2d CLAW_SERVO_BOUNDS = new Vector2d(0,1);
