@@ -21,14 +21,14 @@ public class Wrist {
     public static double INIT_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(-80));
     public static double STRAIGHT_POSITION = Kinematics.wristOrientationToPosition(Math.toRadians(0));
 
-    public static double SPECIMEN_INTAKE_POSITION = 0.63; //specimen position
-    public static double SPECIMEN_OUTAKE_POSITION = 0;
+    public static double SERVO_MAX = 0.633;
+    public static double SERVO_MIN = 0;
+    public static double INTAKE_POSITION = 0.1863;
 
     public Servo leftServo;
     public Servo rightServo;
 
     public Wrist(HardwareMap hardwareMap) {
-        //Using two wrists but only powering one
         leftServo = hardwareMap.get(Servo.class, "Left Wrist");
         rightServo = hardwareMap.get(Servo.class, "Right Wrist");
         leftServo.setDirection(Servo.Direction.REVERSE);
@@ -40,18 +40,14 @@ public class Wrist {
         return new Wrist.SetPosition(position);
     }
 
-    public Action setPositionSmooth(double position, double movementTime){
-        return new Wrist.SetPosition(position, movementTime);
-    }
-
     public void setInitPosition() {
         leftServo.setPosition(INIT_POSITION);
-//        rightServo.setPosition(INIT_POSITION);
+        rightServo.setPosition(INIT_POSITION);
     }
 
     public void setPositionDirect(double position) {
         leftServo.setPosition(position);
-//        rightServo.setPosition(position);
+        rightServo.setPosition(position);
     }
 
     public class SetPosition implements Action {

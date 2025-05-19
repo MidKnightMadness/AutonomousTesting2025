@@ -22,7 +22,11 @@ public class AxonEncoder {
     }
 
     public void home() {
-        zeroVoltage = analogInput.getVoltage();
+        setHome(analogInput.getVoltage());
+    }
+
+    public void setHome(double homeVoltage) {
+        zeroVoltage = homeVoltage;
         previousVoltage = zeroVoltage;
         totalRotations = 0.0;
     }
@@ -48,7 +52,7 @@ public class AxonEncoder {
     }
 
     public double getAbsolutePositionRadians() {
-        double fractionalRotation = (previousVoltage - zeroVoltage + MAX_VOLTAGE) % MAX_VOLTAGE / MAX_VOLTAGE;
+        double fractionalRotation = (previousVoltage - zeroVoltage) / MAX_VOLTAGE;
         double sign = direction == Direction.FORWARD ? 1: -1;
         return sign * (totalRotations + fractionalRotation) * 2 * Math.PI;
     }

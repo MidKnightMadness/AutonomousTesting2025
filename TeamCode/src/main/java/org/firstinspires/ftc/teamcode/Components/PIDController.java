@@ -5,6 +5,9 @@ public class PIDController {
     public double previousError;
     private double integral;
 
+    private double minOutput = Double.NEGATIVE_INFINITY;
+    private double maxOutput = Double.POSITIVE_INFINITY;
+
     public PIDController(double kp, double ki, double kd) {
         this.kp = kp;
         this.ki = ki;
@@ -13,12 +16,26 @@ public class PIDController {
         this.integral = 0.0;
     }
 
+    public void setOutputLimits(double min, double max) {
+        this.minOutput = min;
+        this.maxOutput = max;
+    }
+
     public double update(double error, double deltaTime) {
         integral += error * deltaTime;
         double derivative = (error - previousError) / deltaTime;
         previousError = error;
 
-        return kp * error + ki * integral + kd * derivative;
+        double output = kp * error + ki * integral + kd * derivative;
+//
+//        output = Math.max(minOutput, Math.min(output, maxOutput));
+//
+//        // Prevent integral windup
+//        if (output == minOutput || output == maxOutput) {
+//            integral -= error * deltaTime;
+//        }
+
+        return output;
     }
 
     public void reset() {

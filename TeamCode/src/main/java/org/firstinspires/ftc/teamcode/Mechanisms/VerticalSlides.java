@@ -20,9 +20,12 @@ public class VerticalSlides {
 
     public static double SPECIMEN_INTAKE = 700;
     public static double SPECIMEN_OUTTAKE = 2200;
+
+    public static double feedforwardPower = 0.05;
+
+    double inactivePower = 0;
+
     //HANG:
-
-
     public VerticalSlides(HardwareMap hardwareMap) {
         rightMotor = hardwareMap.get(DcMotorEx.class, "Right Slide");
         leftMotor = hardwareMap.get(DcMotorEx.class, "Left Slide");
@@ -32,6 +35,18 @@ public class VerticalSlides {
 
         leftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+
+    public void enableFeedforward() {
+        inactivePower = feedforwardPower;
+        leftMotor.setPower(inactivePower);
+        rightMotor.setPower(inactivePower);
+    }
+
+    public void disableFeedforward() {
+        inactivePower = 0;
+        leftMotor.setPower(inactivePower);
+        rightMotor.setPower(inactivePower);
     }
 
     public Action setPosition(double targetPosition, double power) {
@@ -77,8 +92,8 @@ public class VerticalSlides {
             boolean leftCompleted = leftDirection == 1 ? (leftPos > targetPosition) : (leftPos < targetPosition);
             boolean rightCompleted = rightDirection == 1 ? (rightPos > targetPosition) : (leftPos < targetPosition);
 
-            if (leftCompleted) leftMotor.setPower(0);
-            if (rightCompleted) rightMotor.setPower(0);
+            if (leftCompleted) leftMotor.setPower(inactivePower);
+            if (rightCompleted) rightMotor.setPower(inactivePower);
 
             return !(rightCompleted && leftCompleted);
         }

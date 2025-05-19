@@ -7,6 +7,8 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -14,28 +16,25 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
-@Deprecated
 public class Spintake {
 
-    RevColorSensorV3 colorSensor;
-    Rev2mDistanceSensor distanceSensor;
-    public static double INTAKE_POS = 1.0;
-    public static double OUTAKE_POS = 0.0;
+    public RevColorSensorV3 colorSensor;
+    public Rev2mDistanceSensor distanceSensor;
 
     public static double INTAKE_THRESHOLD = 0.6;
     public static double OUTAKE_THRESHOLD = 2;
 
-
-    public Servo leftServo;
-    public Servo rightServo;
+    public CRServo leftServo;
+    public CRServo rightServo;
 
 
     Timer timer;
 
     double lastSetPosition = 0.5;
     public Spintake(HardwareMap hardwareMap) {
-        leftServo = hardwareMap.get(Servo.class, "Left Arm");
-        rightServo = hardwareMap.get(Servo.class, "Right Arm");
+        leftServo = hardwareMap.get(CRServo.class, "Left Spintake");
+        rightServo = hardwareMap.get(CRServo.class, "Right Spintake");
+        rightServo.setDirection(DcMotorSimple.Direction.REVERSE);
 
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "Inside Color");
         distanceSensor = hardwareMap.get(Rev2mDistanceSensor.class, "Outside Distance");
@@ -43,45 +42,25 @@ public class Spintake {
         timer = new Timer();
     }
 
-    public Action setPositionSmooth(double position, double movementTime) {
-        lastSetPosition = position;
-        return new SetPosition(position, movementTime);
+
+    public void setPower(double power) {
+        leftServo.setPower(power);
+        rightServo.setPower(power);
     }
 
-
-    public Action setPosition(double position){
-        lastSetPosition = position;
-        return new SetPosition(position);
+    public Action outtake() {
+        return new Outtake();
     }
 
-    public void setPositionDirect(double position) {
-        lastSetPosition = position;
-        leftServo.setPosition(position);
-        rightServo.setPosition(position);
+    public Action intake() {
+        return new Intake();
     }
 
-    public void setInitPosition() {
-        leftServo.setPosition(0.5);
-        rightServo.setPosition(0.5);
-    }
-
-    public class SetPosition implements Action {
-        private final double continuousPosition;
-        private final double movementTime;
+    public class Outtake implements Action {
+        public double timeout = 2;
 
         double startTime;
         boolean initialized = false;
-        double startPosition;
-
-        public SetPosition(double continuousPosition) {
-            this.continuousPosition = continuousPosition;
-            this.movementTime = 0;
-        }
-
-        public SetPosition(double continuousPosition, double movementTime) {
-            this.continuousPosition = continuousPosition;
-            this.movementTime = movementTime;
-        }
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
@@ -90,28 +69,45 @@ public class Spintake {
                 initialized = true;
             }
 
-            if (movementTime != 0) {
-                double currentTime = timer.updateTime();
-                if (currentTime - startTime < movementTime) {
-                    if (continuousPosition > 0.5 && ((distanceSensor.getDistance(DistanceUnit.INCH) > INTAKE_THRESHOLD)
-                            || (colorSensor.getDistance(DistanceUnit.INCH) > INTAKE_THRESHOLD))) {
-                        leftServo.setPosition(continuousPosition);
-                        rightServo.setPosition(continuousPosition);
-                        return true;
-                    } else if (continuousPosition < 0.5 && ((distanceSensor.getDistance(DistanceUnit.INCH) < OUTAKE_THRESHOLD) ||
-                            (colorSensor.getDistance(DistanceUnit.INCH) < OUTAKE_THRESHOLD))) {
-                        leftServo.setPosition(continuousPosition);
-                        rightServo.setPosition(continuousPosition);
-                        return true;
-                    } else {
-                        leftServo.setPosition(0.5);
-                        rightServo.setPosition(0.5);
-                        return false;
-                    }
-                }
+            setPower(-1);
+
+            if (timer.updateTime() - startTime < timeout) {
+                boolean run = (colorSensor.getDistance(DistanceUnit.INCH) < Spintake.OUTAKE_THRESHOLD)
+                        && ((distanceSensor.getDistance(DistanceUnit.INCH) < Spintake.OUTAKE_THRESHOLD));
+
+                if (!run) setPower(0);
+                return run;
             }
-            leftServo.setPosition(0.5);
-            rightServo.setPosition(0.5);
+
+            setPower(0);
+            return false;
+        }
+    }
+
+    public class Intake implements Action {
+        public double timeout = 3;
+
+        double startTime;
+        boolean initialized = false;
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                startTime = timer.updateTime();
+                initialized = true;
+            }
+
+            setPower(1);
+
+            if (timer.updateTime() - startTime < timeout) {
+                boolean run = (colorSensor.getDistance(DistanceUnit.INCH) > INTAKE_THRESHOLD)
+                        && (distanceSensor.getDistance(DistanceUnit.INCH) > INTAKE_THRESHOLD);
+
+                if (!run) setPower(0);
+                return run;
+            }
+
+            setPower(0);
             return false;
         }
     }

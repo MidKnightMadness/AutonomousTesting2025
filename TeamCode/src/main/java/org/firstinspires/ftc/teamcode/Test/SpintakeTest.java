@@ -7,27 +7,20 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Components.Timer;
+import org.firstinspires.ftc.teamcode.Mechanisms.Spintake;
 
 @TeleOp(group="Test")
 public class SpintakeTest extends OpMode {
 
-    RevColorSensorV3 outsideColorSensor;
-    RevColorSensorV3 insideColorSensor;
-    Servo servoLeft;
-    Servo servoRight;
-    Timer timer;
+    Spintake spintake;
 
+    Timer timer;
     boolean intaking;
     boolean outtaking;
 
     @Override
     public void init() {
-        servoLeft = hardwareMap.get(Servo.class, "leftServo");
-        servoRight = hardwareMap.get(Servo.class, "rightServo");
-        servoRight.setDirection(Servo.Direction.REVERSE);
-
-        outsideColorSensor = hardwareMap.get(RevColorSensorV3.class, "outsideColorSensor");
-        insideColorSensor = hardwareMap.get(RevColorSensorV3.class, "insideColorSensor");
+        spintake = new Spintake(hardwareMap);
 
         timer = new Timer();
     }
@@ -47,32 +40,27 @@ public class SpintakeTest extends OpMode {
         }
 
         if (intaking) {
-            servoLeft.setPosition(1);
-            servoRight.setPosition(1);
-            intaking = (outsideColorSensor.getDistance(DistanceUnit.INCH) > INTAKE_THRESHOLD)
-                    || (insideColorSensor.getDistance(DistanceUnit.INCH) > INTAKE_THRESHOLD);
+            spintake.setPower(1);
+            intaking = (spintake.colorSensor.getDistance(DistanceUnit.INCH) > INTAKE_THRESHOLD)
+                    && (spintake.distanceSensor.getDistance(DistanceUnit.INCH) > INTAKE_THRESHOLD);
         }
         else if (outtaking) {
-            servoLeft.setPosition(0);
-            servoRight.setPosition(0);
-            outtaking = (outsideColorSensor.getDistance(DistanceUnit.INCH) < OUTTAKE_THRESHOLD)
-                     || (insideColorSensor.getDistance(DistanceUnit.INCH) < OUTTAKE_THRESHOLD);
+            spintake.setPower(-1);
+            outtaking = ((spintake.colorSensor.getDistance(DistanceUnit.INCH) < OUTTAKE_THRESHOLD)
+                     && ((spintake.distanceSensor.getDistance(DistanceUnit.INCH) < OUTTAKE_THRESHOLD)));
         }
         else {
-            servoLeft.setPosition(0.5);
-            servoRight.setPosition(0.5);
+            spintake.setPower(0);
         }
 
-        telemetry.addData("Left Servo Pos", servoLeft.getPosition());
-        telemetry.addData("Right Servo Pos", servoRight.getPosition());
-        telemetry.addData("Outside color sensor distance", outsideColorSensor.getDistance(DistanceUnit.INCH));
-        telemetry.addData("Inside color sensor distance", insideColorSensor.getDistance(DistanceUnit.INCH));
+        telemetry.addData("Left Servo Power", spintake.leftServo.getPower());
+        telemetry.addData("Right Servo Power", spintake.rightServo.getPower());
+        telemetry.addData("Color  sensor distance", spintake.colorSensor.getDistance(DistanceUnit.INCH));
+        telemetry.addData("Distance sensor distance", spintake.distanceSensor.getDistance(DistanceUnit.INCH));
 
-        telemetry.addData("Inside color sensor optical", insideColorSensor.getRawLightDetected());
-        telemetry.addData("Outside color sensor optical", outsideColorSensor.getRawLightDetected());
+        telemetry.addData("Inside color sensor optical", spintake.colorSensor.getRawLightDetected());
 
-        telemetry.addData("Inside color sensor raw", insideColorSensor.rawOptical());
-        telemetry.addData("outside color sensor raw", outsideColorSensor.rawOptical());
+        telemetry.addData("Inside color sensor raw", spintake.colorSensor.rawOptical());
 
         telemetry.addData("Time", timer.updateTime());
         telemetry.update();

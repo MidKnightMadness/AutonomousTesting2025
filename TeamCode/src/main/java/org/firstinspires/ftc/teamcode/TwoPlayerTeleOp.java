@@ -1,174 +1,193 @@
-//package org.firstinspires.ftc.teamcode;
-//
-//import com.acmerobotics.dashboard.FtcDashboard;
-//import com.acmerobotics.dashboard.config.Config;
-//import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-//import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-//import com.acmerobotics.roadrunner.Action;
-//import com.acmerobotics.roadrunner.ParallelAction;
-//import com.acmerobotics.roadrunner.Pose2d;
-//import com.acmerobotics.roadrunner.PoseVelocity2d;
-//import com.acmerobotics.roadrunner.SequentialAction;
-//import com.acmerobotics.roadrunner.Vector2d;
-//import com.qualcomm.hardware.lynx.LynxModule;
-//import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-//import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-//
-//import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
-//import org.firstinspires.ftc.teamcode.Mechanisms.PivotingSlides;
-//import org.firstinspires.ftc.teamcode.OutdatedPrograms.SpecimenClaw;
-//import org.firstinspires.ftc.teamcode.OutdatedPrograms.TurnTable;
-//import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
-//import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
-//import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
-//import org.firstinspires.ftc.teamcode.Components.Timer;
-//
-//import java.util.List;
-//
-//@TeleOp(name="TeleOp - Two Player", group="A")
-//@Config
-//public class TwoPlayerTeleOp extends OpMode {
-//    public static double STRAFE_ROTATION_FACTOR = 0.1; // add rotation while strafing to counteract uneven rotation
-//
-//    public static Vector2d basketTrajectoryIntermediate = new Vector2d(0, 20);
-//    public static Vector2d basketTrajectoryPosition = new Vector2d(-40, 28);
-//
-//    public static double rotationFactor = 0.5;
-//
-//    VerticalSlides slides;
-//
-//    SpecimenClaw specimenClaw;
-//    PivotingSlides pivotingSlides;
-//    Arm arm;
-//    Wrist wrist;
-//    TurnTable turnTable;
-//
-//    boolean isInSlideAction = false;
-//
-//    Action activeAction;
-//
-//    Timer timer;
-//
-//    boolean clawClosed = false;
-//    FtcDashboard dash = FtcDashboard.getInstance();
-//
-//    MecanumDrive drive;
-//
-//    Action armAction;
-//
-//    List<LynxModule> allHubs;
-//    TelemetryPacket packet = new TelemetryPacket();
-//
-//    @Override
-//    public void init() {
-//        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-//        slides = new VerticalSlides(hardwareMap);
-//        pivotingSlides = new PivotingSlides(hardwareMap);
-//        arm = new Arm(hardwareMap);
-//        wrist = new Wrist(hardwareMap);
-//        specimenClaw = new SpecimenClaw(hardwareMap);
-//        turnTable = new TurnTable(hardwareMap);
-//
-//
-//        timer = new Timer();
-//        clawClosed = true;
-//
-//        MecanumDrive.PARAMS.maxWheelVel = 60;
-//
-//        drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
-//
-//        if (RunOptions.useBulkReads) {
-//            allHubs = hardwareMap.getAll(LynxModule.class);
-//
-//            for (LynxModule module : allHubs) {
-//                module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public void start() {
-//        turnTable.servo.setPosition(TurnTable.NEUTRAL_POS);
-//        arm.leftServo.setPosition(Arm.STRAIGHT_UP_POSITION);
-//        arm.rightServo.setPosition(Arm.STRAIGHT_UP_POSITION);
-////        wrist.servo.setPosition(Wrist.BASKET_POSITION);
-////        pivotingSlides.getLeftServo().setPosition(PivotingSlides.RETRACT_SERVO_POSITION);
-//        timer.updateTime();
-//    }
-//
-//    double drivingPower = 1;
-//
-//    @Override
-//    public void loop() {
-//            if (RunOptions.useBulkReads) {
-//                for (LynxModule module : allHubs) {
-//                    module.clearBulkCache();
-//                }
-//            }
-//
-//            timer.updateTime();
-//
-//            gamepad1Controls();
-//            gamepad2Controls();
-//
-//            telemetry.addData("Update Rate (Hz)", 1 / timer.getDeltaTime());
-//
-//            if (RunOptions.enableTelemetry) {
-//                PoseVelocity2d vel = drive.updatePoseEstimate();
-//                Pose2d pose = drive.localizer.getPose();
-//
-//                Kinematics.updatePosition(slides, arm, wrist, turnTable);
-//                Pose2d endEffectorPose = Kinematics.endEffectorPosition;
-//
-//                telemetry.addData("Slide mode", slideMode);
-//
-//                telemetry.addData("End effector pose", String.format("(%f, %f)", endEffectorPose.position.x, endEffectorPose.position.y));
-//                telemetry.addData("End effector rotation", Math.toDegrees(endEffectorPose.heading.toDouble()));
-//
-//                telemetry.addLine("-----------Robot Values -----------");
-//
-//                telemetry.addData("x", pose.position.x);
-//                telemetry.addData("y", pose.position.y);
-//                telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
-//                telemetry.addData("velocity (translational)", Math.sqrt(vel.linearVel.x * vel.linearVel.x + vel.linearVel.y * vel.linearVel.y));
-//
-//                telemetry.addLine("-----------Servo Positions -----------");
-//                telemetry.addData("Arm Left Pos", arm.leftServo.getPosition());
-//                telemetry.addData("Arm Right Pos", arm.rightServo.getPosition());
-//                telemetry.addData("Wrist Pos", wrist.servo.getPosition());
-//                telemetry.addData("Specimen Claw Pos", specimenClaw.servo.getPosition());
-//                telemetry.addData("Turntable Wrist Pos", turnTable.servo.getPosition());
-//
-//                telemetry.addData("Is Arm Running", inArmAction);
-//                telemetry.addData("Right motor pos", slides.getRightMotor().getCurrentPosition());
-//                telemetry.addData("Left motor pos", slides.getLeftMotor().getCurrentPosition());
-//
-//                telemetry.update();
-//            }
-//    }
-//
-//    int slideMode = 0; // 0: sample, 1: specimen
-//
-//    public void runSlideControls() {
-//        if (isInSlideAction) {
-//            isInSlideAction = activeAction.run(packet);
-//
-//            // stop running
-//            if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
-//                isInSlideAction = false;
-//            }
-//
-//            telemetry.addLine("Running automation");
-//
-//            telemetry.update();
-//
-//            return;
-//        }
-//
-//        slides.getLeftMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
-//        slides.getRightMotor().setPower(gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1));
-//
-//
+package org.firstinspires.ftc.teamcode;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.Components.Util;
+import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.Mechanisms.PivotingSlides;
+import org.firstinspires.ftc.teamcode.Mechanisms.Spintake;
+import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
+import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
+import org.firstinspires.ftc.teamcode.Components.Timer;
+
+import java.util.List;
+
+@TeleOp(name="TeleOp - Two Player", group="A")
+@Config
+public class TwoPlayerTeleOp extends OpMode {
+
+    public static double STRAFE_ROTATION_FACTOR = 0.1; // rotation while strafing to counteract uneven rotation
+    public static double rotationFactor = 0.5;
+
+    VerticalSlides slides;
+
+    PivotingSlides pivotingSlides;
+    Arm arm;
+    Wrist wrist;
+    Spintake spintake;
+
+    boolean inSlideAction;
+    boolean inArmAction;
+    boolean inSpintakeAction;
+
+    Action slideAction;
+    Action spintakeAction;
+    Action armAction;
+
+    Timer timer;
+
+    boolean clawClosed = false;
+
+    MecanumDrive drive;
+
+
+    List<LynxModule> allHubs;
+    TelemetryPacket packet = new TelemetryPacket();
+
+    @Override
+    public void init() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        slides = new VerticalSlides(hardwareMap);
+        pivotingSlides = new PivotingSlides(hardwareMap);
+        arm = new Arm(hardwareMap, telemetry);
+        wrist = new Wrist(hardwareMap);
+        spintake = new Spintake(hardwareMap);
+
+        timer = new Timer();
+        clawClosed = true;
+
+        MecanumDrive.PARAMS.maxWheelVel = 60;
+
+        drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        wrist.setPositionDirect(Wrist.INTAKE_POSITION);
+        slides.enableFeedforward();
+
+        if (RunOptions.useBulkReads) {
+            allHubs = hardwareMap.getAll(LynxModule.class);
+
+            for (LynxModule module : allHubs) {
+                module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+            }
+        }
+    }
+
+    @Override
+    public void start() {
+        timer.updateTime();
+    }
+
+    double drivingPower = 1;
+
+    @Override
+    public void loop() {
+            if (RunOptions.useBulkReads) {
+                for (LynxModule module : allHubs) {
+                    module.clearBulkCache();
+                }
+            }
+
+            timer.updateTime();
+
+            gamepad1Controls();
+
+            telemetry.addData("Update Rate (Hz)", 1 / timer.getDeltaTime());
+            telemetry.addData("pivoting slides", pivotingSlidesExtension);
+            telemetry.addData("Arm target", armTargetAngle);
+
+            if (gamepad1.right_bumper) {
+                inSpintakeAction = true;
+                spintakeAction = spintake.outtake();
+            }
+            else if (gamepad1.right_trigger > 0.5) {
+                inSpintakeAction = true;
+                spintakeAction = spintake.intake();
+            }
+
+            runPivotingSlides();
+            runWristControls();
+            runArmControls();
+
+            runSpintakeControls();
+
+            if (RunOptions.enableTelemetry) {
+                PoseVelocity2d vel = drive.updatePoseEstimate();
+                Pose2d pose = drive.localizer.getPose();
+
+                telemetry.addData("Slide mode", slideMode);
+
+                telemetry.addLine("-----------Robot Values -----------");
+                telemetry.addData("x", pose.position.x);
+                telemetry.addData("y", pose.position.y);
+                telemetry.addData("heading (deg)", Math.toDegrees(pose.heading.toDouble()));
+                telemetry.addData("velocity (translational)", Math.sqrt(vel.linearVel.x * vel.linearVel.x + vel.linearVel.y * vel.linearVel.y));
+
+                telemetry.addLine("-----------Servo Positions -----------");
+                telemetry.addData("Is Arm Running", inArmAction);
+                telemetry.addData("Right motor pos", slides.getRightMotor().getCurrentPosition());
+                telemetry.addData("Left motor pos", slides.getLeftMotor().getCurrentPosition());
+
+                telemetry.update();
+            }
+    }
+
+    int slideMode = 0; // 0: sample, 1: specimen
+
+
+    public void runSpintakeControls() {
+        if (inSpintakeAction) {
+            inSpintakeAction = spintakeAction.run(packet);
+
+            if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
+                inSlideAction = false;
+            }
+
+            telemetry.addLine("Running automation");
+            telemetry.update();
+
+            return;
+        }
+
+    }
+
+    public void runSlideControls() {
+        if (inSlideAction) {
+            inSlideAction = slideAction.run(packet);
+
+            if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
+                inSlideAction = false;
+            }
+
+            telemetry.addLine("Running automation");
+            telemetry.update();
+
+            return;
+        }
+
+        double slidesPower = gamepad1.left_trigger * (gamepad1.left_bumper ? -1 : 1);
+
+        if (slidesPower >= 0 && slidesPower < VerticalSlides.feedforwardPower) {
+            slides.getLeftMotor().setPower(VerticalSlides.feedforwardPower);
+            slides.getRightMotor().setPower(VerticalSlides.feedforwardPower);
+        }
+        else {
+            slides.getLeftMotor().setPower(slidesPower);
+            slides.getRightMotor().setPower(slidesPower);
+        }
+
+        telemetry.addData("Vert. slides power", slidesPower);
+        // hang
 //        if (gamepad1.left_bumper && gamepad1.y && gamepad1.left_trigger != 0) {
 //            while (true) {
 //                slides.getLeftMotor().setPower(-1);
@@ -182,184 +201,106 @@
 //                }
 //            }
 //        }
-//
-//    }
-//
-//    public void gamepad1Controls(){
-//
-//        if (gamepad1.start) {
-//            slideMode = 0;
-//        }
-//        if (gamepad1.back) {
-//            slideMode = 1;
-//        }
-//        if (gamepad1.x) {
-//            drivingPower = 0.5;
-//        }
-//        else {
-//            drivingPower = 1;
-//        }
-//
-//        drive.setDrivePowers(new PoseVelocity2d(
-//                new Vector2d(
-//                        -gamepad1.left_stick_x * drivingPower,
-//                        -gamepad1.left_stick_y * drivingPower
-//                ),
-//                (-gamepad1.right_stick_x * rotationFactor + gamepad1.left_stick_x * STRAFE_ROTATION_FACTOR) * drivingPower
-//        ));
-//
-//        runSlideControls();
-//
-//        double turnTableDirection = 1;
-//        if (gamepad1.right_bumper) {
-//            turnTableDirection = -1;
-//        }
-//
-//        if(gamepad1.right_trigger > 0.05){
-//            turnTable.servo.setPosition(turnTable.servo.getPosition() + turnTableDirection * gamepad1.right_trigger * timer.getDeltaTime() * 1);
-//        }
-//
-//        if (gamepad1.a) {
-//            activeAction = slidesDown();
-//            isInSlideAction = true;
-//        }
-//        else if (gamepad1.b) {
-//            activeAction = slidesUp();
-//            isInSlideAction = true;
-//        }
-//    }
-//
-//    public Action goToSub(){
-//        drive.localizer.setPose(new Pose2d(new Vector2d(0, 0), Math.toRadians(-225)));
-//
-//        return new SequentialAction(
-//                new ParallelAction(
-//                        arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 1),
-//                        drive.actionBuilderNoCorrection().strafeToLinearHeading(basketTrajectoryIntermediate, Math.toRadians(-225)).build(),
-//                        slides.bringDown(0.6),
-//                        turnTable.setPosition(TurnTable.NEUTRAL_POS),
-//                        wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
-//                ),
-//                arm.setPositionSmooth(Arm.SAMPLE_INTAKE, 0.5),
-//                new ParallelAction(
-//                        drive.actionBuilderNoCorrection().strafeToLinearHeading(basketTrajectoryPosition, Math.toRadians(-90)).build()
-//                )
-//        );
-//    }
-//
-//    public Action slidesDown() {
-//        if (slideMode == 0) {
-//            return new SequentialAction(
-//                    slides.bringDown(0.8)
-//            );
-//        }
-//
-//        return new SequentialAction(
-//                slides.setPosition(VerticalSlides.SPECIMEN_INTAKE, 0.8)
-//        );
-//    }
-//
-//    public Action slidesUp() {
-//        if (slideMode == 0) {
-//            return new ParallelAction(
-//                    slides.liftUp(0.8),
-//                    turnTable.setPosition(TurnTable.NEUTRAL_POS)
-//            );
-//        }
-//
-//        return new SequentialAction(
-//                slides.setPosition(VerticalSlides.SPECIMEN_OUTTAKE, 0.8)
-//        );
-//    }
-//
-//
-//    String activeEndEffector = "Sample Claw";
-//    boolean inArmAction;
-//
-//    public static double extensionLength = 0;
-//    public static double pivotingSlidesSpeed = 1;
-//    public void gamepad2Controls(){
-//        //Change End Effectors
-//        if(gamepad2.dpad_right) {
-//           activeEndEffector = "Specimen Claw";
-//        }
-//        if(gamepad2.dpad_left) {
-//            activeEndEffector = "Spintake";
-//        }
-//
-//        //Claw
-////        if(activeClaw.equals("Sample Claw")) {
-////            if (gamepad2.right_bumper) {
-////                sampleClaw.release();
-////            } else if (gamepad2.right_trigger > 0.5) {
-////                sampleClaw.grab();;
-////            }
-////        }
-//        timer.updateTime();
-//        double deltaTime = timer.getDeltaTime();
-//
-//        extensionLength += gamepad1.dpad_up ? deltaTime * pivotingSlidesSpeed : 0;
-//        extensionLength -= gamepad1.dpad_down ? deltaTime * pivotingSlidesSpeed : 0;
-//
-//        if(gamepad2.right_trigger > 0.5){
-//            pivotingSlides.setExtensionLength(extensionLength);
-//        }
-//        if(gamepad2.right_bumper){
-//            pivotingSlides.setExtensionLength(0);
-//        }
-//
-//        if(activeEndEffector.equals("Specimen Claw")) {
-//            if (gamepad2.right_bumper) {
-//                specimenClaw.release();
-//            } else if (gamepad2.right_trigger > 0.5) {
-//                specimenClaw.grab();
-//            }
-//        }
-//
-//        runWristControls();
-//        runArmControls();
-//    }
-//
-//    public void runWristControls() {
-//        if (gamepad2.left_bumper) {
-//            wrist.servo.setPosition(Wrist.BASKET_POSITION);
-//            return;
-//        }
-//
-//        if(Math.abs(gamepad2.left_stick_y) > 0.05){
-//            wrist.servo.setPosition(wrist.servo.getPosition() + gamepad2.left_stick_y * timer.getDeltaTime() * 0.5);
-//        }
-//    }
-//
-//    public void runArmControls() {
-//        if (inArmAction) {
-//            inArmAction = armAction.run(packet);
-//            return;
-//        }
-//
-//        if (gamepad2.y) {
-//            armAction = arm.setPositionSmooth(Arm.BASKET_POSITION, 0.5);
-//            inArmAction = true;
-//        }
-//        else if (gamepad2.a) {
-//            armAction = arm.setPositionSmooth(Kinematics.armOrientationToPosition(Math.toRadians(-23)), 0.5);
-//            inArmAction = true;
-//        }
-//        else if(gamepad2.x){
-//            armAction = arm.setPositionSmooth(Arm.INIT_AUTO_POS, 0.5);
-//            inArmAction = true;
-//        }
-//        else if(gamepad2.b){
-//            armAction = arm.setPositionSmooth(Arm.STRAIGHT_UP_POSITION, 0.5);
-//            inArmAction = true;
-//        }
-//
-//        //Arm
-//        if (Math.abs(gamepad2.right_stick_y) > 0.05){
-//            arm.setPositionDirect(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * 0.5);
-//        }
-//    }
-//
-//
-//}
-//
+
+    }
+
+    public void gamepad1Controls(){
+        drive.setDrivePowers(new PoseVelocity2d(
+                new Vector2d(
+                        -gamepad1.left_stick_x * drivingPower,
+                        -gamepad1.left_stick_y * drivingPower
+                ),
+                (-gamepad1.right_stick_x * rotationFactor + gamepad1.left_stick_x * STRAFE_ROTATION_FACTOR) * drivingPower
+        ));
+
+        runSlideControls();
+
+        if (gamepad1.a) {
+            slideAction = slidesDown();
+            inSlideAction = true;
+        }
+        else if (gamepad1.y) {
+            slideAction = slidesUp();
+            inSlideAction = true;
+        }
+    }
+
+    public Action slidesDown() {
+        if (slideMode == 0) {
+            return new SequentialAction(
+                    slides.bringDown(0.8)
+            );
+        }
+
+        return new SequentialAction(
+                slides.setPosition(VerticalSlides.SPECIMEN_INTAKE, 0.8)
+        );
+    }
+
+    public Action slidesUp() {
+        if (slideMode == 0) {
+            return new ParallelAction(
+                    slides.liftUp(0.8)
+            );
+        }
+
+        return new SequentialAction(
+                slides.setPosition(VerticalSlides.SPECIMEN_OUTTAKE, 0.8)
+        );
+    }
+
+    double armTargetAngle;
+    double pivotingSlidesExtension = 0;
+    public static double armSpeed = 150; // degrees / sec
+    public static double pivotingSlidesSpeed = 300;  // mm / s
+
+    public void runWristControls() {
+        if (gamepad1.x) {
+            wrist.setPositionDirect(0.1863);
+        }
+        else if (gamepad1.b) {
+            wrist.setPositionDirect(Wrist.SERVO_MAX);
+        }
+
+        double sign = gamepad2.right_bumper ? 1 : -1;
+
+        if (Math.abs(gamepad2.left_stick_y) > 0.05){
+            wrist.setPosition(wrist.leftServo.getPosition() + sign * gamepad2.right_trigger * timer.getDeltaTime() * 0.5);
+        }
+    }
+
+    public void runPivotingSlides() {
+        if (gamepad2.left_trigger > 0.5) {
+            pivotingSlidesExtension = PivotingSlides.MAX_EXTENSION_LENGTH;
+        }
+        else if (gamepad2.left_bumper) {
+            pivotingSlidesExtension = 30;
+        }
+
+        pivotingSlidesExtension -= gamepad2.left_stick_y * timer.getDeltaTime() * pivotingSlidesSpeed;
+        pivotingSlidesExtension = Util.clamp(pivotingSlidesExtension, 0, PivotingSlides.MAX_EXTENSION_LENGTH);
+        pivotingSlides.setExtensionLength(pivotingSlidesExtension);
+
+
+        telemetry.addData("pivoting slides servo", pivotingSlides.leftServo.getPosition());
+    }
+
+    public void runArmControls() {
+        if (gamepad2.x) {
+
+            armTargetAngle = 0;
+            inArmAction = true;
+        }
+        else if (gamepad2.y) {
+            armTargetAngle = 51;
+            inArmAction = true;
+        }
+        else if(gamepad2.b){
+            armTargetAngle = 141;
+            inArmAction = true;
+        }
+
+        arm.setPowerWithFF(-gamepad2.right_stick_y);
+    }
+}
+
