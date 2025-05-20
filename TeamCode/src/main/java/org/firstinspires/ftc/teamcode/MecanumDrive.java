@@ -25,14 +25,17 @@ import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.Localization.GoBildaPinpoint.PinpointOdometryLocalizer;
+import org.firstinspires.ftc.teamcode.Localization.InternalIMU.TwoDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
 import org.firstinspires.ftc.teamcode.Localization.messages.DriveCommandMessage;
@@ -52,20 +55,20 @@ public final class MecanumDrive {
         public double tickPerRev = 2000;
         public double inPerTick = 32 / 25.4 * Math.PI / tickPerRev;  // for dead wheel encoders
         public double lateralInPerTick = inPerTick;
-        public double trackWidthTicks = 6134.355708484638;
+        public double trackWidthTicks = 5884.18574081694;
 
         // TODO: feedforward parameters (in tick units)
-        public double kS = 1.257885934301533;
-        public double kV = 0.00026481855361795676;
-        public double kA = 0.000005;
+        public double kS = 1.2074404622065877;
+        public double kV = 0.00026704218268925093;
+        public double kA = 0.000051;
 
         // TODO: path profile parameters (in inches)
-//        public double maxWheelVel = 50;
-//        public double minProfileAccel = -30;
-//        public double maxProfileAccel = 50;
-        public double maxWheelVel = 20;
-        public double minProfileAccel = -10;
-        public double maxProfileAccel = 20;
+        public double maxWheelVel = 40;
+        public double minProfileAccel = -30;
+        public double maxProfileAccel = 30;
+//        public double maxWheelVel = 20;
+//        public double minProfileAccel = -10;
+//        public double maxProfileAccel = 20;
 
         // TODO: turn profile parameters (in radians)
         public double maxAngVel = Math.PI * 1.4;
@@ -143,8 +146,14 @@ public final class MecanumDrive {
 //        otos.setAngularUnit(AngleUnit.RADIANS);
 //        otos.resetTracking();
 
-//        localizer = new TwoDeadWheelOTOSLocalizer(hardwareMap, otos, PARAMS.inPerTick, pose);
-        localizer = new PinpointOdometryLocalizer(hardwareMap, pose);
+        IMU imu = hardwareMap.get(IMU.class, "imu");
+
+        // tuning
+        lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.UP));
+        localizer = new TwoDeadWheelLocalizer(hardwareMap, imu, PARAMS.inPerTick, pose);
+
+//        localizer = new PinpointOdometryLocalizer(hardwareMap, pose);
     }
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose, Telemetry telemetry) {
@@ -528,19 +537,7 @@ public final class MecanumDrive {
 
     public TrajectoryActionBuilder actionBuilder() {
         updatePoseEstimate();
-        return new TrajectoryActionBuilder(
-                TurnAction::new,
-                FollowTrajectoryAction::new,
-                new TrajectoryBuilderParams(
-                        1e-6,
-                        new ProfileParams(
-                                0.25, 0.1, 1e-2
-                        )
-                ),
-                localizer.getPose(), 0.0,
-                defaultTurnConstraints,
-                defaultVelConstraint, defaultAccelConstraint
-        );
+        return actionBuilder(localizer.getPose());
     }
 
     public TrajectoryActionBuilder actionBuilderNoCorrection(Pose2d beginPose) {

@@ -30,8 +30,8 @@ public class PivotingSlidesTest extends OpMode {
         extensionLength += gamepad1.dpad_up ? deltaTime * speed : 0;
         extensionLength -= gamepad1.dpad_down ? deltaTime * speed : 0;
 
-        if (gamepad1.a) pivotingSlides.setExtensionLength(extensionLength * 25.4);
-        if (gamepad1.b) pivotingSlides.setExtensionLength(0);
+        if (gamepad1.a) pivotingSlides.setExtension(extensionLength * 25.4);
+        if (gamepad1.b) pivotingSlides.setExtension(0);
 
         telemetry.addData("Extension length", extensionLength);
         telemetry.update();

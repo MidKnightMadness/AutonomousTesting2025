@@ -86,7 +86,9 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
         an incorrect starting value for x, y, and heading.
          */
         //odo.recalibrateIMU();
+
         odo.resetPosAndIMU();
+        odo.setPosition(new Pose2D(DistanceUnit.INCH, 3, 4, AngleUnit.DEGREES, 90));
 
         telemetry.addData("Status", "Initialized");
         telemetry.addData("X offset", odo.getXOffset());
@@ -99,6 +101,8 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
         waitForStart();
         resetRuntime();
 
+        odo.setPosition(new Pose2D(DistanceUnit.INCH, 3, 4, AngleUnit.DEGREES, 90));
+
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -107,6 +111,7 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
             Request an update from the Pinpoint odometry computer. This checks almost all outputs
             from the device in a single I2C read.
              */
+
             odo.update();
 
             /*
@@ -116,13 +121,13 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
             //odo.update(GoBildaPinpointDriver.readData.ONLY_UPDATE_HEADING);
 
 
-            if (gamepad1.a){
-                odo.resetPosAndIMU(); //resets the position to 0 and recalibrates the IMU
-            }
-
-            if (gamepad1.b){
-                odo.recalibrateIMU(); //recalibrates the IMU without resetting position
-            }
+//            if (gamepad1.a){
+//                odo.resetPosAndIMU(); //resets the position to 0 and recalibrates the IMU
+//            }
+//
+//            if (gamepad1.b){
+//                odo.recalibrateIMU(); //recalibrates the IMU without resetting position
+//            }
 
             /*
             This code prints the loop frequency of the REV Control Hub. This frequency is effected
@@ -134,6 +139,7 @@ public class SensorGoBildaPinpointExample extends LinearOpMode {
             double loopTime = newTime-oldTime;
             double frequency = 1/loopTime;
             oldTime = newTime;
+
 
 
             /*

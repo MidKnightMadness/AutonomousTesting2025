@@ -47,7 +47,7 @@ public class InverseKinematics {
     public Action setArmOrientationWithEndEffectorAngle(OldArm arm, Wrist wrist, double armOrientation, double endEffectorOrientation) {
         return new ParallelAction(
                 arm.setPositionSmooth(Kinematics.armOrientationToPosition(armOrientation)),
-                wrist.setPosition(Kinematics.wristOrientationToPosition(endEffectorOrientation - armOrientation))
+                wrist.setPositionAction(Kinematics.wristOrientationToPosition(endEffectorOrientation - armOrientation))
         );
     }
 

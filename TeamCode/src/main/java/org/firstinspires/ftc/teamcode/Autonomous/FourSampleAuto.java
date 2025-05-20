@@ -1,194 +1,148 @@
 package org.firstinspires.ftc.teamcode.Autonomous;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.teamcode.Kinematics.Kinematics;
-import org.firstinspires.ftc.teamcode.OutdatedPrograms.OldArm;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.Mechanisms.PivotingSlides;
+import org.firstinspires.ftc.teamcode.Mechanisms.Spintake;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
-import org.firstinspires.ftc.teamcode.MecanumDrive;
 
-import com.acmerobotics.roadrunner.Action;
-import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
-
-
-//Start at the left of the 2nd tile
+@Autonomous
 @Config
-@Autonomous(name = "FourSampleAuto")
 public class FourSampleAuto extends OpMode {
-    public static Pose2d scoringPose = new Pose2d(new Vector2d(10.5, 22), Math.toRadians(130));
-    public static Pose2d firstSamplePose = new Pose2d(new Vector2d( 19, 16.5),0);
-    public static Pose2d secondSamplePose = new Pose2d(new Vector2d(19, 26.5), 0);
-    public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(24.5, 24.5), Math.toRadians(45));
-    public static double thirdSampleIntermediateOffset = 3;
-    public static Pose2d submersibleIntermediatePose = new Pose2d(55, 17, Math.toRadians(-90));
-    public static Pose2d parkingPose = new Pose2d(new Vector2d(55, 0), Math.toRadians(-90));
 
-    OldArm arm;
-    VerticalSlides slides;
-    Wrist wrist;
+    public static Vector2d basketScoring = new Vector2d(-54, 54);
+    public static Vector2d firstSamplePickup = new Vector2d(-54, 54);
+    public static Vector2d secondSamplePickup = new Vector2d(-54, 54);
+    public static Vector2d thirdSamplePickup = new Vector2d(-54, 54);
+
+    public static double preloadScoringRot = 135;
+    public static double basketScoringRot = -45;
+    public static double firstSampleRot = 15;
+    public static double secondSampleRot = 0;
+    public static double thirdSampleRot = 0;
+
+    public static double wristDeg = 90;
+    public static double pivExtension = 240;
+    public static double armAngle = 58;
+
+    Arm arm;
     MecanumDrive mecanumDrive;
+    VerticalSlides verticalSlides;
+    PivotingSlides pivotingSlides;
+    Wrist wrist;
+    Spintake spintake;
 
-    public static Pose2d startingPose = new Pose2d(0, 0,  Math.toRadians(90));
+    private final Pose2d startingPose = new Pose2d(-64.5, 32, Math.toRadians(90));
+    private final Pose2d preloadScoringPose = new Pose2d(basketScoring, Math.toRadians(preloadScoringRot));
+    private final Pose2d basketScoringPose = new Pose2d(basketScoring, Math.toRadians(basketScoringRot));
+    private final Pose2d firstSamplePose = new Pose2d(firstSamplePickup, Math.toRadians(firstSampleRot));
+    private final Pose2d secondSamplePose = new Pose2d(secondSamplePickup, Math.toRadians(secondSampleRot));
+    private final Pose2d thirdSamplePose = new Pose2d(thirdSamplePickup, Math.toRadians(thirdSampleRot));
 
     @Override
     public void init() {
-        arm = new OldArm(hardwareMap);
-        wrist = new Wrist(hardwareMap);
-        slides = new VerticalSlides(hardwareMap);
+        arm = new Arm(hardwareMap, telemetry);
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
+        verticalSlides = new VerticalSlides(hardwareMap);
+        pivotingSlides = new PivotingSlides(hardwareMap);
+        wrist = new Wrist(hardwareMap);
+        spintake = new Spintake(hardwareMap);
 
-        arm.setInitPosition();
         wrist.setInitPosition();
-        slides.resetEncoders();
+
+        telemetry.addData("start pos", mecanumDrive.localizer.getPose().position);
+        telemetry.addData("start heading", mecanumDrive.localizer.getPose().heading);
     }
 
     @Override
     public void init_loop() {
-
-        telemetry.update();
+        telemetry.addData("Arm current angle", arm.getCurrentAngleDegrees());
+        telemetry.addData("Arm target", arm.getTargetAngle());
     }
 
     @Override
     public void start() {
+        mecanumDrive.localizer.setPose(startingPose);
+        arm.homeEncoders();
+        verticalSlides.resetEncoders();
 
-        Actions.runBlocking(
-                scoreInBasket(0, 0)
-        );
-
-        firstLineSample();
-        secondLineSample();
-        thirdLineSample();
-        parkFromBasket();
+        runActionsWithUpdate(
+            new SequentialAction(
+                scorePreload(),
+                new SleepAction(1),
+                resetAfterScoring()
+        ));
     }
 
-
-    public Action scoreInBasket(double xOffset, double yOffset) {
-        return new SequentialAction(
-                new ParallelAction(
-                        arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION),
-                        mecanumDrive.actionBuilder().strafeToSplineHeading(new Vector2d(scoringPose.position.x + xOffset, scoringPose.position.y + yOffset), scoringPose.heading).build(),
-                        slides.liftUp(1),
-                        wrist.setPosition(Wrist.BASKET_POSITION)
-                ),
-                arm.setPositionSmooth(OldArm.BASKET_POSITION)
-        );
-    }
-
-    public Action manipulatorPickUp() {
-        return new SequentialAction(
-                new ParallelAction(
-                        arm.setPositionSmooth(OldArm.SAMPLE_INTAKE)
-                ),
-                new SleepAction(0.2)
-        );
-    }
-
-    public Action goToPickUpPosition(Pose2d pose) {
+    public Action scorePreload() {
         return new ParallelAction(
-                slides.bringDown(1),
-                mecanumDrive.actionBuilder()
-                        .strafeToLinearHeading(pose.position, pose.heading)
-                        .build(),
-                new SequentialAction(
-                        new SleepAction(0.2),
-                        arm.setPositionSmooth(OldArm.SCANNING_POSITION)
-                )
+            arm.setAngle(armAngle),
+            verticalSlides.liftUp(1),
+            pivotingSlides.setExtensionAction(pivExtension),
+            wrist.setDegreesAction(wristDeg),
+            new SequentialAction(
+                mecanumDrive.actionBuilder(startingPose).strafeToLinearHeading(basketScoring, Math.toRadians(preloadScoringRot)).build(),
+                spintake.outtake()
+            )
         );
     }
 
     public Action resetAfterScoring() {
-        return new ParallelAction(
-                arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION),
-                wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
+        return new SequentialAction(
+            arm.setAngle(45),
+            wrist.setDegreesAction(0),
+            new ParallelAction(
+                verticalSlides.bringDown(0.8),
+                pivotingSlides.setExtensionAction(25),
+                new SequentialAction(
+                    mecanumDrive.actionBuilder(mecanumDrive.localizer.getPose()).strafeToLinearHeading(firstSamplePickup, Math.toRadians(firstSampleRot)).build()
+                )
+            )
         );
     }
 
-    public void firstLineSample() {
-        Actions.runBlocking(new SequentialAction(
-                resetAfterScoring(),
-                goToPickUpPosition(firstSamplePose),
-                manipulatorPickUp(),
-                scoreInBasket(0, 0)
-        ));
-    }
-
-    public void secondLineSample() {
-        Actions.runBlocking(new SequentialAction(
-                resetAfterScoring(),
-                goToPickUpPosition(secondSamplePose),
-                manipulatorPickUp(),
-
-                new ParallelAction(
-                        arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION),
-                        new SequentialAction(
-                                new SleepAction(0.5),
-                                scoreInBasket(0, 0)
-                        )
-                )
-        ));
-    }
-
-    public void thirdLineSample() {
-        Pose2d intermediatePose = new Pose2d(thirdSamplePose.position.x - thirdSampleIntermediateOffset, thirdSamplePose.position.y - thirdSampleIntermediateOffset, thirdSamplePose.heading.toDouble());
-
-        Actions.runBlocking(new SequentialAction(
-                resetAfterScoring(),
-                new ParallelAction(
-                        goToPickUpPosition(intermediatePose),
-                        wrist.setPosition(Wrist.SAMPLE_PICKUP_POSITION)
-                ),
-
-                // open before picking up
-                new ParallelAction(
-                        mecanumDrive.actionBuilder(intermediatePose)
-                                .strafeToLinearHeading(thirdSamplePose.position, thirdSamplePose.heading)
-                                .build()
-                ),
-
-                manipulatorPickUp(),
-                new SleepAction(0.2),
-
-                new ParallelAction(
-                        mecanumDrive.actionBuilder(thirdSamplePose)
-                                .strafeToLinearHeading(intermediatePose.position, intermediatePose.heading)
-                                .build(),
-                        arm.setPositionSmooth(OldArm.STRAIGHT_UP_POSITION)
-                ),
-
-                wrist.setPosition(Wrist.BASKET_POSITION),
-
-                scoreInBasket(0, 0)
-        ));
-    }
-
-    public void parkFromBasket() {
-        Actions.runBlocking(new SequentialAction(
-                new ParallelAction(
-                        resetAfterScoring(),
-                        slides.bringDown(1),
-                        mecanumDrive.actionBuilder()
-                                .strafeToLinearHeading(submersibleIntermediatePose.position, submersibleIntermediatePose.heading)
-                                .strafeToLinearHeading(parkingPose.position, parkingPose.heading)
-                                .build()
-                ),
-                arm.setPositionSmooth(Kinematics.armOrientationToPosition(Math.toRadians(80)))
-        ));
-
-        arm.leftServo.getController().pwmDisable();
-        arm.rightServo.getController().pwmDisable();
-    }
-
-
     @Override
-    public void loop() { }
+    public void loop() {
+
+    }
+
+    public void runActionsWithUpdate(Action action) {
+        Actions.runBlocking(new ParallelAction(
+                action,
+                new ContinuousAction(() -> {
+                    arm.update(armAngle);
+                    telemetry.update();
+                })
+        ));
+    }
+
+    public static class ContinuousAction implements Action {
+        private final Runnable runnable;
+
+        public ContinuousAction(Runnable runnable) {
+            this.runnable = runnable;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            runnable.run();
+            return true;
+        }
+    }
 }
-
-

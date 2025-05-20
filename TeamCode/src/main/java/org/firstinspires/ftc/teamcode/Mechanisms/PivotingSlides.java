@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.Mechanisms;
 
-import static com.acmerobotics.roadrunner.Math.clamp;
-
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -23,7 +23,7 @@ public class PivotingSlides {
 
     PolynomialApproximator angleToExtension = new PolynomialApproximator(extensionToAngleCoefficients, 0, MAX_EXTENSION_LENGTH);
 
-    private static double SERVO_DEGREES = 300;
+    private static final double SERVO_DEGREES = 300;
     public static double currentExtensionLength = 0;
 
     public Servo leftServo;
@@ -33,11 +33,9 @@ public class PivotingSlides {
         leftServo = hardwareMap.get(Servo.class, "Left Pivoting Slides");
         rightServo = hardwareMap.get(Servo.class, "Right Pivoting Slides");
         rightServo.setDirection(Servo.Direction.REVERSE);
-
-        setExtensionLength(currentExtensionLength);
     }
     
-    public void setExtensionLength(double extensionLength) {
+    public void setExtension(double extensionLength) {
         currentExtensionLength = Util.clamp(extensionLength, 0, MAX_EXTENSION_LENGTH);
 
         double angle = angleToExtension.evaluate(currentExtensionLength);
@@ -51,7 +49,8 @@ public class PivotingSlides {
         return currentExtensionLength;
     }
 
-    public double servoPositionToAngle(double position) {
-        return position;
+    public Action setExtensionAction(double extension) {
+        return new InstantAction(() -> {
+            setExtension(extension);});
     }
 }

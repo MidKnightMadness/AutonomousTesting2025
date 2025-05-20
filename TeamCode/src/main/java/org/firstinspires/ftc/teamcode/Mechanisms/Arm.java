@@ -22,8 +22,8 @@ public class Arm {
     public final CRServo leftServo;
     public final CRServo rightServo;
 
-    public static double leftZeroVoltage = 0;
-    public static double rightZeroVoltage = 0;
+    public static double leftZeroVoltage = 0.117;
+    public static double rightZeroVoltage = 0.01;
 
     public final AxonEncoder leftEncoder;
     public final AxonEncoder rightEncoder;
@@ -41,7 +41,7 @@ public class Arm {
     static double maxOutput = 1;
     public static double minPower = 0.051;
 
-    public static double deadband = 0;
+    public static double deadband = 0.5;
 
     public PIDController leftController;
     public PIDController rightController;
@@ -50,6 +50,8 @@ public class Arm {
     public static double p;
     public static double i;
     public static double d;
+
+    public static double STRAIGHT_UP = 51;
 
     Telemetry telemetry;
 
@@ -90,8 +92,8 @@ public class Arm {
         double leftError = left - leftEncoder.getAbsolutePositionDegrees();
         double rightError = right - rightEncoder.getAbsolutePositionDegrees();
 
-        double leftPow = leftController.update(normalizeDegrees(leftError), timer.getDeltaTime());
-        double rightPow = rightController.update(normalizeDegrees(rightError), timer.getDeltaTime());
+        double leftPow = leftController.update(leftError, timer.getDeltaTime());
+        double rightPow = rightController.update(rightError, timer.getDeltaTime());
 
         telemetry.addData("LPower", leftPow);
         telemetry.addData("RPower", rightPow);

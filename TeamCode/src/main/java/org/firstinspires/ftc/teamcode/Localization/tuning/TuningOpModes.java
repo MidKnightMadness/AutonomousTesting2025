@@ -22,6 +22,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
+import org.firstinspires.ftc.teamcode.Localization.GoBildaPinpoint.GoBildaPinpointDriver;
+import org.firstinspires.ftc.teamcode.Localization.GoBildaPinpoint.PinpointOdometryLocalizer;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Localization.InternalIMU.TwoDeadWheelLocalizer;
@@ -70,6 +72,11 @@ public final class TuningOpModes {
                     parEncs.add(dl.par);
                     perpEncs.add(dl.perp);
                 }
+//                else if (md.localizer instanceof GoBildaPinpointDriver) {
+//                    PinpointOdometryLocalizer dl = (PinpointOdometryLocalizer) md.localizer;
+//                    parEncs.add(dl.par);
+//                    perpEncs.add(dl.perp);
+//                }
                 else {
                     throw new RuntimeException("unknown localizer: " + md.localizer.getClass().getName());
                 }

@@ -213,7 +213,6 @@ public class Vision {
             String rotation = getSampleRotation(corners);
             telemetry.addData("Sample Closer To:", rotation);
 
-
             //Center of sample -> transform to world coordinates
             double pixelX = result.getTargetXPixels();
             double pixelY = result.getTargetYPixels();
