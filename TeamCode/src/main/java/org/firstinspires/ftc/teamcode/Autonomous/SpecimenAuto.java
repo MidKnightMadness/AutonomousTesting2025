@@ -24,8 +24,6 @@ public class SpecimenAuto extends OpMode {
     public static double firstSpecimenHeading =  Math.toRadians(180);
     public static Pose2d thirdSamplePose = new Pose2d(new Vector2d(24.5, 24.5), Math.toRadians(45));
 
-    SampleClaw sampleClaw;
-    OldArm arm;
     VerticalSlides slides;
     Wrist wrist;
 
@@ -35,8 +33,6 @@ public class SpecimenAuto extends OpMode {
 
     @Override
     public void init() {
-        sampleClaw = new SampleClaw(hardwareMap);
-        arm = new OldArm(hardwareMap);
         wrist = new Wrist(hardwareMap);
         slides = new VerticalSlides(hardwareMap);
 

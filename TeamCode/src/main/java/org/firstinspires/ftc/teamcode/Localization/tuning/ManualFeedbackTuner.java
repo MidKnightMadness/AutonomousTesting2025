@@ -25,7 +25,7 @@ public final class ManualFeedbackTuner extends LinearOpMode {
     @Override
     public void runOpMode()  {
         if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
-            startingPose = new Pose2d(-60, -60, 0);
+            startingPose = new Pose2d(0, 0, 0);
             drive = new MecanumDrive(hardwareMap, startingPose);
             
             if (drive.localizer instanceof TwoDeadWheelLocalizer) {

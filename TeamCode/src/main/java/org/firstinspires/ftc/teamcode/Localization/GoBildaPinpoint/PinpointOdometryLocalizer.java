@@ -16,20 +16,21 @@ public class PinpointOdometryLocalizer implements Localizer {
     public GoBildaPinpointDriver odo;
 
     Pose2d pose;
-
+    Pose2d startingPose;
     public PinpointOdometryLocalizer(HardwareMap hardwareMap, Pose2d startingPose) {
         odo = hardwareMap.get(GoBildaPinpointDriver.class, "Pinpoint");
         odo.setOffsets(138.874, 33); // using left odometry pod
         // odo.setOffsets(-139.1662678093, 33);  // using right odometry pod
 
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-
         odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
         odo.recalibrateIMU();
         odo.resetPosAndIMU();
-        setPose(startingPose);
 
+        setPose(startingPose);
+        pose = startingPose;
+        this.startingPose = startingPose;
     }
 
     @Override
@@ -49,7 +50,9 @@ public class PinpointOdometryLocalizer implements Localizer {
         Pose2D vel = odo.getVelocity();
         Pose2D pos = odo.getPosition();
 
-        this.pose = new Pose2d(pos.getX(DistanceUnit.INCH), pos.getY(DistanceUnit.INCH), pos.getHeading(AngleUnit.RADIANS));
+        this.pose = new Pose2d(pos.getX(DistanceUnit.INCH),
+                               pos.getY(DistanceUnit.INCH) ,
+                               pos.getHeading(AngleUnit.RADIANS));
         return new PoseVelocity2d(new Vector2d(vel.getX(DistanceUnit.INCH), vel.getY(DistanceUnit.INCH)), vel.getHeading(AngleUnit.RADIANS));
     }
 
@@ -60,5 +63,4 @@ public class PinpointOdometryLocalizer implements Localizer {
     public static double mod(double num, double divisor) {
         return num - Math.floor(num / divisor) * divisor;
     }
-
 }

@@ -15,7 +15,8 @@ public class VerticalSlides {
     DcMotorEx rightMotor;
     DcMotorEx leftMotor;
 
-    public static double BASKET_SCORING_POSITION = 2150;
+    public static double BASKET_FORWARD_SCORING = 1750;
+    public static double BASKET_BACKWARDS_SCORING = 2150;
     public static double DOWN_POSITION = 10;
 
     public static double SPECIMEN_INTAKE = 700;
@@ -54,7 +55,7 @@ public class VerticalSlides {
     }
 
     public Action liftUp(double power) {
-        return new Lift(BASKET_SCORING_POSITION, power);
+        return new Lift(BASKET_FORWARD_SCORING, power);
     }
 
     public Action bringDown(double power) {

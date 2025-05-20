@@ -20,16 +20,11 @@ import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 
 @TeleOp(group="Test")
 public class ActionsTestOpMode extends OpMode {
-    RevColorSensorV3 insideColorSensor;
-    Servo leftSpintake;
-    Servo rightSpintake;
-
-    VerticalSlides slides;
     MecanumDrive mecanumDrive;
     Pose2d initialPose;
-//    Wrist wrist;
     PivotingSlides pivotingSlides;
     Timer timer;
+
     @Override
     public void init() {
         initialPose = new Pose2d(0, 0, 0);
@@ -37,18 +32,20 @@ public class ActionsTestOpMode extends OpMode {
         timer = new Timer();
 
         pivotingSlides = new PivotingSlides(hardwareMap);
-
-        rightSpintake.setDirection(Servo.Direction.REVERSE);
-
-        insideColorSensor = hardwareMap.get(RevColorSensorV3.class, "Inside Color");
-
         telemetry.setAutoClear(true);
+    }
+
+    @Override
+    public void start() {
+        Actions.runBlocking(
+                mecanumDrive.actionBuilder(initialPose).strafeTo(new Vector2d(10, 20)).build()
+        );
     }
 
     @Override
     public void loop() {
         Actions.runBlocking(
-                mecanumDrive.actionBuilder().strafeTo(new Vector2d(20, 20)).build()
+                mecanumDrive.actionBuilder(initialPose).strafeTo(new Vector2d(10, 20)).build()
         );
 
 
