@@ -91,8 +91,9 @@ public class MovableVisionTest extends OpMode {
 
                 telemetry.addLine("Color: " + closestSample.getColor() + ", Confidence: " + closestSample.getConfidence());
                 telemetry.addLine("(RelX, RelY): " + closestSample.getRelativeX() + ", " + closestSample.getRelativeY());
-                telemetry.addLine("(FieldX, FieldY): " + closestSample.getWorldX() + ", " + closestSample.getWorldY());
-
+//                telemetry.addLine("(FieldX, FieldY): " + closestSample.getWorldX() + ", " + closestSample.getWorldY());
+                telemetry.addData("Distance", closestSample.getSampleDistance());
+                telemetry.addData("Sample Angle", closestSample.getSampleTheta() * 180/ Math.PI);
 
             }
             for (Sample sampleDetected : vision.getSortedSamples()) {
@@ -101,7 +102,9 @@ public class MovableVisionTest extends OpMode {
 
                 telemetry.addLine("Color: " + sampleDetected.getColor() + ", Confidence: " + sampleDetected.getConfidence());
                 telemetry.addLine("(RelX, RelY): " +  sampleDetected.getRelativeX() + ", " + sampleDetected.getRelativeY());
-                telemetry.addLine("(FieldX, FieldY): " + sampleDetected.getWorldX() + ", " + sampleDetected.getWorldY());
+//                telemetry.addLine("(FieldX, FieldY): " + sampleDetected.getWorldX() + ", " + sampleDetected.getWorldY());
+                telemetry.addData("Distance", closestSample.getSampleDistance());
+                telemetry.addData("Sample Angle", closestSample.getSampleTheta() * 180/ Math.PI);
                 prioritySample += 1;
             }
             previousGamepad1A = true;

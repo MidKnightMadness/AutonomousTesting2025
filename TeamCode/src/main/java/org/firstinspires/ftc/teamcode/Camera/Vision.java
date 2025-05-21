@@ -228,7 +228,11 @@ public class Vision {
             //All units here are inches, plug in degrees in radians
             sampleRelCoord = VisionCoordTransformation.transformSampleCoordFromRobotCenter(sampleRelCoord, ROBOT_RADIUS);
 
-            double[] sampleWorldCoord = VisionCoordTransformation.transformRelativeCoordToWorld(sampleRelCoord, robotPose);
+//            double[] sampleWorldCoord = VisionCoordTransformation.transformRelativeCoordToWorld(sampleRelCoord, robotPose);
+
+            double hyp = Math.sqrt(Math.pow(sampleRelCoord[0], 2) + Math.pow(sampleRelCoord[1], 2));
+
+            double sampleAngle = Math.acos(sampleRelCoord[1] / hyp);//Radians
 
             //TODO: Plug in sample coordinates and robot coordinates into NEW IKR to produce minimalistic IKR as possible
 //            InverseKinematics.IKResult IKRResult = InverseKinematics.solve(new Pose2d(sampleRelCoord[0], sampleRelCoord[1], sampleRotationValue));
@@ -239,7 +243,7 @@ public class Vision {
 //            if (IKRResult.isReachable) {
 //                telemetry.addData("Robot position", IKRResult.robotPose.position);
 //                telemetry.addData("Robot heading", Math.toDegrees(IKRResult.robotPose.heading.toDouble()));
-//                Sample sample = new Sample(sampleColor, sampleRelCoord, sampleWorldCoord, rot, confidence, IKRResult);
+//
 //                samples.add(sample);
 //
 //            }
@@ -250,13 +254,16 @@ public class Vision {
 
 //            //Autonomous: have the entire space but want to sort by weights closest to the center
 
+            Sample sample = new Sample(sampleColor, sampleRelCoord, hyp, sampleAngle, confidence);
             telemetry.addLine("----------------------------");
             telemetry.addLine("Sample " + sampleCount);
             telemetry.addData("Update Rate(Hz)", 1/deltaTime);
 
             telemetry.addLine("PixelCoord: { " + pixelX + ", " + pixelY + "} ");
             telemetry.addLine("RelativeCoord(Relative to Center of Robot): { " + sampleRelCoord[0] + ", " + sampleRelCoord[1] + "} ");
-            telemetry.addLine("WorldCoord: { " + sampleWorldCoord[0] + ", " + sampleWorldCoord[1] + "} ");
+//            telemetry.addLine("WorldCoord: { " + sampleWorldCoord[0] + ", " + sampleWorldCoord[1] + "} ");
+            telemetry.addData("Distance", hyp);//From robot center
+            telemetry.addData("Sample Theta", Math.toDegrees(sampleAngle));
             telemetry.addData("Color", sampleType.toString());
 //            telemetry.addData("Hor Distance", horizontalDistance);
 //            telemetry.addData("Vert Distance", verticalDistance);
@@ -266,7 +273,7 @@ public class Vision {
             telemetry.addData("CameraYAngle", yAngle);
 //            telemetry.addData("CameraArea", area);
 
-            //sort samples array
+            samples.add(sample);
 
             //Free up memory
             pointMat.release();

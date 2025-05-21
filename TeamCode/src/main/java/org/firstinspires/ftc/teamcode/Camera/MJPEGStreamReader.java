@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+@Deprecated
 public class MJPEGStreamReader {
     private InputStream stream;//to read raw bytes
 
