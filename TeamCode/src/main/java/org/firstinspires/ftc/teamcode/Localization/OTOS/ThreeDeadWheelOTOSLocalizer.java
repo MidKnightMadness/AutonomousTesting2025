@@ -21,7 +21,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 import org.firstinspires.ftc.teamcode.Localization.ThreeDeadWheelLocalizer;
 
-@Config
 public final class ThreeDeadWheelOTOSLocalizer implements Localizer {
     public static class Params {
         public double par0YTicks = ThreeDeadWheelLocalizer.PARAMS.par0YTicks; // 138.874mm

@@ -39,8 +39,6 @@ public final class ManualFeedbackTuner extends LinearOpMode {
             }
             waitForStart();
 
-
-
             while (opModeIsActive()) {
                 Actions.runBlocking(
                         tuneAction()

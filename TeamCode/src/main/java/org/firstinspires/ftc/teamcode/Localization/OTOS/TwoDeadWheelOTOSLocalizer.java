@@ -19,7 +19,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.Localization.Localizer;
 
-@Config
 public final class TwoDeadWheelOTOSLocalizer implements Localizer {
 
     public static class Params {
