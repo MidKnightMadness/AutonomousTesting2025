@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Mechanisms;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @TeleOp
+@Config
 public class ServoBoundsSetter extends OpMode {
 
     ServoImplEx leftPivotingSlides;
@@ -44,8 +46,8 @@ public class ServoBoundsSetter extends OpMode {
     }
 
     boolean manualControl = false;
-    String activeServo = "";
-    double servoPosition = 0.5;
+    public static String activeServo = "";
+    public static double servoPosition = 0.5;
 
     public void disableAllPowers() {
         leftPivotingSlides.setPwmDisable();

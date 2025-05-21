@@ -73,7 +73,7 @@ public class Spintake {
 
             if (timer.updateTime() - startTime < timeout) {
                 boolean run = (colorSensor.getDistance(DistanceUnit.INCH) < Spintake.OUTAKE_THRESHOLD)
-                        && ((distanceSensor.getDistance(DistanceUnit.INCH) < Spintake.OUTAKE_THRESHOLD));
+                        || ((distanceSensor.getDistance(DistanceUnit.INCH) < Spintake.OUTAKE_THRESHOLD));
 
                 if (!run) setPower(0);
                 return run;

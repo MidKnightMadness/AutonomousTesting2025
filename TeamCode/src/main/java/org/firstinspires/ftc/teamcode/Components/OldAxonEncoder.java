@@ -7,20 +7,18 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 
 @Config
-public class AxonEncoder {
+public class OldAxonEncoder {
     private static final double MAX_VOLTAGE = 3.3;
-    public static double DV_THRESHOLD = 1;
+    public static double DV_THRESHOLD = 0.4;
 
     private double previousVoltage = -1;
     private double totalRotations = 0.0;
     public double zeroVoltage = 0.0;
 
-    public double numRejections = 0;
-
     public AnalogInput analogInput;
     Direction direction;
 
-    public AxonEncoder(HardwareMap hardwareMap, String analogDeviceName) {
+    public OldAxonEncoder(HardwareMap hardwareMap, String analogDeviceName) {
         analogInput = hardwareMap.get(AnalogInput.class, analogDeviceName);
         direction = Direction.FORWARD;
 
@@ -33,7 +31,7 @@ public class AxonEncoder {
 
     public void setHome(double homeVoltage) {
         zeroVoltage = homeVoltage;
-        previousVoltage = -1;
+        previousVoltage = zeroVoltage;
         totalRotations = 0.0;
     }
 
@@ -59,10 +57,7 @@ public class AxonEncoder {
         double circularDifference = circularDelta(currentVoltage, previousVoltage);
 
         // filter out large voltage spikes
-        if (Math.abs(circularDifference) > DV_THRESHOLD) {
-            numRejections++;
-            return;
-        }
+        if (Math.abs(circularDifference) > DV_THRESHOLD) return;
 
         // Detect wraparound
         if (voltageDifference > MAX_VOLTAGE / 2) {

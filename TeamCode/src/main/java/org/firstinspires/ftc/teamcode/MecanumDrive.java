@@ -75,13 +75,13 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI * 1.4;
 
         // TODO: path controller gains
-        public double axialGain = 7;
-        public double lateralGain = 7;
-        public double headingGain = 8;
+        public double axialGain = 10;
+        public double lateralGain = 10;
+        public double headingGain = 5;
 
-        public double axialVelGain = 1;
-        public double lateralVelGain = 1;
-        public double headingVelGain = 1;
+        public double axialVelGain = 0.3;
+        public double lateralVelGain = 0.2;
+        public double headingVelGain = 0.1;
         public double errorTolerance = 0.5;
         public double headingToleranceDeg = 1;
         public double velocityTolerance = 1;
@@ -146,14 +146,14 @@ public final class MecanumDrive {
 //        otos.setAngularUnit(AngleUnit.RADIANS);
 //        otos.resetTracking();
 
-        IMU imu = hardwareMap.get(IMU.class, "imu");
 
         // tuning
-        lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.UP));
-        localizer = new TwoDeadWheelLocalizer(hardwareMap, imu, PARAMS.inPerTick, pose);
+//        IMU imu = hardwareMap.get(IMU.class, "imu");
+//        lazyImu = new LazyImu(hardwareMap, "imu", new RevHubOrientationOnRobot(
+//                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT, RevHubOrientationOnRobot.UsbFacingDirection.UP));
+//        localizer = new TwoDeadWheelLocalizer(hardwareMap, imu, PARAMS.inPerTick, pose);
 
-//        localizer = new PinpointOdometryLocalizer(hardwareMap, pose);
+        localizer = new PinpointOdometryLocalizer(hardwareMap, pose);
     }
 
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose, Telemetry telemetry) {

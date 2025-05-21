@@ -57,6 +57,8 @@ public class Arm {
 
     private double targetAngle;
 
+    public static boolean inAction;
+
     public Arm(HardwareMap hardwareMap, Telemetry telemetry) {
 
         this.leftServo = hardwareMap.get(CRServo.class, "Left Arm");
@@ -114,9 +116,10 @@ public class Arm {
         // 2 : 1 gear ratio
         double armOrientation = getCurrentAngleDegrees();
         telemetry.addData("Current angle", armOrientation);
-        double error = normalizeDegrees(targetAngleDegrees - armOrientation);
+        double error = targetAngleDegrees - armOrientation;
 
         telemetry.addData("Error", error);
+
         // 0.15 power for 3.2Nm
         double gravityFeedForward = -calculateGravityTorque() * kPTorque;
 
@@ -203,10 +206,13 @@ public class Arm {
 
     public double getTargetAngle() { return targetAngle; }
 
-    public final double setAngleToleranceDegrees = 3;
+    public static double angleToleranceDegrees = 3;
+    public static double setAngleTimeout = 3;
 
     public class SetAngle implements Action {
         private final double targetAngleDegrees;
+        private boolean initialized = false;
+        private double startTime;
 
         public SetAngle(double targetAngleDegrees) {
             this.targetAngleDegrees = targetAngleDegrees;
@@ -214,10 +220,76 @@ public class Arm {
 
         @Override
         public boolean run(@NonNull TelemetryPacket packet) {
+            if (!initialized) {
+                startTime = timer.updateTime();
+                initialized = true;
+            }
+
             double error = update(targetAngleDegrees);
-            return Math.abs(error) > setAngleToleranceDegrees;
+            boolean overtime = (timer.updateTime() - startTime) > setAngleTimeout;
+            boolean run = Math.abs(error) > angleToleranceDegrees && !overtime;
+            inAction = run;
+
+            return run;
+
         }
     }
+
+//    public class SetAngle implements Action {
+//        private final double targetAngleDegrees;
+//        private boolean initialized = false;
+//        private double startTime;
+//
+//        // --- NEW FIELDS for stall detection ---
+//        private double lastError = Double.NaN;
+//        private double lastMovementTime;
+//        private static final double STALL_EPS_DEGREES     = 0.5;  // how much error must move to count as “movement”
+//        private static final double STALL_TIMEOUT_SECONDS = 1;  // how long error can stay within ±ε before we call it “stuck”
+//
+//        public SetAngle(double targetAngleDegrees) {
+//            this.targetAngleDegrees = targetAngleDegrees;
+//        }
+//
+//        @Override
+//        public boolean run(@NonNull TelemetryPacket packet) {
+//            double now = timer.updateTime();
+//
+//            if (!initialized) {
+//                startTime         = now;
+//                lastMovementTime  = now;
+//                lastError         = update(targetAngleDegrees);  // initialize lastError
+//                initialized       = true;
+//            }
+//
+//            // compute how far we are from target right now
+//            double error = update(targetAngleDegrees);
+//
+//            // --- STALL CHECK ---
+//            // If error has moved by more than ε since last cycle, count that as “movement”:
+//            if (Math.abs(error - lastError) > STALL_EPS_DEGREES) {
+//                lastMovementTime = now;
+//            }
+//
+//            // if it’s been too long without meaningful movement, we’re stuck:
+//            boolean isStuck = (now - lastMovementTime) > STALL_TIMEOUT_SECONDS;
+//            if (isStuck) {
+//                packet.put("status", "ARM STUCK");
+//                return false;   // abort the action immediately
+//            }
+//
+//            // --- NORMAL STOP CONDITIONS ---
+//            boolean withinTolerance = Math.abs(error) <= angleToleranceDegrees;
+//            boolean overtime          = (now - startTime) > setAngleTimeout;
+//
+//            boolean shouldContinue = !withinTolerance && !overtime;
+//            inAction = shouldContinue;
+//
+//            // save for next iteration
+//            lastError = error;
+//            return shouldContinue;
+//        }
+//    }
+
 
     public Action setAngle(double angle) {
         return new SetAngle(angle);

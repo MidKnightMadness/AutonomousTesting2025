@@ -12,8 +12,7 @@ import org.firstinspires.ftc.teamcode.Components.Util;
 @Config
 public class PivotingSlides {
 
-    public static double SERVO_RANGE = Math.toRadians(300);
-    public static double RETRACT_SERVO_POSITION = 0.13;
+    public static double RETRACT_SERVO_POSITION = 0.137;
     public static double EXTEND_SERVO_POSITION = 0.6;
     public static double MAX_EXTENSION_LENGTH = 240;
 
@@ -23,11 +22,14 @@ public class PivotingSlides {
 
     PolynomialApproximator angleToExtension = new PolynomialApproximator(extensionToAngleCoefficients, 0, MAX_EXTENSION_LENGTH);
 
-    private static final double SERVO_DEGREES = 300;
+    private static double SERVO_DEGREES = 240;
     public static double currentExtensionLength = 0;
 
     public Servo leftServo;
     public Servo rightServo;
+
+    public double targetAngle;
+    public double targetPos;
 
     public PivotingSlides(HardwareMap hardwareMap) {
         leftServo = hardwareMap.get(Servo.class, "Left Pivoting Slides");
@@ -41,6 +43,9 @@ public class PivotingSlides {
         double angle = angleToExtension.evaluate(currentExtensionLength);
         double position = RETRACT_SERVO_POSITION + angle / SERVO_DEGREES;
 
+        targetAngle = angle;
+        targetPos = position;
+
         leftServo.setPosition(position);
         rightServo.setPosition(position);
     }
@@ -50,7 +55,6 @@ public class PivotingSlides {
     }
 
     public Action setExtensionAction(double extension) {
-        return new InstantAction(() -> {
-            setExtension(extension);});
+        return new InstantAction(() -> setExtension(extension));
     }
 }

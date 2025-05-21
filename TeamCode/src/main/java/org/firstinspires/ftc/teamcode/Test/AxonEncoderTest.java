@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.Test;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -19,8 +20,8 @@ public class AxonEncoderTest extends OpMode {
 
     @Override
     public void init() {
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         controller = new Arm(hardwareMap, telemetry);
-
         timer = new Timer();
     }
 

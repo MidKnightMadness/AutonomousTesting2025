@@ -15,7 +15,7 @@ public class VerticalSlides {
     DcMotorEx rightMotor;
     DcMotorEx leftMotor;
 
-    public static double BASKET_FORWARD_SCORING = 1750;
+    public static double BASKET_FORWARD_SCORING = 1650;
     public static double BASKET_BACKWARDS_SCORING = 2150;
     public static double DOWN_POSITION = 10;
 

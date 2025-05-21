@@ -10,8 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 
-@TeleOp
-@Config
 public class TrajectoryTesting extends OpMode {
 
     MecanumDrive mecanumDrive;
