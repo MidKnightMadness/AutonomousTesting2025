@@ -24,6 +24,7 @@ import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.LazyImu;
 import com.acmerobotics.roadrunner.ftc.LynxFirmware;
+import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -48,6 +49,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @Config
+@Configurable
 public final class MecanumDrive {
     public static class Params {
 

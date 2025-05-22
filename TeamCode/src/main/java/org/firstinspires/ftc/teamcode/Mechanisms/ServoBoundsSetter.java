@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Pose2d;
+import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -16,6 +17,7 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 @TeleOp
 @Config
+@Configurable
 public class ServoBoundsSetter extends OpMode {
 
     ServoImplEx leftPivotingSlides;

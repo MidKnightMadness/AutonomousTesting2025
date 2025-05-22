@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -17,13 +18,14 @@ import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.Components.Util;
 
 @Config
+@Configurable
 public class Arm {
 
     public final CRServo leftServo;
     public final CRServo rightServo;
 
-    public static double leftZeroVoltage = 0.117;
-    public static double rightZeroVoltage = 0.01;
+    public static double leftZeroVoltage = 1.6875;
+    public static double rightZeroVoltage = 2.41;
 
     public final AxonEncoder leftEncoder;
     public final AxonEncoder rightEncoder;
@@ -235,64 +237,66 @@ public class Arm {
         }
     }
 
-//    public class SetAngle implements Action {
-//        private final double targetAngleDegrees;
-//        private boolean initialized = false;
-//        private double startTime;
-//
-//        // --- NEW FIELDS for stall detection ---
-//        private double lastError = Double.NaN;
-//        private double lastMovementTime;
-//        private static final double STALL_EPS_DEGREES     = 0.5;  // how much error must move to count as “movement”
-//        private static final double STALL_TIMEOUT_SECONDS = 1;  // how long error can stay within ±ε before we call it “stuck”
-//
-//        public SetAngle(double targetAngleDegrees) {
-//            this.targetAngleDegrees = targetAngleDegrees;
-//        }
-//
-//        @Override
-//        public boolean run(@NonNull TelemetryPacket packet) {
-//            double now = timer.updateTime();
-//
-//            if (!initialized) {
-//                startTime         = now;
-//                lastMovementTime  = now;
-//                lastError         = update(targetAngleDegrees);  // initialize lastError
-//                initialized       = true;
-//            }
-//
-//            // compute how far we are from target right now
-//            double error = update(targetAngleDegrees);
-//
-//            // --- STALL CHECK ---
-//            // If error has moved by more than ε since last cycle, count that as “movement”:
-//            if (Math.abs(error - lastError) > STALL_EPS_DEGREES) {
-//                lastMovementTime = now;
-//            }
-//
-//            // if it’s been too long without meaningful movement, we’re stuck:
-//            boolean isStuck = (now - lastMovementTime) > STALL_TIMEOUT_SECONDS;
-//            if (isStuck) {
-//                packet.put("status", "ARM STUCK");
-//                return false;   // abort the action immediately
-//            }
-//
-//            // --- NORMAL STOP CONDITIONS ---
-//            boolean withinTolerance = Math.abs(error) <= angleToleranceDegrees;
-//            boolean overtime          = (now - startTime) > setAngleTimeout;
-//
-//            boolean shouldContinue = !withinTolerance && !overtime;
-//            inAction = shouldContinue;
-//
-//            // save for next iteration
-//            lastError = error;
-//            return shouldContinue;
-//        }
-//    }
+    public class SetAngleStallDetection implements Action {
+        private final double targetAngleDegrees;
+        private boolean initialized = false;
+        private double startTime;
+
+        // --- NEW FIELDS for stall detection ---
+        private double lastError = Double.NaN;
+        private double lastMovementTime;
+
+        private static final double VELOCITY_THRESHOLD_DEG_PER_S = 5.0;
+        private static final double STALL_TIMEOUT_SECONDS = 1;  // how long angular velocity can stay within ±ε before we call it “stuck”
+
+        public SetAngleStallDetection(double targetAngleDegrees) {
+            this.targetAngleDegrees = targetAngleDegrees;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket packet) {
+            double now = timer.updateTime();
+
+            if (!initialized) {
+                startTime         = now;
+                lastMovementTime  = now;
+                lastError         = update(targetAngleDegrees);  // initialize lastError
+                initialized       = true;
+            }
+
+            double error = update(targetAngleDegrees);
+
+            // --- STALL CHECK ---
+            // If error has moved by more than ε since last cycle, count that as “movement”:
+            double angularSpeed = Math.abs(error - lastError) / timer.getDeltaTime();
+
+            if (angularSpeed > VELOCITY_THRESHOLD_DEG_PER_S) {
+                lastMovementTime = now;
+            }
+
+            boolean isStuck = (now - lastMovementTime) > STALL_TIMEOUT_SECONDS;
+            if (isStuck) {
+                packet.put("status", "ARM STUCK");
+                inAction = false;
+                return false;
+            }
+
+            // --- NORMAL STOP CONDITIONS ---
+            boolean withinTolerance = Math.abs(error) <= angleToleranceDegrees;
+            boolean overtime = (now - startTime) > setAngleTimeout;
+
+            boolean shouldContinue = !withinTolerance && !overtime;
+            inAction = shouldContinue;
+
+            // save for next iteration
+            lastError = error;
+            return shouldContinue;
+        }
+    }
 
 
     public Action setAngle(double angle) {
-        return new SetAngle(angle);
+        return new SetAngleStallDetection(angle);
     }
 }
 

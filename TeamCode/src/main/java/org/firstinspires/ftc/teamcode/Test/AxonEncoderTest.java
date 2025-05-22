@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @TeleOp
 @Config
+@Configurable
 public class AxonEncoderTest extends OpMode {
 
     Timer timer;

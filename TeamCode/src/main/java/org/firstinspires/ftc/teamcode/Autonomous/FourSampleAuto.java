@@ -12,6 +12,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
+import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -25,6 +26,7 @@ import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 
 @Autonomous
 @Config
+@Configurable
 public class FourSampleAuto extends OpMode {
 
     public static EditablePose preloadScoring = new EditablePose(-54, 54, 135);
@@ -97,7 +99,10 @@ public class FourSampleAuto extends OpMode {
         if (gamepad1.a) {
             arm.homeEncoders();
         }
+
         telemetry.addData("Arm current angle", arm.getCurrentAngleDegrees());
+        telemetry.addData("Left zero voltage", arm.leftEncoder.zeroVoltage);
+        telemetry.addData("Right zero voltage", arm.rightEncoder.zeroVoltage);
         telemetry.addData("Arm target", arm.getTargetAngle());
     }
 
@@ -170,7 +175,6 @@ public class FourSampleAuto extends OpMode {
                 )
         );
     }
-
 
     public Action pickUp() {
         return new ParallelAction(

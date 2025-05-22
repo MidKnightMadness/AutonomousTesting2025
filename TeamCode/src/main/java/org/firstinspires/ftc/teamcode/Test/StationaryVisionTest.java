@@ -38,7 +38,7 @@ public class StationaryVisionTest extends OpMode {
 
                 telemetry.addLine("Color: " + closestSample.getColor() + ", Confidence: " + closestSample.getConfidence());
                 telemetry.addLine("(RelX, RelY): " + closestSample.getRelativeX() + ", " + closestSample.getRelativeY());
-                telemetry.addLine("(FieldX, FieldY): " + closestSample.getWorldX() + ", " + closestSample.getWorldY());
+//                telemetry.addLine("(FieldX, FieldY): " + closestSample.getWorldX() + ", " + closestSample.getWorldY());
             }
 
 
@@ -48,7 +48,7 @@ public class StationaryVisionTest extends OpMode {
 
                 telemetry.addLine("Color: " + sampleDetected.getColor() + ", Confidence: " + sampleDetected.getConfidence());
                 telemetry.addLine("(RelX, RelY): " +  sampleDetected.getRelativeX() + ", " + sampleDetected.getRelativeY());
-                telemetry.addLine("(FieldX, FieldY): " + sampleDetected.getWorldX() + ", " + sampleDetected.getWorldY());
+//                telemetry.addLine("(FieldX, FieldY): " + sampleDetected.getWorldX() + ", " + sampleDetected.getWorldY());
                 prioritySample += 1;
             }
 

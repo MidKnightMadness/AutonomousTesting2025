@@ -320,8 +320,6 @@ public class Vision {
     }
 
 
-
-
     public ArrayList<Sample> getSortedSamples(){
         return samples;
     }

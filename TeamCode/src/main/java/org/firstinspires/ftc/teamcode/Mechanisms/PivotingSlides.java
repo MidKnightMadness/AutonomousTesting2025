@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.Mechanisms;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.InstantAction;
+import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -10,6 +11,7 @@ import org.firstinspires.ftc.teamcode.Components.PolynomialApproximator;
 import org.firstinspires.ftc.teamcode.Components.Util;
 
 @Config
+@Configurable
 public class PivotingSlides {
 
     public static double RETRACT_SERVO_POSITION = 0.137;

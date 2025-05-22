@@ -6,10 +6,19 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction;
 
+/**
+ * AxonEncoder is a utility class for interfacing with analog encoders found in Axon servos.
+ * It tracks the absolute and relative orientation of the servo shaft by reading analog voltage values,
+ * handling wraparounds, and filtering out invalid spikes. The class provides methods to home, reset,
+ * and retrieve the current position in both radians and degrees.
+ *
+ * This class is designed for use in FTC robotics applications where precise angular tracking of Axon servos is required.
+ */
+
 @Config
 public class AxonEncoder {
     private static final double MAX_VOLTAGE = 3.3;
-    public static double DV_THRESHOLD = 1;
+    public static double DV_THRESHOLD = 3.3;
 
     private double previousVoltage = -1;
     private double totalRotations = 0.0;

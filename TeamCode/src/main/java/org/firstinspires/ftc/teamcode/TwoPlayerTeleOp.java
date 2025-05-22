@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @TeleOp(name="TeleOp - Two Player", group="A")
 @Config
+@Configurable
 public class TwoPlayerTeleOp extends OpMode {
 
     public static double STRAFE_ROTATION_FACTOR = 0.15; // rotation while strafing to counteract uneven rotation
@@ -105,8 +107,6 @@ public class TwoPlayerTeleOp extends OpMode {
             telemetry.addData("Update Rate (Hz)", 1 / timer.getDeltaTime());
             telemetry.addData("pivoting slides", pivotingSlidesExtension);
             telemetry.addData("Arm angle", arm.getCurrentAngleDegrees());
-
-
 
             runPivotingSlides();
             runWristControls();
@@ -249,7 +249,7 @@ public class TwoPlayerTeleOp extends OpMode {
     }
 
     double pivotingSlidesExtension = 0;
-    public static double armSpeed = 150; // degrees / sec
+    public static double armPower = 1;
     public static double pivotingSlidesSpeed = 300;  // mm / s
 
     public void runWristControls() {
@@ -280,7 +280,7 @@ public class TwoPlayerTeleOp extends OpMode {
         pivotingSlides.setExtension(pivotingSlidesExtension);
 
 
-        telemetry.addData("pivoting slides servo", pivotingSlides.leftServo.getPosition());
+        telemetry.addData("Pivoting slides servo", pivotingSlides.leftServo.getPosition());
     }
 
     boolean isHoldingAngle;
@@ -326,12 +326,11 @@ public class TwoPlayerTeleOp extends OpMode {
             isHoldingAngle = false;
         }
 
-
         if (isHoldingAngle) {
             arm.update(holdAngle);
         }
         else {
-            arm.setPowerWithFF(-gamepad2.right_stick_y);
+            arm.setPowerWithFF(-gamepad2.right_stick_y * armPower);
         }
     }
 }
