@@ -1,53 +1,52 @@
 package org.firstinspires.ftc.teamcode.Test;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.Autonomous.FourSampleAuto;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.OutdatedPrograms.OldArm;
+import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.Mechanisms.CRArm;
 import org.firstinspires.ftc.teamcode.Mechanisms.PivotingSlides;
-import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 
 
 @TeleOp(group="Test")
 public class ActionsTestOpMode extends OpMode {
-    MecanumDrive mecanumDrive;
-    Pose2d initialPose;
-    PivotingSlides pivotingSlides;
-    Timer timer;
+    Arm arm;
 
     @Override
     public void init() {
-        initialPose = new Pose2d(0, 0, 0);
-        mecanumDrive = new MecanumDrive(hardwareMap, initialPose);
-        timer = new Timer();
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        pivotingSlides = new PivotingSlides(hardwareMap);
-        telemetry.setAutoClear(true);
+        arm = new Arm(hardwareMap);
+        arm.setInitPosition();
     }
 
     @Override
     public void start() {
+
         Actions.runBlocking(
-                mecanumDrive.actionBuilder(initialPose).strafeTo(new Vector2d(10, 20)).build()
+                new SequentialAction(
+                        arm.setAngleSmooth(51),
+                        new SleepAction(1),
+                        arm.setAngleSmooth(141),
+                        new SleepAction(1),
+                        arm.setAngleSmooth(0)
+                )
         );
     }
 
     @Override
     public void loop() {
-        Actions.runBlocking(
-                mecanumDrive.actionBuilder(initialPose).strafeTo(new Vector2d(10, 20)).build()
-        );
-
 
         telemetry.update();
     }

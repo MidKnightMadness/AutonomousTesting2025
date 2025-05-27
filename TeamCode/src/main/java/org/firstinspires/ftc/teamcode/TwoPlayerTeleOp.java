@@ -1,17 +1,21 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Autonomous.FourSampleAuto.CYCLE;
+import static org.firstinspires.ftc.teamcode.Autonomous.FourSampleAuto.RESET;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -23,8 +27,6 @@ import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Wrist;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
-import java.util.List;
-
 @TeleOp(name="TeleOp - Two Player", group="A")
 @Config
 @Configurable
@@ -34,28 +36,23 @@ public class TwoPlayerTeleOp extends OpMode {
     public static double rotationFactor = 0.5;
 
     VerticalSlides slides;
-
     PivotingSlides pivotingSlides;
     Arm arm;
     Wrist wrist;
     Spintake spintake;
 
-    boolean inSlideAction;
+    boolean inPresetAction;
     boolean inArmAction;
     boolean inSpintakeAction;
 
-    Action slideAction;
+    Action presetAction;
     Action spintakeAction;
     Action armAction;
 
     Timer timer;
 
-    boolean clawClosed = false;
-
     MecanumDrive drive;
 
-
-    List<LynxModule> allHubs;
     TelemetryPacket packet = new TelemetryPacket();
 
     @Override
@@ -63,26 +60,17 @@ public class TwoPlayerTeleOp extends OpMode {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         slides = new VerticalSlides(hardwareMap);
         pivotingSlides = new PivotingSlides(hardwareMap);
-        arm = new Arm(hardwareMap, telemetry);
+        arm = new Arm(hardwareMap);
         wrist = new Wrist(hardwareMap);
         spintake = new Spintake(hardwareMap);
 
         timer = new Timer();
-        clawClosed = true;
 
         MecanumDrive.PARAMS.maxWheelVel = 60;
 
         drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
         wrist.setPosition(Wrist.INTAKE_POSITION);
         slides.enableFeedforward();
-
-        if (RunOptions.useBulkReads) {
-            allHubs = hardwareMap.getAll(LynxModule.class);
-
-            for (LynxModule module : allHubs) {
-                module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
-            }
-        }
     }
 
     @Override
@@ -94,19 +82,12 @@ public class TwoPlayerTeleOp extends OpMode {
 
     @Override
     public void loop() {
-            if (RunOptions.useBulkReads) {
-                for (LynxModule module : allHubs) {
-                    module.clearBulkCache();
-                }
-            }
-
             timer.updateTime();
 
             gamepad1Controls();
 
             telemetry.addData("Update Rate (Hz)", 1 / timer.getDeltaTime());
             telemetry.addData("pivoting slides", pivotingSlidesExtension);
-            telemetry.addData("Arm angle", arm.getCurrentAngleDegrees());
 
             runPivotingSlides();
             runWristControls();
@@ -133,15 +114,12 @@ public class TwoPlayerTeleOp extends OpMode {
             }
     }
 
-    int slideMode = 0; // 0: sample, 1: specimen
-
-
     public void runSpintakeControls() {
         if (inSpintakeAction) {
             inSpintakeAction = spintakeAction.run(packet);
 
             if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
-                inSlideAction = false;
+                inSpintakeAction = false;
             }
 
             telemetry.addLine("Running spintake");
@@ -161,11 +139,11 @@ public class TwoPlayerTeleOp extends OpMode {
     }
 
     public void runSlideControls() {
-        if (inSlideAction) {
-            inSlideAction = slideAction.run(packet);
+        if (inPresetAction) {
+            inPresetAction = presetAction.run(packet);
 
             if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
-                inSlideAction = false;
+                inPresetAction = false;
             }
 
             telemetry.addLine("Running slides action");
@@ -186,21 +164,6 @@ public class TwoPlayerTeleOp extends OpMode {
         }
 
         telemetry.addData("Vert. slides power", slidesPower);
-        // hang
-//        if (gamepad1.left_bumper && gamepad1.y && gamepad1.left_trigger != 0) {
-//            while (true) {
-//                slides.getLeftMotor().setPower(-1);
-//                slides.getRightMotor().setPower(-1);
-//
-//                if (gamepad1.y && gamepad1.a) {
-//                    while (true) {
-//                        slides.getLeftMotor().setPower(-0.1);
-//                        slides.getRightMotor().setPower(-0.1);
-//                    }
-//                }
-//            }
-//        }
-
     }
 
     public void gamepad1Controls(){
@@ -215,41 +178,41 @@ public class TwoPlayerTeleOp extends OpMode {
         runSlideControls();
 
         if (gamepad1.a) {
-            slideAction = slidesDown();
-            inSlideAction = true;
+            presetAction = slidesDown();
+            inPresetAction = true;
         }
         else if (gamepad1.y) {
-            slideAction = slidesUp();
-            inSlideAction = true;
+            presetAction = slidesUp();
+            inPresetAction = true;
         }
     }
 
     public Action slidesDown() {
-        if (slideMode == 0) {
-            return new SequentialAction(
-                    slides.bringDown(0.8)
-            );
-        }
-
         return new SequentialAction(
-                slides.setPosition(VerticalSlides.SPECIMEN_INTAKE, 0.8)
-        );
+            wrist.setDegreesAction(90),
+            new InstantAction(() -> {
+                pivotingSlidesExtension = RESET.pivExtension;
+            }),
+            new ParallelAction(
+                    slides.bringDown(RESET.downPower)
+            ));
     }
 
     public Action slidesUp() {
-        if (slideMode == 0) {
-            return new ParallelAction(
-                    slides.liftUp(0.8)
-            );
-        }
-
-        return new SequentialAction(
-                slides.setPosition(VerticalSlides.SPECIMEN_OUTTAKE, 0.8)
+        return new ParallelAction(
+            new SequentialAction(
+                slides.setPosition(VerticalSlides.BASKET_BACKWARDS_SCORING, 1),
+                wrist.setDegreesAction(CYCLE.wristScoreDeg)
+            ),
+            arm.setAngleSmooth(14),
+            new InstantAction(() -> {
+                pivotingSlidesExtension = CYCLE.pivExtension;
+            })
         );
     }
 
     double pivotingSlidesExtension = 0;
-    public static double armPower = 1;
+    public static double armPower = 1.2;
     public static double pivotingSlidesSpeed = 300;  // mm / s
 
     public void runWristControls() {
@@ -283,54 +246,36 @@ public class TwoPlayerTeleOp extends OpMode {
         telemetry.addData("Pivoting slides servo", pivotingSlides.leftServo.getPosition());
     }
 
-    boolean isHoldingAngle;
-    double holdAngle;
     public void runArmControls() {
+        if (inPresetAction) return;
+
         if (inArmAction) {
             inArmAction = armAction.run(packet);
-
-            if (gamepad1.dpad_down || gamepad1.dpad_up || gamepad1.dpad_right || gamepad1.dpad_left) {
-                inArmAction = false;
-            }
-
-            telemetry.addLine("Running arm action");
-            telemetry.update();
-
             return;
         }
 
-        if (gamepad2.back) {
-            arm.homeEncoders();
+        if (gamepad2.y) {
+            armAction = arm.setAngleSmooth(51);
+            inArmAction = true;
+        }
+        else if (gamepad2.b) {
+            armAction = arm.setAngleSmooth(130);
+            inArmAction = true;
+        }
+        else if(gamepad2.x){
+            armAction = arm.setAngleSmooth(0);
+            inArmAction = true;
+        }
+        else if (gamepad2.a) {
+            armAction = arm.setAngleSmooth(143);
+            inArmAction = true;
         }
 
-        if (gamepad2.x) {
-            armAction = arm.setAngle(0);
-            holdAngle = 0;
-            inArmAction = true;
-            isHoldingAngle = true;
-        }
-        else if (gamepad2.y) {
-            armAction = arm.setAngle(51);
-            holdAngle = 51;
-            inArmAction = true;
-            isHoldingAngle = true;
-        }
-        else if(gamepad2.b){
-            armAction = arm.setAngle(141);
-            holdAngle = 141;
-            inArmAction = true;
-            isHoldingAngle = true;
-        }
-
-        if (Math.abs(gamepad2.right_stick_y) > 0.05) {
-            isHoldingAngle = false;
-        }
-
-        if (isHoldingAngle) {
-            arm.update(holdAngle);
-        }
-        else {
-            arm.setPowerWithFF(-gamepad2.right_stick_y * armPower);
+        //Arm
+        if(!inArmAction) {
+            if (Math.abs(gamepad2.right_stick_y) > 0.05) {
+                arm.setPosition(arm.leftServo.getPosition() - gamepad2.right_stick_y * timer.getDeltaTime() * armPower);
+            }
         }
     }
 }

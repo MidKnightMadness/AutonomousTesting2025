@@ -34,7 +34,7 @@ public class Spintake {
     public Spintake(HardwareMap hardwareMap) {
         leftServo = hardwareMap.get(CRServo.class, "Left Spintake");
         rightServo = hardwareMap.get(CRServo.class, "Right Spintake");
-        rightServo.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftServo.setDirection(DcMotorSimple.Direction.REVERSE);
 
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "Inside Color");
         distanceSensor = hardwareMap.get(Rev2mDistanceSensor.class, "Outside Distance");

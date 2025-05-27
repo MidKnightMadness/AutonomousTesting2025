@@ -7,10 +7,12 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.InstantAction;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -19,6 +21,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.Mechanisms.CRArm;
 import org.firstinspires.ftc.teamcode.Mechanisms.PivotingSlides;
 import org.firstinspires.ftc.teamcode.Mechanisms.Spintake;
 import org.firstinspires.ftc.teamcode.Mechanisms.VerticalSlides;
@@ -31,39 +34,49 @@ public class FourSampleAuto extends OpMode {
 
     public static EditablePose preloadScoring = new EditablePose(-54, 54, 135);
     public static EditablePose basketScoring = new EditablePose(-54, 54, -45);
-    public static EditablePose rightSamplePickup = new EditablePose(-53, 53, -8);
+    public static EditablePose rightSamplePickup = new EditablePose(-53, 53, -7);
     public static EditablePose middleSamplePickup = new EditablePose(-54, 58, 5);
-    public static EditablePose leftSamplePickup = new EditablePose(-49, 55, 28);
-
-    public static class PreloadScoring {
-        public double wristDeg = 90;
-        public double pivExtension = 240;
-        public double armDeg = 58;
-    }
-
+    public static EditablePose leftSamplePickup = new EditablePose(-49, 55, 30);
+    public static EditablePose submersibleIntermediate = new EditablePose(-9.5, 32, -90);
+    public static EditablePose parkPose = new EditablePose(-9.5, 29, -90);
     public static class Reset {
         public double downPower = 0.8;
         public double pivExtension = 25;
-        public double armDeg = 45;
+        public double armDeg = 51;
     }
 
     public static class Pickup {
         public double wristDeg = 95;
         public double pivExtension = 85;
-        public double armPrepDeg = 120;
-        public double armPickupDeg = 134;
+        public double armPrepDeg = 135;
+        public double armPickupDeg = 143;
+    }
+
+    public static class LeftPickup {
+        public double pivExtension = 110;
+    }
+
+    public static class MiddlePickup {
+        public double pivExtension = 135;
+    }
+
+    public static class RightPickup {
+        public double pivExtension = 135;
     }
 
     public static class CycleScoring {
-        public double armDeg = 8;
+        public double armDeg = 13;
         public double wristScoreDeg = -39.9;
         public double pivExtension = 240;
     }
 
-    public static PreloadScoring PRELOAD = new PreloadScoring();
     public static Reset RESET = new Reset();
     public static Pickup PICKUP = new Pickup();
     public static CycleScoring CYCLE = new CycleScoring();
+    public static LeftPickup LEFT = new LeftPickup();
+    public static RightPickup RIGHT = new RightPickup();
+    public static MiddlePickup MIDDLE = new MiddlePickup();
+
 
     Arm arm;
     MecanumDrive mecanumDrive;
@@ -74,12 +87,11 @@ public class FourSampleAuto extends OpMode {
 
     EditablePose lastPose;
     Timer timer;
-
-    private final Pose2d startingPose = new Pose2d(-64.5, 32, Math.toRadians(90));
+    final Pose2d startingPose = new Pose2d(-63.5, 41, Math.toRadians(0));
 
     @Override
     public void init() {
-        arm = new Arm(hardwareMap, telemetry);
+        arm = new Arm(hardwareMap);
         mecanumDrive = new MecanumDrive(hardwareMap, startingPose);
         verticalSlides = new VerticalSlides(hardwareMap);
         pivotingSlides = new PivotingSlides(hardwareMap);
@@ -96,65 +108,40 @@ public class FourSampleAuto extends OpMode {
 
     @Override
     public void init_loop() {
-        if (gamepad1.a) {
-            arm.homeEncoders();
-        }
 
-        telemetry.addData("Arm current angle", arm.getCurrentAngleDegrees());
-        telemetry.addData("Left zero voltage", arm.leftEncoder.zeroVoltage);
-        telemetry.addData("Right zero voltage", arm.rightEncoder.zeroVoltage);
-        telemetry.addData("Arm target", arm.getTargetAngle());
     }
 
     @Override
     public void start() {
         mecanumDrive.localizer.setPose(startingPose);
-//        arm.homeEncoders();
         verticalSlides.resetEncoders();
-
-        runActionsWithUpdate(
+        lastPose = new EditablePose(startingPose.position.x, startingPose.position.y, Math.toDegrees(startingPose.heading.toDouble()));
+        Actions.runBlocking(
             new SequentialAction(
-                scorePreload(),
-                resetAfterPreload(leftSamplePickup),
-                pickUp(),
-                score(),
-                resetAfterCycle(middleSamplePickup),
-                pickUp(),
-                score(),
+                score(new Vector2d(0, 0)),
                 resetAfterCycle(rightSamplePickup),
-                pickUp(),
-                score()
+                pickUp(RIGHT.pivExtension),
+                score(new Vector2d(0, 0)),
+                resetAfterCycle(middleSamplePickup),
+                pickUp(MIDDLE.pivExtension),
+                score(new Vector2d(0, 0)),
+                resetAfterCycle(leftSamplePickup),
+                pickUp(LEFT.pivExtension),
+                score(new Vector2d(1, 1)),
+                resetAfterCycle(submersibleIntermediate),
+                park()
         ));
     }
 
-    public Action scorePreload() {
-        lastPose = preloadScoring;
-        return new ParallelAction(
-            arm.setAngle(PRELOAD.armDeg),
-            verticalSlides.liftUp(1),
-            pivotingSlides.setExtensionAction(PRELOAD.pivExtension),
-            wrist.setDegreesAction(PRELOAD.wristDeg),
-            new SequentialAction(
-                mecanumDrive.actionBuilder(startingPose).strafeToLinearHeading(preloadScoring.vector2d, preloadScoring.heading).build(),
-                spintake.outtake()
-            )
-        );
-    }
-
-    public Action resetAfterPreload(EditablePose targetPose) {
-        EditablePose oldPose = lastPose;
-        lastPose = targetPose;
-
+    public Action park() {
         return new SequentialAction(
-            arm.setAngle(RESET.armDeg),
-            wrist.setDegreesAction(0),
-            new ParallelAction(
-                verticalSlides.bringDown(RESET.downPower),
-                pivotingSlides.setExtensionAction(RESET.pivExtension),
-                new SequentialAction(
-                    mecanumDrive.actionBuilder(oldPose.pose2d).strafeToLinearHeading(targetPose.vector2d, targetPose.heading).build()
-                )
-            )
+            mecanumDrive.actionBuilder(lastPose.pose2d).strafeToLinearHeading(parkPose.vector2d, parkPose.heading).build(),
+            new InstantAction(() -> arm.setAngle(70)),
+            new SleepAction(0.5),
+            new InstantAction(() -> {
+                arm.leftServo.getController().pwmDisable();
+                arm.rightServo.getController().pwmDisable();
+            })
         );
     }
 
@@ -165,9 +152,8 @@ public class FourSampleAuto extends OpMode {
         return new SequentialAction(
                 wrist.setDegreesAction(0),
                 pivotingSlides.setExtensionAction(RESET.pivExtension),
-                new SleepAction(0.5),
                 new ParallelAction(
-                        arm.setAngle(RESET.armDeg),
+                        arm.setAngleSmooth(RESET.armDeg),
                         verticalSlides.bringDown(RESET.downPower),
                         new SequentialAction(
                                 mecanumDrive.actionBuilder(oldPose.pose2d).strafeToLinearHeading(targetPose.vector2d, targetPose.heading).build()
@@ -176,39 +162,40 @@ public class FourSampleAuto extends OpMode {
         );
     }
 
-    public Action pickUp() {
+    public Action pickUp(double pivExtension) {
         return new ParallelAction(
             new SequentialAction(
                 new ParallelAction(
                         wrist.setDegreesAction(PICKUP.wristDeg),
-                        pivotingSlides.setExtensionAction(PICKUP.pivExtension),
-                        arm.setAngle(PICKUP.armPrepDeg)
+                        pivotingSlides.setExtensionAction(pivExtension),
+                        arm.setAngleSmooth(PICKUP.armPrepDeg)
                 ),
                 new SleepAction(0.5),
                 new ParallelAction(
                     spintake.intake(),
-                    arm.setAngle(PICKUP.armPickupDeg)
+                    arm.setAngleSmooth(PICKUP.armPickupDeg)
                 )
             )
         );
     }
 
-    public Action score() {
+    public Action score(Vector2d offset) {
         EditablePose oldPose = lastPose;
         lastPose = basketScoring;
+
         return new SequentialAction(
             new ParallelAction(
                 pivotingSlides.setExtensionAction(30),
-                arm.setAngle(CYCLE.armDeg)
+                arm.setAngleSmooth(CYCLE.armDeg)
             ),
             new ParallelAction(
-                mecanumDrive.actionBuilder(oldPose.pose2d).strafeToLinearHeading(basketScoring.vector2d, basketScoring.heading).build(),
+                mecanumDrive.actionBuilder(oldPose.pose2d).strafeToLinearHeading(basketScoring.vector2d.plus(offset), basketScoring.heading).build(),
                 verticalSlides.setPosition(VerticalSlides.BASKET_BACKWARDS_SCORING, 1)
             ),
             pivotingSlides.setExtensionAction(CYCLE.pivExtension),
             new SleepAction(0.2),
             wrist.setDegreesAction(CYCLE.wristScoreDeg),
-            new SleepAction(0.2),
+            new SleepAction(0.3),
             spintake.outtake()
         );
     }
@@ -223,27 +210,8 @@ public class FourSampleAuto extends OpMode {
                 action,
                 new ContinuousAction(() -> {
                     timer.updateTime();
-                    if (!Arm.inAction) {
-                        arm.update(arm.getTargetAngle());
-                    }
-
-                    if (gamepad1.a) {
-                        arm.homeEncoders();
-                    }
-
 
                     telemetry.addData("Update rate", (1 / timer.getDeltaTime()));
-                    telemetry.addData("Arm angle", arm.getCurrentAngleDegrees());
-
-                    telemetry.addData("Left voltage", arm.leftEncoder.getVoltage());
-                    telemetry.addData("Right voltage", arm.rightEncoder.getVoltage());
-
-                    telemetry.addData("Left skips", arm.leftEncoder.numRejections);
-                    telemetry.addData("Right skips", arm.rightEncoder.numRejections);
-
-                    telemetry.addData("Left angle", arm.leftEncoder.getAbsolutePositionDegrees());
-                    telemetry.addData("Right angle", arm.rightEncoder.getAbsolutePositionDegrees());
-
                     telemetry.update();
                 })
         ));

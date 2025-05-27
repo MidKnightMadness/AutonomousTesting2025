@@ -8,22 +8,20 @@ import com.bylazar.ftcontrol.panels.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.Localization.messages.Drawing;
-import org.firstinspires.ftc.teamcode.Mechanisms.Arm;
+import org.firstinspires.ftc.teamcode.Mechanisms.CRArm;
 import org.firstinspires.ftc.teamcode.Components.Timer;
 
 @TeleOp
-@Config
-@Configurable
+@Deprecated
 public class AxonEncoderTest extends OpMode {
 
     Timer timer;
-    Arm controller;
+    CRArm controller;
 
     @Override
     public void init() {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        controller = new Arm(hardwareMap, telemetry);
+        controller = new CRArm(hardwareMap, telemetry);
         timer = new Timer();
     }
 

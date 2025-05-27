@@ -31,15 +31,15 @@ public class StationaryVisionTest extends OpMode {
             int prioritySample = 1;
             vision.update(new Pose2d(poseX, poseY, poseHeading));
 
-            Sample closestSample = vision.getClosestSample(searchColor, bufferTime);
-            if(closestSample != null) {
-                telemetry.addLine("-------------------------------------------");
-                telemetry.addData("Priority(Starting From 1):", prioritySample);
-
-                telemetry.addLine("Color: " + closestSample.getColor() + ", Confidence: " + closestSample.getConfidence());
-                telemetry.addLine("(RelX, RelY): " + closestSample.getRelativeX() + ", " + closestSample.getRelativeY());
-//                telemetry.addLine("(FieldX, FieldY): " + closestSample.getWorldX() + ", " + closestSample.getWorldY());
-            }
+//            Sample closestSample = vision.getClosestSample(searchColor, bufferTime);
+//            if(closestSample != null) {
+//                telemetry.addLine("-------------------------------------------");
+//                telemetry.addData("Priority(Starting From 1):", prioritySample);
+//
+//                telemetry.addLine("Color: " + closestSample.getColor() + ", Confidence: " + closestSample.getConfidence());
+//                telemetry.addLine("(RelX, RelY): " + closestSample.getRelativeX() + ", " + closestSample.getRelativeY());
+////                telemetry.addLine("(FieldX, FieldY): " + closestSample.getWorldX() + ", " + closestSample.getWorldY());
+//            }
 
 
             for (Sample sampleDetected : vision.getSortedSamples()) {

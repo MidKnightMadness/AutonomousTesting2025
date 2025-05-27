@@ -23,11 +23,15 @@ public class AxonEncoder {
     private double previousVoltage = -1;
     private double totalRotations = 0.0;
     public double zeroVoltage = 0.0;
+    public double homeVoltage;
 
     public double numRejections = 0;
 
     public AnalogInput analogInput;
     Direction direction;
+
+    static LinearInterpolator leftInterpolator = LinearInterpolator.leftAxonVoltageInterpolator();
+    static LinearInterpolator rightInterpolator = LinearInterpolator.rightAxonVoltageInterpolator();
 
     public AxonEncoder(HardwareMap hardwareMap, String analogDeviceName) {
         analogInput = hardwareMap.get(AnalogInput.class, analogDeviceName);
@@ -42,6 +46,7 @@ public class AxonEncoder {
 
     public void setHome(double homeVoltage) {
         zeroVoltage = homeVoltage;
+        this.homeVoltage = homeVoltage;
         previousVoltage = -1;
         totalRotations = 0.0;
     }
@@ -57,6 +62,7 @@ public class AxonEncoder {
     }
 
     public void update() {
+        homeVoltage = zeroVoltage;
         double currentVoltage = analogInput.getVoltage();
 
         if (previousVoltage < 0) {
@@ -83,8 +89,37 @@ public class AxonEncoder {
         previousVoltage = currentVoltage;
     }
 
+    public void update(double power, boolean left) {
+        double currentVoltage = analogInput.getVoltage();
+
+        homeVoltage = zeroVoltage + (left ? leftInterpolator.evaluate(power) : rightInterpolator.evaluate(power));
+
+        if (previousVoltage < 0) {
+            previousVoltage = currentVoltage;
+            return;
+        }
+
+        double voltageDifference = currentVoltage - previousVoltage;
+        double circularDifference = circularDelta(currentVoltage, previousVoltage);
+
+        // filter out large voltage spikes
+        if (Math.abs(circularDifference) > DV_THRESHOLD) {
+            numRejections++;
+            return;
+        }
+
+        // Detect wraparound
+        if (voltageDifference > MAX_VOLTAGE / 2) {
+            totalRotations -= 1.0;
+        } else if (voltageDifference < -MAX_VOLTAGE / 2) {
+            totalRotations += 1.0;
+        }
+
+        previousVoltage = currentVoltage;
+    }
+
     public double getAbsolutePositionRadians() {
-        double fractionalRotation = (previousVoltage - zeroVoltage) / MAX_VOLTAGE;
+        double fractionalRotation = (previousVoltage - homeVoltage) / MAX_VOLTAGE;
         double sign = direction == Direction.FORWARD ? 1: -1;
         return sign * (totalRotations + fractionalRotation) * 2 * Math.PI;
     }
